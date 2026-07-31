@@ -1,7 +1,7 @@
 {
   "info": {
-    "_postman_id": "usta-gallery-api-tests",
-    "name": "UstaGallery API Tests",
+    "_postman_id": "quyca-api-tests",
+    "name": "Quyca API Tests",
     "description": "Full Newman test suite — Auth, User, Groups, Photos, Products, Styles, Events, Classes, Schedule",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },

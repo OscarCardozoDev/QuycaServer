@@ -1,5 +1,5 @@
 
-# UstaGalleryServer
+# Quyca — Backend
 
 Backend API para la plataforma de gestión de galería de arte de la Universidad Santo Tomás (Tunja).
 
