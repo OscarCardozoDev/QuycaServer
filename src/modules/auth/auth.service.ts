@@ -98,7 +98,7 @@ export class AuthService {
     const { error } = await resend.emails.send({
       from: emailFrom,
       to: credential.mail,
-      subject: 'Código de verificación - UstaGallery',
+      subject: 'Código de verificación - Quyca',
       text: `Tu código de verificación es: ${code}\n\nEste código expira en 10 minutos.`,
     });
 
@@ -180,7 +180,7 @@ export class AuthService {
     const { error } = await resend.emails.send({
       from: emailFrom,
       to: mail,
-      subject: 'Recuperar contraseña - UstaGallery',
+      subject: 'Recuperar contraseña - Quyca',
       text: `Tu código para recuperar la contraseña es: ${code}\n\nEste código expira en 10 minutos.\n\nSi no solicitaste este cambio, ignora este correo.`,
     });
 
