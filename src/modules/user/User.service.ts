@@ -252,6 +252,10 @@ export class UserService {
       data: { photo: { connect: { uid: created.uid } } },
     });
 
+    if (existing.photoId) {
+      await this.photosService.deletePhotoUseCase(existing.photoId);
+    }
+
     return { uid: existing.uid, photo: { uid: created.uid } };
   }
 
