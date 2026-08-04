@@ -3,7 +3,6 @@ import {
   Post,
   Body,
   Res,
-  HttpException,
   UnauthorizedException,
   UseGuards,
   Req,
@@ -42,12 +41,12 @@ export class AuthController {
       this.configService.get<string>('config.nodeEnv') === 'production';
 
     if (!credential) {
-      throw new HttpException('Correo no encontrado', 404);
+      throw new UnauthorizedException('Credenciales inválidas');
     }
 
     const isValid = await verifyText(auth.password, credential.password);
     if (!isValid) {
-      throw new UnauthorizedException('Contraseña incorrecta');
+      throw new UnauthorizedException('Credenciales inválidas');
     }
 
     const token = await this.jwtService.signAsync({

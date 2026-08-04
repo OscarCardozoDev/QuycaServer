@@ -162,7 +162,7 @@ export class AuthService {
     });
 
     if (!credential) {
-      throw new NotFoundException('Correo no encontrado');
+      return; // Do not reveal whether the email exists
     }
 
     await this.prismaService.verificationCodes.updateMany({
