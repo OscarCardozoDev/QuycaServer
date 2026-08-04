@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AuthService } from './auth.service';
+import { AuthService } from './Auth.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as cryptoModule from 'crypto';
 

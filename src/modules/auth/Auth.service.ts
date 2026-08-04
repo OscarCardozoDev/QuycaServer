@@ -7,11 +7,11 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { LoginDto, RegisterDto } from './auth.dto';
+import { LoginDto, RegisterDto } from './Auth.dto';
 import {
   GetCredentialResult,
   CredentialWithoutProfile,
-} from './auth.interface';
+} from './Auth.interface';
 import { hashText } from 'src/utils/crypto.util';
 import { randomInt } from 'crypto';
 

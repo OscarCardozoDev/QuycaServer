@@ -2,8 +2,8 @@ import { Test } from '@nestjs/testing';
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
+import { AuthController } from './Auth.controller';
+import { AuthService } from './Auth.service';
 import * as cryptoUtil from 'src/utils/crypto.util';
 
 const mockAuthService = {
