@@ -30,6 +30,16 @@ export class AuthController {
     private jwtService: JwtService,
   ) {}
 
+  // ── private helper ────────────────────────────────────────────────────────
+  private cookieOptions(isProduction: boolean) {
+    return {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+      maxAge: 1000 * 60 * 60 * 24,
+    };
+  }
+
   @Post('login')
   @ApiOperation({ summary: 'Iniciar sesión' })
   async login(
@@ -54,12 +64,7 @@ export class AuthController {
       userTypeId: credential.userTypeId,
     });
 
-    res.cookie('access_token', token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 24,
-    });
+    res.cookie('access_token', token, this.cookieOptions(isProduction));
 
     return {
       message: 'Login successful',
@@ -83,12 +88,7 @@ export class AuthController {
 
     const token = await this.jwtService.signAsync({ uid });
 
-    res.cookie('access_token', token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 24,
-    });
+    res.cookie('access_token', token, this.cookieOptions(isProduction));
 
     return { message: 'User registered successfully', isEmailVerified: false };
   }
@@ -96,7 +96,9 @@ export class AuthController {
   @Post('logout')
   @ApiOperation({ summary: 'Cerrar sesión' })
   logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('access_token');
+    const isProduction =
+      this.configService.get<string>('config.nodeEnv') === 'production';
+    res.clearCookie('access_token', this.cookieOptions(isProduction));
     return { message: 'Logged out' };
   }
 

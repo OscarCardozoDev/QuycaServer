@@ -81,4 +81,56 @@ describe('AuthController', () => {
       expect(statusWrongPassword).toBe(401);
     });
   });
+
+  describe('cookie options', () => {
+    it('logout calls clearCookie with same options used in login', async () => {
+      // Simulate login in production
+      mockConfigService.get.mockReturnValue('production');
+      mockAuthService.getCredentialByEmail.mockResolvedValue({
+        uid: 'u1', password: 'hashed', isEmailVerified: true,
+        hasProfile: true, hasGroup: false, userTypeId: 'type-1',
+      });
+      jest.spyOn(cryptoUtil, 'verifyText').mockResolvedValue(true);
+      await controller.login({ mail: 'a@b.com', password: 'pass' }, mockRes);
+
+      const setCookieOptions = mockRes.cookie.mock.calls[0][2];
+
+      // Reset mock calls for clearCookie
+      mockRes.clearCookie.mockClear();
+
+      // Logout should pass the same options
+      controller.logout(mockRes);
+      const clearCookieOptions = mockRes.clearCookie.mock.calls[0][1];
+
+      expect(clearCookieOptions).toEqual(setCookieOptions);
+    });
+
+    it('in development: sameSite is lax and secure is false', async () => {
+      mockConfigService.get.mockReturnValue('development');
+      mockAuthService.getCredentialByEmail.mockResolvedValue({
+        uid: 'u1', password: 'hashed', isEmailVerified: true,
+        hasProfile: true, hasGroup: false, userTypeId: 'type-1',
+      });
+      jest.spyOn(cryptoUtil, 'verifyText').mockResolvedValue(true);
+      await controller.login({ mail: 'a@b.com', password: 'pass' }, mockRes);
+
+      const opts = mockRes.cookie.mock.calls[0][2];
+      expect(opts.sameSite).toBe('lax');
+      expect(opts.secure).toBe(false);
+    });
+
+    it('in production: sameSite is none and secure is true', async () => {
+      mockConfigService.get.mockReturnValue('production');
+      mockAuthService.getCredentialByEmail.mockResolvedValue({
+        uid: 'u1', password: 'hashed', isEmailVerified: true,
+        hasProfile: true, hasGroup: false, userTypeId: 'type-1',
+      });
+      jest.spyOn(cryptoUtil, 'verifyText').mockResolvedValue(true);
+      await controller.login({ mail: 'a@b.com', password: 'pass' }, mockRes);
+
+      const opts = mockRes.cookie.mock.calls[0][2];
+      expect(opts.sameSite).toBe('none');
+      expect(opts.secure).toBe(true);
+    });
+  });
 });
