@@ -42,7 +42,7 @@ function buildPublicUrl(folderPath = '', fileName: string): string {
   return `/images/${cleanPath}/${fileName}`.replace(/\/+/g, '/');
 }
 
-export const photoManagment = {
+export const photoManagement = {
   /**
    * Guarda una foto en public/images/(path)
    */

@@ -29,7 +29,7 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('Mi API')
+    .setTitle('Quyca API')
     .setVersion('1.0')
     .build();
 
