@@ -7,7 +7,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateCredentialDto } from './auth.dto';
+import { LoginDto, RegisterDto } from './auth.dto';
 import {
   GetCredentialResult,
   CredentialWithoutProfile,
@@ -52,14 +52,14 @@ export class AuthService {
     };
   }
 
-  async setCredentialData(auth: CreateCredentialDto): Promise<{ uid: string }> {
+  async setCredentialData(auth: RegisterDto): Promise<{ uid: string }> {
     return this.prismaService.credentials.create({
       data: auth,
       select: { uid: true },
     });
   }
 
-  async putPasswordByEmail(auth: CreateCredentialDto): Promise<void> {
+  async putPasswordByEmail(auth: { mail: string; password: string }): Promise<void> {
     await this.prismaService.credentials.update({
       where: { mail: auth.mail },
       data: { password: auth.password },
@@ -67,46 +67,18 @@ export class AuthService {
   }
 
   async sendVerificationCode(uid: string): Promise<void> {
-    const resendKey = this.configService.get<string>('config.resendKey');
-    const emailFrom = this.configService.get<string>('config.emailFrom');
-    const resend = new Resend(resendKey);
-
-    if (!emailFrom) {
-      throw new Error('config.emailFrom no está configurado');
-    }
-
     const credential = await this.prismaService.credentials.findUnique({
       where: { uid },
       select: { mail: true },
     });
+    if (!credential) throw new NotFoundException('Credencial no encontrada');
 
-    if (!credential) {
-      throw new NotFoundException('Credencial no encontrada');
-    }
-
-    await this.prismaService.verificationCodes.updateMany({
-      where: { credentialUid: uid, usedAt: null },
-      data: { usedAt: new Date() },
-    });
-
-    const code = randomInt(100000, 1000000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-    await this.prismaService.verificationCodes.create({
-      data: { credentialUid: uid, code, expiresAt },
-    });
-
-    const { error } = await resend.emails.send({
-      from: emailFrom,
-      to: credential.mail,
+    await this.createAndSendCode({
+      credentialUid: uid,
+      toEmail: credential.mail,
       subject: 'Código de verificación - Quyca',
-      text: `Tu código de verificación es: ${code}\n\nEste código expira en 10 minutos.`,
+      text: `Tu código de verificación es: {CODE}\n\nEste código expira en 10 minutos.`,
     });
-
-    if (error) {
-      console.error('Error sending email:', error);
-      throw new InternalServerErrorException('Error al enviar el correo');
-    }
   }
 
   async verifyEmailCode(
@@ -149,46 +121,18 @@ export class AuthService {
   }
 
   async sendPasswordResetCode(mail: string): Promise<void> {
-    const resendKey = this.configService.get<string>('config.resendKey');
-    const emailFrom = this.configService.get<string>('config.emailFrom');
-    const resend = new Resend(resendKey);
-
-    if (!emailFrom) {
-      throw new Error('config.emailFrom no está configurado');
-    }
-
     const credential = await this.prismaService.credentials.findUnique({
       where: { mail },
       select: { uid: true },
     });
+    if (!credential) return; // Do not reveal whether the email exists
 
-    if (!credential) {
-      return; // Do not reveal whether the email exists
-    }
-
-    await this.prismaService.verificationCodes.updateMany({
-      where: { credentialUid: credential.uid, usedAt: null },
-      data: { usedAt: new Date() },
-    });
-
-    const code = randomInt(100000, 1000000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-    await this.prismaService.verificationCodes.create({
-      data: { credentialUid: credential.uid, code, expiresAt },
-    });
-
-    const { error } = await resend.emails.send({
-      from: emailFrom,
-      to: mail,
+    await this.createAndSendCode({
+      credentialUid: credential.uid,
+      toEmail: mail,
       subject: 'Recuperar contraseña - Quyca',
-      text: `Tu código para recuperar la contraseña es: ${code}\n\nEste código expira en 10 minutos.\n\nSi no solicitaste este cambio, ignora este correo.`,
+      text: `Tu código para recuperar la contraseña es: {CODE}\n\nEste código expira en 10 minutos.\n\nSi no solicitaste este cambio, ignora este correo.`,
     });
-
-    if (error) {
-      console.error('Error sending email:', error);
-      throw new InternalServerErrorException('Error al enviar el correo');
-    }
   }
 
   async resetPassword(
@@ -225,5 +169,44 @@ export class AuthService {
 
     const hashedPassword = await hashText(newPassword);
     await this.putPasswordByEmail({ mail, password: hashedPassword });
+  }
+
+  private async createAndSendCode(params: {
+    credentialUid: string;
+    toEmail: string;
+    subject: string;
+    text: string;
+  }): Promise<void> {
+    const resendKey = this.configService.get<string>('config.resendKey');
+    const emailFrom = this.configService.get<string>('config.emailFrom');
+    const resend = new Resend(resendKey);
+
+    if (!emailFrom) {
+      throw new Error('config.emailFrom no está configurado');
+    }
+
+    await this.prismaService.verificationCodes.updateMany({
+      where: { credentialUid: params.credentialUid, usedAt: null },
+      data: { usedAt: new Date() },
+    });
+
+    const code = randomInt(100000, 1000000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await this.prismaService.verificationCodes.create({
+      data: { credentialUid: params.credentialUid, code, expiresAt },
+    });
+
+    const { error } = await resend.emails.send({
+      from: emailFrom,
+      to: params.toEmail,
+      subject: params.subject,
+      text: params.text.replace('{CODE}', code),
+    });
+
+    if (error) {
+      console.error('Error sending email:', error);
+      throw new InternalServerErrorException('Error al enviar el correo');
+    }
   }
 }
