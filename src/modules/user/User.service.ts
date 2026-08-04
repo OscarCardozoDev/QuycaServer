@@ -253,7 +253,12 @@ export class UserService {
     });
 
     if (existing.photoId) {
-      await this.photosService.deletePhotoUseCase(existing.photoId);
+      try {
+        await this.photosService.deletePhotoUseCase(existing.photoId);
+      } catch (err) {
+        console.error(`Failed to delete old photo ${existing.photoId}:`, err);
+        // Non-fatal: photo update succeeded; orphaned record will need manual cleanup
+      }
     }
 
     return { uid: existing.uid, photo: { uid: created.uid } };
