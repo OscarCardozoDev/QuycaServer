@@ -13,6 +13,7 @@ import {
   CredentialWithoutProfile,
 } from './auth.interface';
 import { hashText } from 'src/utils/crypto.util';
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -88,7 +89,7 @@ export class AuthService {
       data: { usedAt: new Date() },
     });
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const code = randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     await this.prismaService.verificationCodes.create({
@@ -170,7 +171,7 @@ export class AuthService {
       data: { usedAt: new Date() },
     });
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const code = randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     await this.prismaService.verificationCodes.create({
