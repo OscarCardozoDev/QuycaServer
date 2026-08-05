@@ -2537,7 +2537,6 @@ export type VerificationCodesScalarFieldEnum = (typeof VerificationCodesScalarFi
 export const GroupsScalarFieldEnum = {
   uid: 'uid',
   name: 'name',
-  category: 'category',
   isActive: 'isActive',
   institutionId: 'institutionId',
   categoryId: 'categoryId',
@@ -2581,9 +2580,8 @@ export const StylesScalarFieldEnum = {
   uid: 'uid',
   name: 'name',
   description: 'description',
-  category: 'category',
-  categoryId: 'categoryId',
   isActive: 'isActive',
+  categoryId: 'categoryId',
   groupId: 'groupId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -2937,20 +2935,6 @@ export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'J
  * Reference to a field of type 'QueryMode'
  */
 export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
-    
-
-
-/**
- * Reference to a field of type 'Category'
- */
-export type EnumCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Category'>
-    
-
-
-/**
- * Reference to a field of type 'Category[]'
- */
-export type ListEnumCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Category[]'>
     
 
 

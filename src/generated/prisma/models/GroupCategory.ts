@@ -340,9 +340,9 @@ export type GroupCategoryUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type GroupCategoryNullableScalarRelationFilter = {
-  is?: Prisma.GroupCategoryWhereInput | null
-  isNot?: Prisma.GroupCategoryWhereInput | null
+export type GroupCategoryScalarRelationFilter = {
+  is?: Prisma.GroupCategoryWhereInput
+  isNot?: Prisma.GroupCategoryWhereInput
 }
 
 export type GroupCategoryCountOrderByAggregateInput = {
@@ -375,18 +375,21 @@ export type GroupCategoryMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type GroupCategoryNullableScalarRelationFilter = {
+  is?: Prisma.GroupCategoryWhereInput | null
+  isNot?: Prisma.GroupCategoryWhereInput | null
+}
+
 export type GroupCategoryCreateNestedOneWithoutGroupsInput = {
   create?: Prisma.XOR<Prisma.GroupCategoryCreateWithoutGroupsInput, Prisma.GroupCategoryUncheckedCreateWithoutGroupsInput>
   connectOrCreate?: Prisma.GroupCategoryCreateOrConnectWithoutGroupsInput
   connect?: Prisma.GroupCategoryWhereUniqueInput
 }
 
-export type GroupCategoryUpdateOneWithoutGroupsNestedInput = {
+export type GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput = {
   create?: Prisma.XOR<Prisma.GroupCategoryCreateWithoutGroupsInput, Prisma.GroupCategoryUncheckedCreateWithoutGroupsInput>
   connectOrCreate?: Prisma.GroupCategoryCreateOrConnectWithoutGroupsInput
   upsert?: Prisma.GroupCategoryUpsertWithoutGroupsInput
-  disconnect?: Prisma.GroupCategoryWhereInput | boolean
-  delete?: Prisma.GroupCategoryWhereInput | boolean
   connect?: Prisma.GroupCategoryWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.GroupCategoryUpdateToOneWithWhereWithoutGroupsInput, Prisma.GroupCategoryUpdateWithoutGroupsInput>, Prisma.GroupCategoryUncheckedUpdateWithoutGroupsInput>
 }
@@ -397,12 +400,10 @@ export type GroupCategoryCreateNestedOneWithoutStylesInput = {
   connect?: Prisma.GroupCategoryWhereUniqueInput
 }
 
-export type GroupCategoryUpdateOneWithoutStylesNestedInput = {
+export type GroupCategoryUpdateOneRequiredWithoutStylesNestedInput = {
   create?: Prisma.XOR<Prisma.GroupCategoryCreateWithoutStylesInput, Prisma.GroupCategoryUncheckedCreateWithoutStylesInput>
   connectOrCreate?: Prisma.GroupCategoryCreateOrConnectWithoutStylesInput
   upsert?: Prisma.GroupCategoryUpsertWithoutStylesInput
-  disconnect?: Prisma.GroupCategoryWhereInput | boolean
-  delete?: Prisma.GroupCategoryWhereInput | boolean
   connect?: Prisma.GroupCategoryWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.GroupCategoryUpdateToOneWithWhereWithoutStylesInput, Prisma.GroupCategoryUpdateWithoutStylesInput>, Prisma.GroupCategoryUncheckedUpdateWithoutStylesInput>
 }

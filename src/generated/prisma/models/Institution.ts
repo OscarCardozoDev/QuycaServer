@@ -406,9 +406,9 @@ export type InstitutionUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type InstitutionNullableScalarRelationFilter = {
-  is?: Prisma.InstitutionWhereInput | null
-  isNot?: Prisma.InstitutionWhereInput | null
+export type InstitutionScalarRelationFilter = {
+  is?: Prisma.InstitutionWhereInput
+  isNot?: Prisma.InstitutionWhereInput
 }
 
 export type InstitutionListRelationFilter = {
@@ -460,23 +460,16 @@ export type InstitutionMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
-export type InstitutionScalarRelationFilter = {
-  is?: Prisma.InstitutionWhereInput
-  isNot?: Prisma.InstitutionWhereInput
-}
-
 export type InstitutionCreateNestedOneWithoutGroupsInput = {
   create?: Prisma.XOR<Prisma.InstitutionCreateWithoutGroupsInput, Prisma.InstitutionUncheckedCreateWithoutGroupsInput>
   connectOrCreate?: Prisma.InstitutionCreateOrConnectWithoutGroupsInput
   connect?: Prisma.InstitutionWhereUniqueInput
 }
 
-export type InstitutionUpdateOneWithoutGroupsNestedInput = {
+export type InstitutionUpdateOneRequiredWithoutGroupsNestedInput = {
   create?: Prisma.XOR<Prisma.InstitutionCreateWithoutGroupsInput, Prisma.InstitutionUncheckedCreateWithoutGroupsInput>
   connectOrCreate?: Prisma.InstitutionCreateOrConnectWithoutGroupsInput
   upsert?: Prisma.InstitutionUpsertWithoutGroupsInput
-  disconnect?: Prisma.InstitutionWhereInput | boolean
-  delete?: Prisma.InstitutionWhereInput | boolean
   connect?: Prisma.InstitutionWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.InstitutionUpdateToOneWithWhereWithoutGroupsInput, Prisma.InstitutionUpdateWithoutGroupsInput>, Prisma.InstitutionUncheckedUpdateWithoutGroupsInput>
 }

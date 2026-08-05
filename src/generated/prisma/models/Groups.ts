@@ -27,7 +27,6 @@ export type AggregateGroups = {
 export type GroupsMinAggregateOutputType = {
   uid: string | null
   name: string | null
-  category: $Enums.Category | null
   isActive: boolean | null
   institutionId: string | null
   categoryId: string | null
@@ -39,7 +38,6 @@ export type GroupsMinAggregateOutputType = {
 export type GroupsMaxAggregateOutputType = {
   uid: string | null
   name: string | null
-  category: $Enums.Category | null
   isActive: boolean | null
   institutionId: string | null
   categoryId: string | null
@@ -51,7 +49,6 @@ export type GroupsMaxAggregateOutputType = {
 export type GroupsCountAggregateOutputType = {
   uid: number
   name: number
-  category: number
   isActive: number
   institutionId: number
   categoryId: number
@@ -65,7 +62,6 @@ export type GroupsCountAggregateOutputType = {
 export type GroupsMinAggregateInputType = {
   uid?: true
   name?: true
-  category?: true
   isActive?: true
   institutionId?: true
   categoryId?: true
@@ -77,7 +73,6 @@ export type GroupsMinAggregateInputType = {
 export type GroupsMaxAggregateInputType = {
   uid?: true
   name?: true
-  category?: true
   isActive?: true
   institutionId?: true
   categoryId?: true
@@ -89,7 +84,6 @@ export type GroupsMaxAggregateInputType = {
 export type GroupsCountAggregateInputType = {
   uid?: true
   name?: true
-  category?: true
   isActive?: true
   institutionId?: true
   categoryId?: true
@@ -174,10 +168,9 @@ export type GroupsGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 export type GroupsGroupByOutputType = {
   uid: string
   name: string
-  category: $Enums.Category
   isActive: boolean
-  institutionId: string | null
-  categoryId: string | null
+  institutionId: string
+  categoryId: string
   profesorId: string | null
   createdAt: Date
   updatedAt: Date
@@ -207,15 +200,14 @@ export type GroupsWhereInput = {
   NOT?: Prisma.GroupsWhereInput | Prisma.GroupsWhereInput[]
   uid?: Prisma.UuidFilter<"Groups"> | string
   name?: Prisma.StringFilter<"Groups"> | string
-  category?: Prisma.EnumCategoryFilter<"Groups"> | $Enums.Category
   isActive?: Prisma.BoolFilter<"Groups"> | boolean
-  institutionId?: Prisma.UuidNullableFilter<"Groups"> | string | null
-  categoryId?: Prisma.UuidNullableFilter<"Groups"> | string | null
+  institutionId?: Prisma.UuidFilter<"Groups"> | string
+  categoryId?: Prisma.UuidFilter<"Groups"> | string
   profesorId?: Prisma.UuidNullableFilter<"Groups"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Groups"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Groups"> | Date | string
-  institution?: Prisma.XOR<Prisma.InstitutionNullableScalarRelationFilter, Prisma.InstitutionWhereInput> | null
-  groupCategory?: Prisma.XOR<Prisma.GroupCategoryNullableScalarRelationFilter, Prisma.GroupCategoryWhereInput> | null
+  institution?: Prisma.XOR<Prisma.InstitutionScalarRelationFilter, Prisma.InstitutionWhereInput>
+  groupCategory?: Prisma.XOR<Prisma.GroupCategoryScalarRelationFilter, Prisma.GroupCategoryWhereInput>
   profesor?: Prisma.XOR<Prisma.UsersNullableScalarRelationFilter, Prisma.UsersWhereInput> | null
   users?: Prisma.UsersGroupsListRelationFilter
   products?: Prisma.ProductsListRelationFilter
@@ -229,10 +221,9 @@ export type GroupsWhereInput = {
 export type GroupsOrderByWithRelationInput = {
   uid?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  category?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
-  institutionId?: Prisma.SortOrderInput | Prisma.SortOrder
-  categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
+  categoryId?: Prisma.SortOrder
   profesorId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -254,15 +245,14 @@ export type GroupsWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.GroupsWhereInput[]
   NOT?: Prisma.GroupsWhereInput | Prisma.GroupsWhereInput[]
   name?: Prisma.StringFilter<"Groups"> | string
-  category?: Prisma.EnumCategoryFilter<"Groups"> | $Enums.Category
   isActive?: Prisma.BoolFilter<"Groups"> | boolean
-  institutionId?: Prisma.UuidNullableFilter<"Groups"> | string | null
-  categoryId?: Prisma.UuidNullableFilter<"Groups"> | string | null
+  institutionId?: Prisma.UuidFilter<"Groups"> | string
+  categoryId?: Prisma.UuidFilter<"Groups"> | string
   profesorId?: Prisma.UuidNullableFilter<"Groups"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Groups"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Groups"> | Date | string
-  institution?: Prisma.XOR<Prisma.InstitutionNullableScalarRelationFilter, Prisma.InstitutionWhereInput> | null
-  groupCategory?: Prisma.XOR<Prisma.GroupCategoryNullableScalarRelationFilter, Prisma.GroupCategoryWhereInput> | null
+  institution?: Prisma.XOR<Prisma.InstitutionScalarRelationFilter, Prisma.InstitutionWhereInput>
+  groupCategory?: Prisma.XOR<Prisma.GroupCategoryScalarRelationFilter, Prisma.GroupCategoryWhereInput>
   profesor?: Prisma.XOR<Prisma.UsersNullableScalarRelationFilter, Prisma.UsersWhereInput> | null
   users?: Prisma.UsersGroupsListRelationFilter
   products?: Prisma.ProductsListRelationFilter
@@ -276,10 +266,9 @@ export type GroupsWhereUniqueInput = Prisma.AtLeast<{
 export type GroupsOrderByWithAggregationInput = {
   uid?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  category?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
-  institutionId?: Prisma.SortOrderInput | Prisma.SortOrder
-  categoryId?: Prisma.SortOrderInput | Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
+  categoryId?: Prisma.SortOrder
   profesorId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -294,10 +283,9 @@ export type GroupsScalarWhereWithAggregatesInput = {
   NOT?: Prisma.GroupsScalarWhereWithAggregatesInput | Prisma.GroupsScalarWhereWithAggregatesInput[]
   uid?: Prisma.UuidWithAggregatesFilter<"Groups"> | string
   name?: Prisma.StringWithAggregatesFilter<"Groups"> | string
-  category?: Prisma.EnumCategoryWithAggregatesFilter<"Groups"> | $Enums.Category
   isActive?: Prisma.BoolWithAggregatesFilter<"Groups"> | boolean
-  institutionId?: Prisma.UuidNullableWithAggregatesFilter<"Groups"> | string | null
-  categoryId?: Prisma.UuidNullableWithAggregatesFilter<"Groups"> | string | null
+  institutionId?: Prisma.UuidWithAggregatesFilter<"Groups"> | string
+  categoryId?: Prisma.UuidWithAggregatesFilter<"Groups"> | string
   profesorId?: Prisma.UuidNullableWithAggregatesFilter<"Groups"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Groups"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Groups"> | Date | string
@@ -306,12 +294,11 @@ export type GroupsScalarWhereWithAggregatesInput = {
 export type GroupsCreateInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  institution?: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
-  groupCategory?: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
+  groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
   users?: Prisma.UsersGroupsCreateNestedManyWithoutGroupInput
   products?: Prisma.ProductsCreateNestedManyWithoutGroupInput
@@ -325,10 +312,9 @@ export type GroupsCreateInput = {
 export type GroupsUncheckedCreateInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
-  institutionId?: string | null
-  categoryId?: string | null
+  institutionId: string
+  categoryId: string
   profesorId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -344,12 +330,11 @@ export type GroupsUncheckedCreateInput = {
 export type GroupsUpdateInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  institution?: Prisma.InstitutionUpdateOneWithoutGroupsNestedInput
-  groupCategory?: Prisma.GroupCategoryUpdateOneWithoutGroupsNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
+  groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
   users?: Prisma.UsersGroupsUpdateManyWithoutGroupNestedInput
   products?: Prisma.ProductsUpdateManyWithoutGroupNestedInput
@@ -363,10 +348,9 @@ export type GroupsUpdateInput = {
 export type GroupsUncheckedUpdateInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  institutionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -382,10 +366,9 @@ export type GroupsUncheckedUpdateInput = {
 export type GroupsCreateManyInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
-  institutionId?: string | null
-  categoryId?: string | null
+  institutionId: string
+  categoryId: string
   profesorId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -394,7 +377,6 @@ export type GroupsCreateManyInput = {
 export type GroupsUpdateManyMutationInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -403,10 +385,9 @@ export type GroupsUpdateManyMutationInput = {
 export type GroupsUncheckedUpdateManyInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  institutionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -425,7 +406,6 @@ export type GroupsOrderByRelationAggregateInput = {
 export type GroupsCountOrderByAggregateInput = {
   uid?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  category?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
@@ -437,7 +417,6 @@ export type GroupsCountOrderByAggregateInput = {
 export type GroupsMaxOrderByAggregateInput = {
   uid?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  category?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
@@ -449,7 +428,6 @@ export type GroupsMaxOrderByAggregateInput = {
 export type GroupsMinOrderByAggregateInput = {
   uid?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  category?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
@@ -503,10 +481,6 @@ export type GroupsUncheckedUpdateManyWithoutProfesorNestedInput = {
   update?: Prisma.GroupsUpdateWithWhereUniqueWithoutProfesorInput | Prisma.GroupsUpdateWithWhereUniqueWithoutProfesorInput[]
   updateMany?: Prisma.GroupsUpdateManyWithWhereWithoutProfesorInput | Prisma.GroupsUpdateManyWithWhereWithoutProfesorInput[]
   deleteMany?: Prisma.GroupsScalarWhereInput | Prisma.GroupsScalarWhereInput[]
-}
-
-export type EnumCategoryFieldUpdateOperationsInput = {
-  set?: $Enums.Category
 }
 
 export type GroupsCreateNestedOneWithoutUsersInput = {
@@ -694,12 +668,11 @@ export type GroupsUncheckedUpdateManyWithoutGroupCategoryNestedInput = {
 export type GroupsCreateWithoutProfesorInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  institution?: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
-  groupCategory?: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
+  groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   users?: Prisma.UsersGroupsCreateNestedManyWithoutGroupInput
   products?: Prisma.ProductsCreateNestedManyWithoutGroupInput
   events?: Prisma.GroupEventCreateNestedManyWithoutGroupInput
@@ -712,10 +685,9 @@ export type GroupsCreateWithoutProfesorInput = {
 export type GroupsUncheckedCreateWithoutProfesorInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
-  institutionId?: string | null
-  categoryId?: string | null
+  institutionId: string
+  categoryId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UsersGroupsUncheckedCreateNestedManyWithoutGroupInput
@@ -759,10 +731,9 @@ export type GroupsScalarWhereInput = {
   NOT?: Prisma.GroupsScalarWhereInput | Prisma.GroupsScalarWhereInput[]
   uid?: Prisma.UuidFilter<"Groups"> | string
   name?: Prisma.StringFilter<"Groups"> | string
-  category?: Prisma.EnumCategoryFilter<"Groups"> | $Enums.Category
   isActive?: Prisma.BoolFilter<"Groups"> | boolean
-  institutionId?: Prisma.UuidNullableFilter<"Groups"> | string | null
-  categoryId?: Prisma.UuidNullableFilter<"Groups"> | string | null
+  institutionId?: Prisma.UuidFilter<"Groups"> | string
+  categoryId?: Prisma.UuidFilter<"Groups"> | string
   profesorId?: Prisma.UuidNullableFilter<"Groups"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Groups"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Groups"> | Date | string
@@ -771,12 +742,11 @@ export type GroupsScalarWhereInput = {
 export type GroupsCreateWithoutUsersInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  institution?: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
-  groupCategory?: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
+  groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
   products?: Prisma.ProductsCreateNestedManyWithoutGroupInput
   events?: Prisma.GroupEventCreateNestedManyWithoutGroupInput
@@ -789,10 +759,9 @@ export type GroupsCreateWithoutUsersInput = {
 export type GroupsUncheckedCreateWithoutUsersInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
-  institutionId?: string | null
-  categoryId?: string | null
+  institutionId: string
+  categoryId: string
   profesorId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -823,12 +792,11 @@ export type GroupsUpdateToOneWithWhereWithoutUsersInput = {
 export type GroupsUpdateWithoutUsersInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  institution?: Prisma.InstitutionUpdateOneWithoutGroupsNestedInput
-  groupCategory?: Prisma.GroupCategoryUpdateOneWithoutGroupsNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
+  groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
   products?: Prisma.ProductsUpdateManyWithoutGroupNestedInput
   events?: Prisma.GroupEventUpdateManyWithoutGroupNestedInput
@@ -841,10 +809,9 @@ export type GroupsUpdateWithoutUsersInput = {
 export type GroupsUncheckedUpdateWithoutUsersInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  institutionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -859,12 +826,11 @@ export type GroupsUncheckedUpdateWithoutUsersInput = {
 export type GroupsCreateWithoutProductsInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  institution?: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
-  groupCategory?: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
+  groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
   users?: Prisma.UsersGroupsCreateNestedManyWithoutGroupInput
   events?: Prisma.GroupEventCreateNestedManyWithoutGroupInput
@@ -877,10 +843,9 @@ export type GroupsCreateWithoutProductsInput = {
 export type GroupsUncheckedCreateWithoutProductsInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
-  institutionId?: string | null
-  categoryId?: string | null
+  institutionId: string
+  categoryId: string
   profesorId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -911,12 +876,11 @@ export type GroupsUpdateToOneWithWhereWithoutProductsInput = {
 export type GroupsUpdateWithoutProductsInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  institution?: Prisma.InstitutionUpdateOneWithoutGroupsNestedInput
-  groupCategory?: Prisma.GroupCategoryUpdateOneWithoutGroupsNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
+  groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
   users?: Prisma.UsersGroupsUpdateManyWithoutGroupNestedInput
   events?: Prisma.GroupEventUpdateManyWithoutGroupNestedInput
@@ -929,10 +893,9 @@ export type GroupsUpdateWithoutProductsInput = {
 export type GroupsUncheckedUpdateWithoutProductsInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  institutionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -947,12 +910,11 @@ export type GroupsUncheckedUpdateWithoutProductsInput = {
 export type GroupsCreateWithoutStylesInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  institution?: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
-  groupCategory?: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
+  groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
   users?: Prisma.UsersGroupsCreateNestedManyWithoutGroupInput
   products?: Prisma.ProductsCreateNestedManyWithoutGroupInput
@@ -965,10 +927,9 @@ export type GroupsCreateWithoutStylesInput = {
 export type GroupsUncheckedCreateWithoutStylesInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
-  institutionId?: string | null
-  categoryId?: string | null
+  institutionId: string
+  categoryId: string
   profesorId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -999,12 +960,11 @@ export type GroupsUpdateToOneWithWhereWithoutStylesInput = {
 export type GroupsUpdateWithoutStylesInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  institution?: Prisma.InstitutionUpdateOneWithoutGroupsNestedInput
-  groupCategory?: Prisma.GroupCategoryUpdateOneWithoutGroupsNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
+  groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
   users?: Prisma.UsersGroupsUpdateManyWithoutGroupNestedInput
   products?: Prisma.ProductsUpdateManyWithoutGroupNestedInput
@@ -1017,10 +977,9 @@ export type GroupsUpdateWithoutStylesInput = {
 export type GroupsUncheckedUpdateWithoutStylesInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  institutionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1035,12 +994,11 @@ export type GroupsUncheckedUpdateWithoutStylesInput = {
 export type GroupsCreateWithoutInvitationsInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  institution?: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
-  groupCategory?: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
+  groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
   users?: Prisma.UsersGroupsCreateNestedManyWithoutGroupInput
   products?: Prisma.ProductsCreateNestedManyWithoutGroupInput
@@ -1053,10 +1011,9 @@ export type GroupsCreateWithoutInvitationsInput = {
 export type GroupsUncheckedCreateWithoutInvitationsInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
-  institutionId?: string | null
-  categoryId?: string | null
+  institutionId: string
+  categoryId: string
   profesorId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1087,12 +1044,11 @@ export type GroupsUpdateToOneWithWhereWithoutInvitationsInput = {
 export type GroupsUpdateWithoutInvitationsInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  institution?: Prisma.InstitutionUpdateOneWithoutGroupsNestedInput
-  groupCategory?: Prisma.GroupCategoryUpdateOneWithoutGroupsNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
+  groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
   users?: Prisma.UsersGroupsUpdateManyWithoutGroupNestedInput
   products?: Prisma.ProductsUpdateManyWithoutGroupNestedInput
@@ -1105,10 +1061,9 @@ export type GroupsUpdateWithoutInvitationsInput = {
 export type GroupsUncheckedUpdateWithoutInvitationsInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  institutionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1123,12 +1078,11 @@ export type GroupsUncheckedUpdateWithoutInvitationsInput = {
 export type GroupsCreateWithoutEventsInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  institution?: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
-  groupCategory?: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
+  groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
   users?: Prisma.UsersGroupsCreateNestedManyWithoutGroupInput
   products?: Prisma.ProductsCreateNestedManyWithoutGroupInput
@@ -1141,10 +1095,9 @@ export type GroupsCreateWithoutEventsInput = {
 export type GroupsUncheckedCreateWithoutEventsInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
-  institutionId?: string | null
-  categoryId?: string | null
+  institutionId: string
+  categoryId: string
   profesorId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1175,12 +1128,11 @@ export type GroupsUpdateToOneWithWhereWithoutEventsInput = {
 export type GroupsUpdateWithoutEventsInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  institution?: Prisma.InstitutionUpdateOneWithoutGroupsNestedInput
-  groupCategory?: Prisma.GroupCategoryUpdateOneWithoutGroupsNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
+  groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
   users?: Prisma.UsersGroupsUpdateManyWithoutGroupNestedInput
   products?: Prisma.ProductsUpdateManyWithoutGroupNestedInput
@@ -1193,10 +1145,9 @@ export type GroupsUpdateWithoutEventsInput = {
 export type GroupsUncheckedUpdateWithoutEventsInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  institutionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1211,12 +1162,11 @@ export type GroupsUncheckedUpdateWithoutEventsInput = {
 export type GroupsCreateWithoutSchedulesInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  institution?: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
-  groupCategory?: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
+  groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
   users?: Prisma.UsersGroupsCreateNestedManyWithoutGroupInput
   products?: Prisma.ProductsCreateNestedManyWithoutGroupInput
@@ -1229,10 +1179,9 @@ export type GroupsCreateWithoutSchedulesInput = {
 export type GroupsUncheckedCreateWithoutSchedulesInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
-  institutionId?: string | null
-  categoryId?: string | null
+  institutionId: string
+  categoryId: string
   profesorId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1263,12 +1212,11 @@ export type GroupsUpdateToOneWithWhereWithoutSchedulesInput = {
 export type GroupsUpdateWithoutSchedulesInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  institution?: Prisma.InstitutionUpdateOneWithoutGroupsNestedInput
-  groupCategory?: Prisma.GroupCategoryUpdateOneWithoutGroupsNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
+  groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
   users?: Prisma.UsersGroupsUpdateManyWithoutGroupNestedInput
   products?: Prisma.ProductsUpdateManyWithoutGroupNestedInput
@@ -1281,10 +1229,9 @@ export type GroupsUpdateWithoutSchedulesInput = {
 export type GroupsUncheckedUpdateWithoutSchedulesInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  institutionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1299,12 +1246,11 @@ export type GroupsUncheckedUpdateWithoutSchedulesInput = {
 export type GroupsCreateWithoutClassesInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  institution?: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
-  groupCategory?: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
+  groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
   users?: Prisma.UsersGroupsCreateNestedManyWithoutGroupInput
   products?: Prisma.ProductsCreateNestedManyWithoutGroupInput
@@ -1317,10 +1263,9 @@ export type GroupsCreateWithoutClassesInput = {
 export type GroupsUncheckedCreateWithoutClassesInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
-  institutionId?: string | null
-  categoryId?: string | null
+  institutionId: string
+  categoryId: string
   profesorId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1351,12 +1296,11 @@ export type GroupsUpdateToOneWithWhereWithoutClassesInput = {
 export type GroupsUpdateWithoutClassesInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  institution?: Prisma.InstitutionUpdateOneWithoutGroupsNestedInput
-  groupCategory?: Prisma.GroupCategoryUpdateOneWithoutGroupsNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
+  groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
   users?: Prisma.UsersGroupsUpdateManyWithoutGroupNestedInput
   products?: Prisma.ProductsUpdateManyWithoutGroupNestedInput
@@ -1369,10 +1313,9 @@ export type GroupsUpdateWithoutClassesInput = {
 export type GroupsUncheckedUpdateWithoutClassesInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  institutionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1387,11 +1330,10 @@ export type GroupsUncheckedUpdateWithoutClassesInput = {
 export type GroupsCreateWithoutInstitutionInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  groupCategory?: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
+  groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
   users?: Prisma.UsersGroupsCreateNestedManyWithoutGroupInput
   products?: Prisma.ProductsCreateNestedManyWithoutGroupInput
@@ -1405,9 +1347,8 @@ export type GroupsCreateWithoutInstitutionInput = {
 export type GroupsUncheckedCreateWithoutInstitutionInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
-  categoryId?: string | null
+  categoryId: string
   profesorId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1449,11 +1390,10 @@ export type GroupsUpdateManyWithWhereWithoutInstitutionInput = {
 export type GroupsCreateWithoutGroupCategoryInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  institution?: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
   users?: Prisma.UsersGroupsCreateNestedManyWithoutGroupInput
   products?: Prisma.ProductsCreateNestedManyWithoutGroupInput
@@ -1467,9 +1407,8 @@ export type GroupsCreateWithoutGroupCategoryInput = {
 export type GroupsUncheckedCreateWithoutGroupCategoryInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
-  institutionId?: string | null
+  institutionId: string
   profesorId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1511,10 +1450,9 @@ export type GroupsUpdateManyWithWhereWithoutGroupCategoryInput = {
 export type GroupsCreateManyProfesorInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
-  institutionId?: string | null
-  categoryId?: string | null
+  institutionId: string
+  categoryId: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1522,12 +1460,11 @@ export type GroupsCreateManyProfesorInput = {
 export type GroupsUpdateWithoutProfesorInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  institution?: Prisma.InstitutionUpdateOneWithoutGroupsNestedInput
-  groupCategory?: Prisma.GroupCategoryUpdateOneWithoutGroupsNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
+  groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   users?: Prisma.UsersGroupsUpdateManyWithoutGroupNestedInput
   products?: Prisma.ProductsUpdateManyWithoutGroupNestedInput
   events?: Prisma.GroupEventUpdateManyWithoutGroupNestedInput
@@ -1540,10 +1477,9 @@ export type GroupsUpdateWithoutProfesorInput = {
 export type GroupsUncheckedUpdateWithoutProfesorInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  institutionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UsersGroupsUncheckedUpdateManyWithoutGroupNestedInput
@@ -1558,10 +1494,9 @@ export type GroupsUncheckedUpdateWithoutProfesorInput = {
 export type GroupsUncheckedUpdateManyWithoutProfesorInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  institutionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1569,9 +1504,8 @@ export type GroupsUncheckedUpdateManyWithoutProfesorInput = {
 export type GroupsCreateManyInstitutionInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
-  categoryId?: string | null
+  categoryId: string
   profesorId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1580,11 +1514,10 @@ export type GroupsCreateManyInstitutionInput = {
 export type GroupsUpdateWithoutInstitutionInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  groupCategory?: Prisma.GroupCategoryUpdateOneWithoutGroupsNestedInput
+  groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
   users?: Prisma.UsersGroupsUpdateManyWithoutGroupNestedInput
   products?: Prisma.ProductsUpdateManyWithoutGroupNestedInput
@@ -1598,9 +1531,8 @@ export type GroupsUpdateWithoutInstitutionInput = {
 export type GroupsUncheckedUpdateWithoutInstitutionInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1616,9 +1548,8 @@ export type GroupsUncheckedUpdateWithoutInstitutionInput = {
 export type GroupsUncheckedUpdateManyWithoutInstitutionInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  categoryId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1627,9 +1558,8 @@ export type GroupsUncheckedUpdateManyWithoutInstitutionInput = {
 export type GroupsCreateManyGroupCategoryInput = {
   uid?: string
   name: string
-  category?: $Enums.Category
   isActive?: boolean
-  institutionId?: string | null
+  institutionId: string
   profesorId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1638,11 +1568,10 @@ export type GroupsCreateManyGroupCategoryInput = {
 export type GroupsUpdateWithoutGroupCategoryInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  institution?: Prisma.InstitutionUpdateOneWithoutGroupsNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
   users?: Prisma.UsersGroupsUpdateManyWithoutGroupNestedInput
   products?: Prisma.ProductsUpdateManyWithoutGroupNestedInput
@@ -1656,9 +1585,8 @@ export type GroupsUpdateWithoutGroupCategoryInput = {
 export type GroupsUncheckedUpdateWithoutGroupCategoryInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  institutionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1674,9 +1602,8 @@ export type GroupsUncheckedUpdateWithoutGroupCategoryInput = {
 export type GroupsUncheckedUpdateManyWithoutGroupCategoryInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  category?: Prisma.EnumCategoryFieldUpdateOperationsInput | $Enums.Category
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  institutionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1770,15 +1697,14 @@ export type GroupsCountOutputTypeCountClassesArgs<ExtArgs extends runtime.Types.
 export type GroupsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   uid?: boolean
   name?: boolean
-  category?: boolean
   isActive?: boolean
   institutionId?: boolean
   categoryId?: boolean
   profesorId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  institution?: boolean | Prisma.Groups$institutionArgs<ExtArgs>
-  groupCategory?: boolean | Prisma.Groups$groupCategoryArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
+  groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   profesor?: boolean | Prisma.Groups$profesorArgs<ExtArgs>
   users?: boolean | Prisma.Groups$usersArgs<ExtArgs>
   products?: boolean | Prisma.Groups$productsArgs<ExtArgs>
@@ -1793,37 +1719,34 @@ export type GroupsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
 export type GroupsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   uid?: boolean
   name?: boolean
-  category?: boolean
   isActive?: boolean
   institutionId?: boolean
   categoryId?: boolean
   profesorId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  institution?: boolean | Prisma.Groups$institutionArgs<ExtArgs>
-  groupCategory?: boolean | Prisma.Groups$groupCategoryArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
+  groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   profesor?: boolean | Prisma.Groups$profesorArgs<ExtArgs>
 }, ExtArgs["result"]["groups"]>
 
 export type GroupsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   uid?: boolean
   name?: boolean
-  category?: boolean
   isActive?: boolean
   institutionId?: boolean
   categoryId?: boolean
   profesorId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  institution?: boolean | Prisma.Groups$institutionArgs<ExtArgs>
-  groupCategory?: boolean | Prisma.Groups$groupCategoryArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
+  groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   profesor?: boolean | Prisma.Groups$profesorArgs<ExtArgs>
 }, ExtArgs["result"]["groups"]>
 
 export type GroupsSelectScalar = {
   uid?: boolean
   name?: boolean
-  category?: boolean
   isActive?: boolean
   institutionId?: boolean
   categoryId?: boolean
@@ -1832,10 +1755,10 @@ export type GroupsSelectScalar = {
   updatedAt?: boolean
 }
 
-export type GroupsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "name" | "category" | "isActive" | "institutionId" | "categoryId" | "profesorId" | "createdAt" | "updatedAt", ExtArgs["result"]["groups"]>
+export type GroupsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "name" | "isActive" | "institutionId" | "categoryId" | "profesorId" | "createdAt" | "updatedAt", ExtArgs["result"]["groups"]>
 export type GroupsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  institution?: boolean | Prisma.Groups$institutionArgs<ExtArgs>
-  groupCategory?: boolean | Prisma.Groups$groupCategoryArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
+  groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   profesor?: boolean | Prisma.Groups$profesorArgs<ExtArgs>
   users?: boolean | Prisma.Groups$usersArgs<ExtArgs>
   products?: boolean | Prisma.Groups$productsArgs<ExtArgs>
@@ -1847,21 +1770,21 @@ export type GroupsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   _count?: boolean | Prisma.GroupsCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type GroupsIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  institution?: boolean | Prisma.Groups$institutionArgs<ExtArgs>
-  groupCategory?: boolean | Prisma.Groups$groupCategoryArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
+  groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   profesor?: boolean | Prisma.Groups$profesorArgs<ExtArgs>
 }
 export type GroupsIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  institution?: boolean | Prisma.Groups$institutionArgs<ExtArgs>
-  groupCategory?: boolean | Prisma.Groups$groupCategoryArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
+  groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   profesor?: boolean | Prisma.Groups$profesorArgs<ExtArgs>
 }
 
 export type $GroupsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Groups"
   objects: {
-    institution: Prisma.$InstitutionPayload<ExtArgs> | null
-    groupCategory: Prisma.$GroupCategoryPayload<ExtArgs> | null
+    institution: Prisma.$InstitutionPayload<ExtArgs>
+    groupCategory: Prisma.$GroupCategoryPayload<ExtArgs>
     profesor: Prisma.$UsersPayload<ExtArgs> | null
     users: Prisma.$UsersGroupsPayload<ExtArgs>[]
     products: Prisma.$ProductsPayload<ExtArgs>[]
@@ -1874,10 +1797,9 @@ export type $GroupsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     uid: string
     name: string
-    category: $Enums.Category
     isActive: boolean
-    institutionId: string | null
-    categoryId: string | null
+    institutionId: string
+    categoryId: string
     profesorId: string | null
     createdAt: Date
     updatedAt: Date
@@ -2275,8 +2197,8 @@ readonly fields: GroupsFieldRefs;
  */
 export interface Prisma__GroupsClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  institution<T extends Prisma.Groups$institutionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Groups$institutionArgs<ExtArgs>>): Prisma.Prisma__InstitutionClient<runtime.Types.Result.GetResult<Prisma.$InstitutionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  groupCategory<T extends Prisma.Groups$groupCategoryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Groups$groupCategoryArgs<ExtArgs>>): Prisma.Prisma__GroupCategoryClient<runtime.Types.Result.GetResult<Prisma.$GroupCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  institution<T extends Prisma.InstitutionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InstitutionDefaultArgs<ExtArgs>>): Prisma.Prisma__InstitutionClient<runtime.Types.Result.GetResult<Prisma.$InstitutionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  groupCategory<T extends Prisma.GroupCategoryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GroupCategoryDefaultArgs<ExtArgs>>): Prisma.Prisma__GroupCategoryClient<runtime.Types.Result.GetResult<Prisma.$GroupCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   profesor<T extends Prisma.Groups$profesorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Groups$profesorArgs<ExtArgs>>): Prisma.Prisma__UsersClient<runtime.Types.Result.GetResult<Prisma.$UsersPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   users<T extends Prisma.Groups$usersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Groups$usersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UsersGroupsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   products<T extends Prisma.Groups$productsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Groups$productsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2316,7 +2238,6 @@ export interface Prisma__GroupsClient<T, Null = never, ExtArgs extends runtime.T
 export interface GroupsFieldRefs {
   readonly uid: Prisma.FieldRef<"Groups", 'String'>
   readonly name: Prisma.FieldRef<"Groups", 'String'>
-  readonly category: Prisma.FieldRef<"Groups", 'Category'>
   readonly isActive: Prisma.FieldRef<"Groups", 'Boolean'>
   readonly institutionId: Prisma.FieldRef<"Groups", 'String'>
   readonly categoryId: Prisma.FieldRef<"Groups", 'String'>
@@ -2716,44 +2637,6 @@ export type GroupsDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Limit how many Groups to delete.
    */
   limit?: number
-}
-
-/**
- * Groups.institution
- */
-export type Groups$institutionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Institution
-   */
-  select?: Prisma.InstitutionSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Institution
-   */
-  omit?: Prisma.InstitutionOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.InstitutionInclude<ExtArgs> | null
-  where?: Prisma.InstitutionWhereInput
-}
-
-/**
- * Groups.groupCategory
- */
-export type Groups$groupCategoryArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the GroupCategory
-   */
-  select?: Prisma.GroupCategorySelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the GroupCategory
-   */
-  omit?: Prisma.GroupCategoryOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.GroupCategoryInclude<ExtArgs> | null
-  where?: Prisma.GroupCategoryWhereInput
 }
 
 /**

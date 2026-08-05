@@ -166,7 +166,6 @@ export type VerificationCodesScalarFieldEnum = (typeof VerificationCodesScalarFi
 export const GroupsScalarFieldEnum = {
   uid: 'uid',
   name: 'name',
-  category: 'category',
   isActive: 'isActive',
   institutionId: 'institutionId',
   categoryId: 'categoryId',
@@ -210,9 +209,8 @@ export const StylesScalarFieldEnum = {
   uid: 'uid',
   name: 'name',
   description: 'description',
-  category: 'category',
-  categoryId: 'categoryId',
   isActive: 'isActive',
+  categoryId: 'categoryId',
   groupId: 'groupId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
