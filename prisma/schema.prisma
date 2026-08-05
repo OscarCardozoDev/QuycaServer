@@ -53,6 +53,28 @@ enum InvitationStatus {
   REJECTED
 }
 
+enum InstitutionType {
+  EDUCATIONAL
+  INDEPENDENT
+}
+
+enum InstitutionStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+}
+
+enum ContentRequestType {
+  CATEGORY
+  STYLE
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 //////////////////////////////////////////////////////
 // USER TYPES
 //////////////////////////////////////////////////////
@@ -111,6 +133,8 @@ model Users {
   managedGroups  Groups[]  @relation("GroupProfesor")
   createdEvents  Events[]  @relation("EventCreator")
   attendance     Attendance[]
+  userInstitutions       UserInstitution[]
+  institutionInvitations InstitutionInvitation[]
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -146,13 +170,18 @@ model VerificationCodes {
 
 model Groups {
   uid          String   @id @default(uuid()) @db.Uuid
-  name         String   @db.VarChar(100) // Ej: "Danza Folclórica"
-  category     Category @default(ARTES)
+  name         String   @db.VarChar(100)
+  category     Category @default(ARTES)  // kept for migration — removed in Task 4
   isActive     Boolean  @default(true)
 
-  // Profesor  (Sin @unique para permitir 1 profesor -> N grupos)
-  profesor     Users    @relation("GroupProfesor", fields: [profesorId], references: [uid])
-  profesorId   String   @db.Uuid
+  // Phase 1: nullable, filled by data migration later
+  institutionId  String?        @db.Uuid
+  institution    Institution?   @relation(fields: [institutionId], references: [uid])
+  categoryId     String?        @db.Uuid
+  groupCategory  GroupCategory? @relation(fields: [categoryId], references: [uid])
+
+  profesor     Users?   @relation("GroupProfesor", fields: [profesorId], references: [uid])
+  profesorId   String?  @db.Uuid
 
   users        UsersGroups[]
   products     Products[]
@@ -217,6 +246,8 @@ model Styles {
   name         String          @db.VarChar(30)
   description  String          @db.VarChar(300)
   category     Category        @default(ARTES)
+  categoryId    String?        @db.Uuid
+  groupCategory GroupCategory? @relation(fields: [categoryId], references: [uid])
   isActive     Boolean         @default(true)
 
   products     ProductStyle[]
@@ -432,4 +463,126 @@ model Attendance {
   user     Users    @relation(fields: [userId], references: [uid])
 
   @@unique([classId, userId])
+}
+
+//////////////////////////////////////////////////////
+// SUBSCRIPTION PLANS
+//////////////////////////////////////////////////////
+
+model SubscriptionPlan {
+  uid           String        @id @default(uuid()) @db.Uuid
+  name          String        @db.VarChar(50) @unique
+  slug          String        @db.VarChar(30) @unique
+  features      Json
+  maxUsers      Int?
+  maxGroups     Int?
+  priceUsd      Decimal?      @db.Decimal(10,2)
+  stripePriceId String?       @db.VarChar(100)
+  isActive      Boolean       @default(true)
+
+  institutions  Institution[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// INSTITUTIONS
+//////////////////////////////////////////////////////
+
+model Institution {
+  uid                String            @id @default(uuid()) @db.Uuid
+  name               String            @db.VarChar(100)
+  slug               String            @db.VarChar(50) @unique
+  type               InstitutionType   @default(EDUCATIONAL)
+  status             InstitutionStatus @default(TRIAL)
+  subscriptionPlanId String            @db.Uuid
+  trialEndsAt        DateTime?
+  subscriptionEndsAt DateTime?
+
+  subscriptionPlan  SubscriptionPlan       @relation(fields: [subscriptionPlanId], references: [uid])
+  userInstitutions  UserInstitution[]
+  groups            Groups[]
+  invitations       InstitutionInvitation[]
+  contentRequests   ContentRequest[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model UserInstitution {
+  uid           String      @id @default(uuid()) @db.Uuid
+  userId        String      @db.Uuid
+  institutionId String      @db.Uuid
+  contextRole   String      @db.VarChar(30)
+  joinedAt      DateTime    @default(now())
+
+  user          Users       @relation(fields: [userId], references: [uid])
+  institution   Institution @relation(fields: [institutionId], references: [uid])
+
+  @@unique([userId, institutionId])
+}
+
+//////////////////////////////////////////////////////
+// GROUP CATEGORIES
+//////////////////////////////////////////////////////
+
+model GroupCategory {
+  uid       String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(50) @unique
+  slug      String   @db.VarChar(30) @unique
+  iconSlug  String   @db.VarChar(50)
+  isActive  Boolean  @default(true)
+
+  groups    Groups[]
+  styles    Styles[]
+  requests  ContentRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// INSTITUTION INVITATIONS
+//////////////////////////////////////////////////////
+
+model InstitutionInvitation {
+  uid           String           @id @default(uuid()) @db.Uuid
+  institutionId String           @db.Uuid
+  toEmail       String           @db.VarChar(100)
+  toUserId      String?          @db.Uuid
+  targetRole    String           @db.VarChar(30)
+  status        InvitationStatus @default(PENDING)
+  token         String           @unique @db.VarChar(64)
+  expiresAt     DateTime
+  respondedAt   DateTime?
+
+  institution   Institution @relation(fields: [institutionId], references: [uid])
+  user          Users?      @relation(fields: [toUserId], references: [uid])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// CONTENT REQUESTS
+//////////////////////////////////////////////////////
+
+model ContentRequest {
+  uid           String             @id @default(uuid()) @db.Uuid
+  institutionId String             @db.Uuid
+  type          ContentRequestType
+  requestedName String             @db.VarChar(100)
+  categoryId    String?            @db.Uuid
+  justification String?            @db.Text
+  status        RequestStatus      @default(PENDING)
+  reviewNote    String?            @db.Text
+  reviewedBy    String?            @db.Uuid
+  reviewedAt    DateTime?
+
+  institution   Institution    @relation(fields: [institutionId], references: [uid])
+  category      GroupCategory? @relation(fields: [categoryId], references: [uid])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

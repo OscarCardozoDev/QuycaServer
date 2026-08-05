@@ -122,3 +122,33 @@ export type Classes = Prisma.ClassesModel
  * 
  */
 export type Attendance = Prisma.AttendanceModel
+/**
+ * Model SubscriptionPlan
+ * 
+ */
+export type SubscriptionPlan = Prisma.SubscriptionPlanModel
+/**
+ * Model Institution
+ * 
+ */
+export type Institution = Prisma.InstitutionModel
+/**
+ * Model UserInstitution
+ * 
+ */
+export type UserInstitution = Prisma.UserInstitutionModel
+/**
+ * Model GroupCategory
+ * 
+ */
+export type GroupCategory = Prisma.GroupCategoryModel
+/**
+ * Model InstitutionInvitation
+ * 
+ */
+export type InstitutionInvitation = Prisma.InstitutionInvitationModel
+/**
+ * Model ContentRequest
+ * 
+ */
+export type ContentRequest = Prisma.ContentRequestModel

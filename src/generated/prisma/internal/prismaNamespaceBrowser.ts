@@ -71,7 +71,13 @@ export const ModelName = {
   GroupEvent: 'GroupEvent',
   Schedule: 'Schedule',
   Classes: 'Classes',
-  Attendance: 'Attendance'
+  Attendance: 'Attendance',
+  SubscriptionPlan: 'SubscriptionPlan',
+  Institution: 'Institution',
+  UserInstitution: 'UserInstitution',
+  GroupCategory: 'GroupCategory',
+  InstitutionInvitation: 'InstitutionInvitation',
+  ContentRequest: 'ContentRequest'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -162,6 +168,8 @@ export const GroupsScalarFieldEnum = {
   name: 'name',
   category: 'category',
   isActive: 'isActive',
+  institutionId: 'institutionId',
+  categoryId: 'categoryId',
   profesorId: 'profesorId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -203,6 +211,7 @@ export const StylesScalarFieldEnum = {
   name: 'name',
   description: 'description',
   category: 'category',
+  categoryId: 'categoryId',
   isActive: 'isActive',
   groupId: 'groupId',
   createdAt: 'createdAt',
@@ -365,6 +374,98 @@ export const AttendanceScalarFieldEnum = {
 export type AttendanceScalarFieldEnum = (typeof AttendanceScalarFieldEnum)[keyof typeof AttendanceScalarFieldEnum]
 
 
+export const SubscriptionPlanScalarFieldEnum = {
+  uid: 'uid',
+  name: 'name',
+  slug: 'slug',
+  features: 'features',
+  maxUsers: 'maxUsers',
+  maxGroups: 'maxGroups',
+  priceUsd: 'priceUsd',
+  stripePriceId: 'stripePriceId',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SubscriptionPlanScalarFieldEnum = (typeof SubscriptionPlanScalarFieldEnum)[keyof typeof SubscriptionPlanScalarFieldEnum]
+
+
+export const InstitutionScalarFieldEnum = {
+  uid: 'uid',
+  name: 'name',
+  slug: 'slug',
+  type: 'type',
+  status: 'status',
+  subscriptionPlanId: 'subscriptionPlanId',
+  trialEndsAt: 'trialEndsAt',
+  subscriptionEndsAt: 'subscriptionEndsAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InstitutionScalarFieldEnum = (typeof InstitutionScalarFieldEnum)[keyof typeof InstitutionScalarFieldEnum]
+
+
+export const UserInstitutionScalarFieldEnum = {
+  uid: 'uid',
+  userId: 'userId',
+  institutionId: 'institutionId',
+  contextRole: 'contextRole',
+  joinedAt: 'joinedAt'
+} as const
+
+export type UserInstitutionScalarFieldEnum = (typeof UserInstitutionScalarFieldEnum)[keyof typeof UserInstitutionScalarFieldEnum]
+
+
+export const GroupCategoryScalarFieldEnum = {
+  uid: 'uid',
+  name: 'name',
+  slug: 'slug',
+  iconSlug: 'iconSlug',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GroupCategoryScalarFieldEnum = (typeof GroupCategoryScalarFieldEnum)[keyof typeof GroupCategoryScalarFieldEnum]
+
+
+export const InstitutionInvitationScalarFieldEnum = {
+  uid: 'uid',
+  institutionId: 'institutionId',
+  toEmail: 'toEmail',
+  toUserId: 'toUserId',
+  targetRole: 'targetRole',
+  status: 'status',
+  token: 'token',
+  expiresAt: 'expiresAt',
+  respondedAt: 'respondedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InstitutionInvitationScalarFieldEnum = (typeof InstitutionInvitationScalarFieldEnum)[keyof typeof InstitutionInvitationScalarFieldEnum]
+
+
+export const ContentRequestScalarFieldEnum = {
+  uid: 'uid',
+  institutionId: 'institutionId',
+  type: 'type',
+  requestedName: 'requestedName',
+  categoryId: 'categoryId',
+  justification: 'justification',
+  status: 'status',
+  reviewNote: 'reviewNote',
+  reviewedBy: 'reviewedBy',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ContentRequestScalarFieldEnum = (typeof ContentRequestScalarFieldEnum)[keyof typeof ContentRequestScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -379,6 +480,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: 'JsonNull'
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
