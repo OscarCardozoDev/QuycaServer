@@ -14,9 +14,9 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { AuthService } from './auth.service';
+import { AuthService } from './Auth.service';
 import { hashText, verifyText } from 'src/utils/crypto.util';
-import { CreateCredentialDto, VerifyCodeDto, ForgotPasswordDto, ResetPasswordDto } from './auth.dto';
+import { LoginDto, RegisterDto, VerifyCodeDto, ForgotPasswordDto, ResetPasswordDto } from './Auth.dto';
 import { AuthGuard } from 'src/middleware/jwt.guard';
 import type { AuthenticatedRequest } from 'src/interface/jwtPayload';
 import { Roles } from 'src/decorators/roles.decorator';
@@ -43,7 +43,7 @@ export class AuthController {
   @Post('login')
   @ApiOperation({ summary: 'Iniciar sesión' })
   async login(
-    @Body() auth: CreateCredentialDto,
+    @Body() auth: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const credential = await this.authService.getCredentialByEmail(auth.mail);
@@ -77,7 +77,7 @@ export class AuthController {
   @Post('register')
   @ApiOperation({ summary: 'Registrar usuario' })
   async register(
-    @Body() auth: CreateCredentialDto,
+    @Body() auth: RegisterDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     auth.password = await hashText(auth.password);

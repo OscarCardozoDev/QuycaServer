@@ -9,7 +9,7 @@ import {
   ProductStatus,
 } from './Product.interface';
 import { PhotosService } from 'src/modules/photos/Photos.service';
-import { photoManagment } from 'src/utils/photosManagment';
+import { photoManagement } from 'src/utils/photosManagement';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -346,7 +346,7 @@ export class ProductService {
           : `${uid}_${rawName}.${extension}`;
         const folder = img.folder ?? 'products';
 
-        const fileResult = await photoManagment.save({
+        const fileResult = await photoManagement.save({
           fileBuffer: buffer,
           fileName,
           folderPath: folder,
@@ -475,7 +475,7 @@ export class ProductService {
             const segments = cleanPath.split('/').filter(Boolean);
             const fileName = segments.pop()!;
             const folderPath = segments.join('/');
-            await photoManagment.remove(fileName, folderPath);
+            await photoManagement.remove(fileName, folderPath);
           } catch {
             // Archivo ya no existe, no es crítico
           }
@@ -487,7 +487,7 @@ export class ProductService {
       // Transacción falló → eliminar archivos nuevos del disco (rollback)
       for (const file of savedFiles) {
         try {
-          await photoManagment.remove(file.fileName, file.folder);
+          await photoManagement.remove(file.fileName, file.folder);
         } catch {
           // Best-effort cleanup
         }
