@@ -16,7 +16,9 @@
     "prisma:migrate:prod": "cross-env NODE_ENV=production npx prisma migrate deploy",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
-    "test:api": "newman run ./postman/collections/server-api/collection.json --environment ./postman/environments/testing.env.json --reporters cli,htmlextra --reporter-htmlextra-export ./reports/api-test-report.html"
+    "test:api": "newman run ./postman/collections/server-api/collection.json --environment ./postman/environments/testing.env.json --reporters cli,htmlextra --reporter-htmlextra-export ./reports/api-test-report.html",
+    "prisma:seed:static": "cross-env NODE_ENV=development ts-node -r tsconfig-paths/register env/seed.static.ts",
+    "prisma:migrate:data": "cross-env NODE_ENV=development ts-node -r tsconfig-paths/register env/migrate.category-to-groupcategory.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
