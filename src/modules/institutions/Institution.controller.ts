@@ -7,7 +7,9 @@ import { AuthGuard } from 'src/middleware/jwt.guard';
 import { TenantGuard } from 'src/guards/tenant.guard';
 import { ContextRoleGuard } from 'src/guards/context-role.guard';
 import { RequireContextRole } from 'src/decorators/context-role.decorator';
+import { Institution } from 'src/decorators/institution.decorator';
 import type { AuthenticatedRequest } from 'src/interface/jwtPayload';
+import type { Institution as InstitutionModel, SubscriptionPlan } from 'src/generated/prisma/client';
 import {
   CreateInstitutionDto, UpdateInstitutionDto,
   CreateInvitationDto, RespondInvitationDto,
@@ -35,17 +37,25 @@ export class InstitutionController {
   @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
   @RequireContextRole('rector', 'coordinator')
   @ApiOperation({ summary: 'Actualizar datos de institución' })
-  async update(@Param('id') id: string, @Body() dto: UpdateInstitutionDto) {
-    return this.institutionService.update(id, dto);
+  async update(
+    @Param('id') _id: string,
+    @Body() dto: UpdateInstitutionDto,
+    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+  ) {
+    return this.institutionService.update(institution.uid, dto);
   }
 
   @Post('institutions/:id/invitations')
   @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
   @RequireContextRole('rector', 'coordinator', 'institutional')
   @ApiOperation({ summary: 'Enviar invitación a profesor o estudiante' })
-  async createInvitation(@Param('id') id: string, @Body() dto: CreateInvitationDto) {
+  async createInvitation(
+    @Param('id') _id: string,
+    @Body() dto: CreateInvitationDto,
+    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+  ) {
     return this.institutionService.createInvitation({
-      institutionId: id,
+      institutionId: institution.uid,
       toEmail: dto.toEmail,
       targetRole: dto.targetRole,
       expiresInDays: dto.expiresInDays,
@@ -56,8 +66,11 @@ export class InstitutionController {
   @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
   @RequireContextRole('rector', 'coordinator')
   @ApiOperation({ summary: 'Listar invitaciones de la institución' })
-  async getInvitations(@Param('id') id: string) {
-    return this.institutionService.getInvitations(id);
+  async getInvitations(
+    @Param('id') _id: string,
+    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+  ) {
+    return this.institutionService.getInvitations(institution.uid);
   }
 
   @Get('invitations/:token')

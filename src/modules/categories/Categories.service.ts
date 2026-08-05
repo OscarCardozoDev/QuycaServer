@@ -92,5 +92,7 @@ export class CategoriesService {
         reviewNote: data.reviewNote ?? null,
       },
     });
+
+    return { status: 'REVIEWED' };
   }
 }
