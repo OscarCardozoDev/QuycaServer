@@ -4,6 +4,9 @@ import { GroupController } from './Group.controller';
 import { GroupService } from './Group.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
+import { TenantGuard } from 'src/guards/tenant.guard';
+import { ContextRoleGuard } from 'src/guards/context-role.guard';
+import { FeatureGuard } from 'src/guards/feature.guard';
 
 @Module({
   imports: [
@@ -17,6 +20,6 @@ import { JwtModule } from '@nestjs/jwt';
     }),
   ],
   controllers: [GroupController],
-  providers: [GroupService],
+  providers: [GroupService, TenantGuard, ContextRoleGuard, FeatureGuard],
 })
 export class GroupModule {}

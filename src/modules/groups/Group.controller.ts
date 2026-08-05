@@ -26,6 +26,13 @@ import {
   UpdateStudentsDto,
   ChangeProfesorDto,
 } from './Group.dto';
+import { TenantGuard } from 'src/guards/tenant.guard';
+import { ContextRoleGuard } from 'src/guards/context-role.guard';
+import { FeatureGuard } from 'src/guards/feature.guard';
+import { RequireContextRole } from 'src/decorators/context-role.decorator';
+import { RequireFeature } from 'src/decorators/feature.decorator';
+import { Institution } from 'src/decorators/institution.decorator';
+import type { Institution as InstitutionModel, SubscriptionPlan } from 'src/generated/prisma/client';
 
 @ApiTags('groups')
 @UseGuards(AuthGuard)
@@ -34,16 +41,28 @@ export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 
   @Post('create')
-  @Roles('admin')
+  @UseGuards(TenantGuard, ContextRoleGuard, FeatureGuard)
+  @RequireContextRole('rector', 'coordinator')
+  @RequireFeature('groups_create')
   @ApiOperation({ summary: 'Crear grupo' })
-  async create(@Body() body: CreateGroupDto) {
-    return this.groupService.createGroupUseCase(body);
+  async create(
+    @Body() body: CreateGroupDto,
+    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+  ) {
+    return this.groupService.createGroupUseCase({
+      ...body,
+      institutionId: institution.uid,
+    });
   }
 
   @Get('get')
+  @UseGuards(TenantGuard)
   @ApiOperation({ summary: 'Obtener todos los grupos' })
-  async getAll(@Query() query: GetGroupsDto) {
-    return this.groupService.getAll(query);
+  async getAll(
+    @Query() query: GetGroupsDto,
+    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+  ) {
+    return this.groupService.getAll({ ...query, institutionId: institution.uid });
   }
 
   @Get('get/:uid')

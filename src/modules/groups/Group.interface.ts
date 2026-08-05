@@ -9,6 +9,7 @@ export interface GroupParams {
 export interface GetGroupsOptions {
   page?: number;
   limit?: number;
+  institutionId?: string;
 }
 
 export interface GroupStudentParams {

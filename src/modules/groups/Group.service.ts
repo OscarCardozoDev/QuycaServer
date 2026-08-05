@@ -68,9 +68,10 @@ export class GroupService {
    * GET ALL
    * ========================= */
   async getAll(options: GetGroupsOptions = {}) {
-    const { page = 1, limit = 10 } = options;
+    const { page = 1, limit = 10, institutionId } = options;
 
     return this.prisma.groups.findMany({
+      where: institutionId ? { institutionId } : undefined,
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { createdAt: 'desc' },
