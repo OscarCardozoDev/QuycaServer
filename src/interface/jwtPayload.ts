@@ -1,4 +1,5 @@
 import { Request } from 'express';
+import type { Institution, SubscriptionPlan } from 'src/generated/prisma/client';
 
 export interface JwtPayload {
   sub: string;
@@ -10,4 +11,7 @@ export interface JwtPayload {
 
 export interface AuthenticatedRequest extends Request {
   user: JwtPayload;
+  institutionSlug?: string | null;
+  institution?: Institution & { subscriptionPlan: SubscriptionPlan };
+  contextRole?: string;
 }
