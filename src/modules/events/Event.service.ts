@@ -145,7 +145,7 @@ export class EventService {
       include: {
         groups: {
           select: {
-            group: { select: { uid: true, name: true, category: true } },
+            group: { select: { uid: true, name: true, categoryId: true } },
           },
         },
         photos: {
@@ -189,7 +189,7 @@ export class EventService {
         isVirtual: true,
         groups: {
           select: {
-            group: { select: { uid: true, name: true, category: true } },
+            group: { select: { uid: true, name: true, categoryId: true } },
           },
         },
         photos: {
@@ -225,7 +225,7 @@ export class EventService {
         endDate: true,
         groups: {
           select: {
-            group: { select: { uid: true, name: true, category: true } },
+            group: { select: { uid: true, name: true, categoryId: true } },
           },
         },
         photos: {
@@ -279,7 +279,7 @@ export class EventService {
       include: {
         groups: {
           select: {
-            group: { select: { uid: true, name: true, category: true } },
+            group: { select: { uid: true, name: true, categoryId: true } },
           },
         },
         products: {
@@ -658,7 +658,7 @@ export class EventService {
             },
           },
         },
-        group: { select: { uid: true, name: true, category: true } },
+        group: { select: { uid: true, name: true, categoryId: true } },
       },
     });
   }

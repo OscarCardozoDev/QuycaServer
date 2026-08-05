@@ -27,7 +27,7 @@ export class GroupService {
    * CREATE
    * ========================= */
   async createGroupUseCase(data: CreateGroupUseCase) {
-    const { name, profesorId, users } = data;
+    const { name, profesorId, institutionId, categoryId, users } = data;
 
     return this.prisma.$transaction(async (tx) => {
       // 1️⃣ Crear grupo
@@ -35,6 +35,8 @@ export class GroupService {
         data: {
           name,
           profesorId,
+          institutionId,
+          categoryId,
         },
         select: { uid: true },
       });

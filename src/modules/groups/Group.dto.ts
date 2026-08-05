@@ -28,6 +28,14 @@ export class CreateGroupDto {
   @IsString()
   profesorId: string;
 
+  @ApiProperty({ example: 'uuid-de-institution' })
+  @IsString()
+  institutionId: string;
+
+  @ApiProperty({ example: 'uuid-de-categoria' })
+  @IsString()
+  categoryId: string;
+
   @ApiPropertyOptional({
     type: [String],
     example: ['uuid-alumno-1', 'uuid-alumno-2'],

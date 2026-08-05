@@ -11,14 +11,6 @@ datasource db {
 //////////////////////////////////////////////////////
 // ENUMS
 //////////////////////////////////////////////////////
-enum Category {
-  ARTES
-  TEATRO
-  DANZAS
-  MUSICA
-  CANTO
-}
-
 enum ProductStatus {
   PENDING
   APPROVED
@@ -171,14 +163,12 @@ model VerificationCodes {
 model Groups {
   uid          String   @id @default(uuid()) @db.Uuid
   name         String   @db.VarChar(100)
-  category     Category @default(ARTES)  // kept for migration — removed in Task 4
   isActive     Boolean  @default(true)
 
-  // Phase 1: nullable, filled by data migration later
-  institutionId  String?        @db.Uuid
-  institution    Institution?   @relation(fields: [institutionId], references: [uid])
-  categoryId     String?        @db.Uuid
-  groupCategory  GroupCategory? @relation(fields: [categoryId], references: [uid])
+  institutionId  String       @db.Uuid
+  institution    Institution  @relation(fields: [institutionId], references: [uid])
+  categoryId     String       @db.Uuid
+  groupCategory  GroupCategory @relation(fields: [categoryId], references: [uid])
 
   profesor     Users?   @relation("GroupProfesor", fields: [profesorId], references: [uid])
   profesorId   String?  @db.Uuid
@@ -245,10 +235,10 @@ model Styles {
   uid          String          @id @default(uuid()) @db.Uuid
   name         String          @db.VarChar(30)
   description  String          @db.VarChar(300)
-  category     Category        @default(ARTES)
-  categoryId    String?        @db.Uuid
-  groupCategory GroupCategory? @relation(fields: [categoryId], references: [uid])
   isActive     Boolean         @default(true)
+
+  categoryId    String          @db.Uuid
+  groupCategory GroupCategory   @relation(fields: [categoryId], references: [uid])
 
   products     ProductStyle[]
 

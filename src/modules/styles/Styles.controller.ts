@@ -15,7 +15,6 @@ import { StylesService } from './Styles.service';
 import { CreateStyleDto, UpdateStyleDto } from './Styles.dto';
 import { AuthGuard } from 'src/middleware/jwt.guard';
 import { Roles } from 'src/decorators/roles.decorator';
-import { Category } from './Styles.interface';
 
 @ApiTags('styles')
 @Controller('styles')
@@ -29,16 +28,16 @@ export class StylesController {
     return this.stylesService.getAll();
   }
 
-  @Get('all/:category')
+  @Get('all/:categoryId')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Obtener estilos por grupo' })
+  @ApiOperation({ summary: 'Obtener estilos por categoría' })
   @ApiParam({
-    name: 'category',
-    enum: ['ARTES', 'TEATRO', 'DANZAS', 'MUSICA', 'CANTO'],
-    enumName: 'Category',
+    name: 'categoryId',
+    type: 'string',
+    description: 'UUID de la categoría',
   })
-  async getAllByGroup(@Param('category') category: Category) {
-    return this.stylesService.getAllByGroup(category);
+  async getAllByGroup(@Param('categoryId') categoryId: string) {
+    return this.stylesService.getAllByGroup(categoryId);
   }
 
   @Get('get/:uid')

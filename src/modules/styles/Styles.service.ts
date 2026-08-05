@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   Style,
-  Category,
   StyleUidResult,
   CreateStyleUseCase,
   UpdateStyleUseCase,
@@ -18,21 +17,27 @@ export class StylesService {
         uid: true,
         name: true,
         description: true,
-        category: true,
+        categoryId: true,
         groupId: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   }
 
-  async getAllByGroup(category: Category): Promise<Style[]> {
+  async getAllByGroup(categoryId: string): Promise<Style[]> {
     return this.prismaService.styles.findMany({
-      where: { category },
+      where: { categoryId },
       select: {
         uid: true,
         name: true,
         description: true,
-        category: true,
+        categoryId: true,
         groupId: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   }
@@ -45,7 +50,10 @@ export class StylesService {
         name: true,
         description: true,
         groupId: true,
-        category: true,
+        categoryId: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
@@ -59,7 +67,7 @@ export class StylesService {
         name: style.name,
         description: style.description,
         groupId: style.groupId,
-        category: style.category,
+        categoryId: style.categoryId,
       },
       select: { uid: true },
     });

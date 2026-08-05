@@ -71,7 +71,7 @@ export class ClassesService {
         group: {
           select: {
             name: true,
-            category: true,
+            categoryId: true,
             profesor: {
               select: { uid: true, name: true, lastName: true },
             },
