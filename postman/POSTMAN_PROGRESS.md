@@ -57,11 +57,13 @@ Run tests: `bun run test:api` (requires server on port 3000).
 
 ## Groups ✅ Complete
 
+> **Multitenant update:** `POST /groups/create` and `GET /groups/get` now require rector session + `X-Institution-Slug` header. Other endpoints unchanged.
+
 | Endpoint | Test case | Status |
 |---|---|---|
-| POST /groups/create | admin → 201, has uid | ✅ |
-| POST /groups/create | professor → 403 | ✅ |
-| GET /groups/get | → 200, plain array (not paginated) | ✅ |
+| POST /groups/create | rector + X-Institution-Slug → 201, has uid | ✅ |
+| POST /groups/create | institutional role + X-Institution-Slug → 403 | ✅ |
+| GET /groups/get | rector + X-Institution-Slug → 200, plain array | ✅ |
 | GET /groups/get/:uid | → 200, uid matches | ✅ |
 | GET /groups/get/:uid | unknown uid → 404 | ✅ |
 | GET /groups/get/:uid | 404 after delete | ✅ |
@@ -74,12 +76,8 @@ Run tests: `bun run test:api` (requires server on port 3000).
 | DELETE /groups/student/deleteAll/:uid | admin → 200, success true | ✅ |
 | DELETE /groups/delete/:uid | admin → 200, success true | ✅ |
 
-> **Bugs fixed:**
-> - `GET /groups/get` returned plain array, not `{ data, total }` — assertion corrected.
-> - `PUT /groups/update` returns `{ uid }` only, not full object — `.name` assertion removed.
-> - All hardcoded fake UIDs replaced with `{{newProfessorId}}` and `{{studentId}}`.
->
-> **New:** `studentId` captured via `GET /user/me` during student session at start of Groups. Used for all student-related group operations and downstream.
+> **Multitenant breaking changes fixed:** `create` → rector session + `X-Institution-Slug` + `categoryId`/`institutionId` in body; `getAll` → rector session + header.
+> `studentId` captured via `GET /user/me` during student session. Downstream create also uses rector + tenant headers.
 
 ---
 
@@ -127,23 +125,54 @@ Run tests: `bun run test:api` (requires server on port 3000).
 
 ---
 
+## Institutions ✅ Complete
+
+| Endpoint | Test case | Status |
+|---|---|---|
+| POST /institutions | happy path → 201, captures institutionId | ✅ |
+| POST /institutions | duplicate slug → 409 | ✅ |
+| GET /institutions/:slug | auth → 200, slug matches | ✅ |
+| PATCH /institutions/:id | rector + X-Institution-Slug → 200, uid | ✅ |
+| POST /institutions/:id/invitations | rector → 201, captures invitationToken | ✅ |
+| GET /invitations/:token | auth → 200, has token | ✅ |
+| POST /invitations/:token/respond | professor accept → 201, status ACCEPTED | ✅ |
+| POST /invitations/:token/respond | double respond → 400 | ✅ |
+| GET /institutions/:id/invitations | rector → 200, ≥1 item | ✅ |
+
+> **Flow note:** rector credentials (`rectorMail`/`rectorPassword`) are static in env and must match the body of POST /institutions. Institution slug `test-inst-api` is hardcoded in the test.
+> ⚠️ Super_admin endpoints (POST /categories, GET /content-requests, PATCH /content-requests/:id/review) not tested — no super_admin user with credentials seeded.
+
+---
+
+## Categories ✅ Partial
+
+| Endpoint | Test case | Status |
+|---|---|---|
+| GET /categories | public → 200, array, captures categoryId | ✅ |
+| POST /content-requests | rector + X-Institution-Slug → 201, captures contentRequestId | ✅ |
+| GET /content-requests/mine | rector → 200, ≥1 item | ✅ |
+| POST /content-requests | institutional role → 403 | ✅ |
+| POST /categories | super_admin → ⚠️ not tested (no super_admin credentials) | ⚠️ |
+| PATCH /categories/:id | super_admin → ⚠️ not tested | ⚠️ |
+| GET /content-requests | super_admin → ⚠️ not tested | ⚠️ |
+| PATCH /content-requests/:id/review | super_admin → ⚠️ not tested | ⚠️ |
+
+---
+
 ## Styles ✅ Complete
 
 | Endpoint | Test case | Status |
 |---|---|---|
 | GET /styles/all | public → 200, array | ✅ |
-| GET /styles/all/:category | public → 200, array (uses ARTES category) | ✅ |
-| POST /styles/create | professor → 201, has uid | ✅ |
+| GET /styles/all/:categoryId | public → 200, array (uses `{{categoryId}}` UUID) | ✅ |
+| POST /styles/create | professor → 201, has uid (body uses `categoryId` UUID) | ✅ |
 | GET /styles/get/:uid | public → 200, uid matches | ✅ |
 | PUT /styles/update/:uid | professor → 200, has uid | ✅ |
 | DELETE /styles/delete/:uid | professor → 403 | ✅ |
 | DELETE /styles/delete/:uid | admin → 200 | ✅ |
 | GET /styles/get/:uid | 404 after delete | ✅ |
 
-> **Bugs fixed:**
-> - `GET /styles/all/:category`: param is a category enum (ARTES/TEATRO/DANZAS/MUSICA/CANTO), was passing `{{groupId}}` UUID.
-> - `Create Style`: body was missing required `category` field → 400. Added `category: 'ARTES'`.
-> - `Create Style` + `Update Style`: both assert `json.name` but service returns `{ uid }` only. Fixed to `json.uid`.
+> **Multitenant breaking change fixed:** `GET /styles/all/:category` — param changed from enum (ARTES) to UUID `{{categoryId}}`; `POST /styles/create` body field `category` → `categoryId` (UUID).
 
 ---
 

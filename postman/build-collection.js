@@ -16,6 +16,17 @@ function jsonHeader() {
   return [{ key: 'Content-Type', value: 'application/json' }];
 }
 
+function tenantHeaders() {
+  return [
+    { key: 'Content-Type', value: 'application/json' },
+    { key: 'X-Institution-Slug', value: '{{institutionSlug}}' },
+  ];
+}
+
+function tenantHeader() {
+  return [{ key: 'X-Institution-Slug', value: '{{institutionSlug}}' }];
+}
+
 function makeUrl(raw) {
   return raw; // Newman requires plain string URL, not { raw } object
 }
@@ -351,18 +362,229 @@ const userFolder = {
   ],
 };
 
+// ─── INSTITUTIONS MODULE ─────────────────────────────────────────────────────
+
+const institutionsFolder = {
+  name: 'Institutions',
+  item: [
+    makeItem({
+      name: 'Create Institution (public)',
+      method: 'POST', url: '{{baseUrl}}/institutions',
+      headers: jsonHeader(),
+      body: {
+        name: 'Institución Test API',
+        slug: 'test-inst-api',
+        type: 'EDUCATIONAL',
+        planSlug: 'academia',
+        representativeName: 'Rector',
+        representativeLastName: 'Test',
+        email: '{{rectorMail}}',
+        password: '{{rectorPassword}}',
+      },
+      tests: [
+        "pm.test('Status 201', () => pm.response.to.have.status(201));",
+        "const json = pm.response.json();",
+        "pm.test('Has uid', () => pm.expect(json.uid).to.be.a('string'));",
+        "pm.environment.set('institutionId', json.uid);",
+        "pm.environment.set('institutionSlug', 'test-inst-api');",
+      ],
+    }),
+    makeItem({
+      name: 'Create Institution - duplicate slug returns 409',
+      method: 'POST', url: '{{baseUrl}}/institutions',
+      headers: jsonHeader(),
+      body: {
+        name: 'Dup', slug: 'test-inst-api', type: 'EDUCATIONAL', planSlug: 'academia',
+        representativeName: 'X', representativeLastName: 'Y', email: 'dup@test.com', password: 'Test@1234!',
+      },
+      tests: [
+        "pm.test('Status 409 on duplicate slug', () => pm.response.to.have.status(409));",
+      ],
+    }),
+    makeItem({
+      name: '🔐 Login as Rector',
+      method: 'POST', url: '{{baseUrl}}/auth/login',
+      headers: jsonHeader(),
+      body: { mail: '{{rectorMail}}', password: '{{rectorPassword}}' },
+      tests: [
+        "pm.test('Rector login 201', () => pm.response.to.have.status(201));",
+      ],
+    }),
+    makeItem({
+      name: 'Get Institution by Slug (auth)',
+      method: 'GET', url: '{{baseUrl}}/institutions/{{institutionSlug}}',
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('slug matches', () => pm.expect(pm.response.json().slug).to.equal('test-inst-api'));",
+      ],
+    }),
+    makeItem({
+      name: 'Update Institution (rector)',
+      method: 'PATCH', url: '{{baseUrl}}/institutions/{{institutionId}}',
+      headers: tenantHeaders(),
+      body: { name: 'Institución Test Actualizada' },
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Has uid', () => pm.expect(pm.response.json().uid).to.be.a('string'));",
+      ],
+    }),
+    makeItem({
+      name: 'Create Invitation (rector → professor)',
+      method: 'POST', url: '{{baseUrl}}/institutions/{{institutionId}}/invitations',
+      headers: tenantHeaders(),
+      body: { toEmail: '{{professorMail}}', targetRole: 'institutional', expiresInDays: 7 },
+      tests: [
+        "pm.test('Status 201', () => pm.response.to.have.status(201));",
+        "const json = pm.response.json();",
+        "pm.test('Has token', () => pm.expect(json.token).to.be.a('string'));",
+        "pm.environment.set('invitationToken', json.token);",
+      ],
+    }),
+    makeItem({
+      name: 'Get Invitation by Token (rector)',
+      method: 'GET', url: '{{baseUrl}}/invitations/{{invitationToken}}',
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Has token', () => pm.expect(pm.response.json().token).to.be.a('string'));",
+      ],
+    }),
+    loginRequest('professor'),
+    makeItem({
+      name: 'Respond to Invitation - Accept (professor)',
+      method: 'POST', url: '{{baseUrl}}/invitations/{{invitationToken}}/respond',
+      headers: jsonHeader(),
+      body: { accept: true },
+      tests: [
+        "pm.test('Status 201', () => pm.response.to.have.status(201));",
+        "const json = pm.response.json();",
+        "pm.test('Status ACCEPTED', () => pm.expect(json.status).to.equal('ACCEPTED'));",
+      ],
+    }),
+    makeItem({
+      name: 'Respond to Invitation - already responded returns 400',
+      method: 'POST', url: '{{baseUrl}}/invitations/{{invitationToken}}/respond',
+      headers: jsonHeader(),
+      body: { accept: true },
+      tests: [
+        "pm.test('Status 400 on double respond', () => pm.response.to.have.status(400));",
+      ],
+    }),
+    makeItem({
+      name: '🔐 Login as Rector (again)',
+      method: 'POST', url: '{{baseUrl}}/auth/login',
+      headers: jsonHeader(),
+      body: { mail: '{{rectorMail}}', password: '{{rectorPassword}}' },
+      tests: [
+        "pm.test('Rector login 201', () => pm.response.to.have.status(201));",
+      ],
+    }),
+    makeItem({
+      name: 'Get Institution Invitations (rector)',
+      method: 'GET', url: '{{baseUrl}}/institutions/{{institutionId}}/invitations',
+      headers: tenantHeader(),
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+        "pm.test('Has ≥1 invitation', () => pm.expect(pm.response.json().length).to.be.at.least(1));",
+      ],
+    }),
+  ],
+};
+
+// ─── CATEGORIES MODULE ────────────────────────────────────────────────────────
+
+const categoriesFolder = {
+  name: 'Categories',
+  item: [
+    makeItem({
+      name: 'Get Active Categories (public)',
+      method: 'GET', url: '{{baseUrl}}/categories',
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "const arr = pm.response.json();",
+        "pm.test('Returns array', () => pm.expect(arr).to.be.an('array'));",
+        "pm.test('Has seeded categories', () => pm.expect(arr.length).to.be.at.least(1));",
+        "if (arr.length > 0) pm.environment.set('categoryId', arr[0].uid);",
+      ],
+    }),
+    // Rector creates a content request (tenant-scoped)
+    makeItem({
+      name: '🔐 Login as Rector (categories)',
+      method: 'POST', url: '{{baseUrl}}/auth/login',
+      headers: jsonHeader(),
+      body: { mail: '{{rectorMail}}', password: '{{rectorPassword}}' },
+      tests: [
+        "pm.test('Rector login 201', () => pm.response.to.have.status(201));",
+      ],
+    }),
+    makeItem({
+      name: 'Create Content Request - CATEGORY (rector)',
+      method: 'POST', url: '{{baseUrl}}/content-requests',
+      headers: tenantHeaders(),
+      body: {
+        type: 'CATEGORY',
+        requestedName: 'Fotografía',
+        justification: 'Queremos agregar fotografía como nueva categoría',
+      },
+      tests: [
+        "pm.test('Status 201', () => pm.response.to.have.status(201));",
+        "const json = pm.response.json();",
+        "pm.test('Has uid', () => pm.expect(json.uid).to.be.a('string'));",
+        "pm.environment.set('contentRequestId', json.uid);",
+      ],
+    }),
+    makeItem({
+      name: 'Get My Content Requests (rector)',
+      method: 'GET', url: '{{baseUrl}}/content-requests/mine',
+      headers: tenantHeader(),
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+        "pm.test('Has ≥1 request', () => pm.expect(pm.response.json().length).to.be.at.least(1));",
+      ],
+    }),
+    // Professor (institutional role) cannot create content requests (needs rector/coordinator)
+    loginRequest('professor'),
+    makeItem({
+      name: 'Create Content Request - 403 for institutional role',
+      method: 'POST', url: '{{baseUrl}}/content-requests',
+      headers: tenantHeaders(),
+      body: { type: 'CATEGORY', requestedName: 'No Permitido', justification: 'Test' },
+      tests: [
+        "pm.test('Status 403 for institutional role', () => pm.response.to.have.status(403));",
+      ],
+    }),
+    // Restore rector session for Groups folder
+    makeItem({
+      name: '🔐 Login as Rector (restore)',
+      method: 'POST', url: '{{baseUrl}}/auth/login',
+      headers: jsonHeader(),
+      body: { mail: '{{rectorMail}}', password: '{{rectorPassword}}' },
+      tests: [
+        "pm.test('Rector login 201', () => pm.response.to.have.status(201));",
+      ],
+    }),
+  ],
+};
+
 // ─── GROUPS MODULE ────────────────────────────────────────────────────────────
 
 const groupsFolder = {
   name: 'Groups',
   item: [
-    // ── Admin: CRUD ────────────────────────────────────────────────────────────
-    loginRequest('admin'),
+    // ── Rector: tenant-scoped create + list ───────────────────────────────────
+    loginRequest('rector'),
     makeItem({
       name: 'Create Group',
       method: 'POST', url: '{{baseUrl}}/groups/create',
-      headers: jsonHeader(),
-      body: { name: 'Grupo Test 2026', profesorId: '{{newProfessorId}}', users: [] },
+      headers: tenantHeaders(),
+      body: {
+        name: 'Grupo Test 2026',
+        profesorId: '{{newProfessorId}}',
+        institutionId: '{{institutionId}}',
+        categoryId: '{{categoryId}}',
+        users: [],
+      },
       tests: [
         "pm.test('Status 201', () => pm.response.to.have.status(201));",
         "const json = pm.response.json();",
@@ -373,11 +595,14 @@ const groupsFolder = {
     makeItem({
       name: 'Get All Groups',
       method: 'GET', url: '{{baseUrl}}/groups/get?page=1&limit=10',
+      headers: tenantHeader(),
       tests: [
         "pm.test('Status 200', () => pm.response.to.have.status(200));",
         "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));",
       ],
     }),
+    // ── Admin: CRUD ────────────────────────────────────────────────────────────
+    loginRequest('admin'),
     makeItem({
       name: 'Get Group by UID',
       method: 'GET', url: '{{baseUrl}}/groups/get/{{groupId}}',
@@ -464,12 +689,18 @@ const groupsFolder = {
       ],
     }),
     makeItem({
-      name: 'Create Group - 403 for professor',
+      name: 'Create Group - 403 for professor (institutional role, not rector)',
       method: 'POST', url: '{{baseUrl}}/groups/create',
-      headers: jsonHeader(),
-      body: { name: 'No Permitido', profesorId: '{{newProfessorId}}', users: [] },
+      headers: tenantHeaders(),
+      body: {
+        name: 'No Permitido',
+        profesorId: '{{newProfessorId}}',
+        institutionId: '{{institutionId}}',
+        categoryId: '{{categoryId}}',
+        users: [],
+      },
       tests: [
-        "pm.test('Status 403', () => pm.response.to.have.status(403));",
+        "pm.test('Status 403 — institutional role cannot create groups', () => pm.response.to.have.status(403));",
       ],
     }),
     // ── Admin: bulk delete + delete group ─────────────────────────────────────
@@ -507,11 +738,18 @@ const groupsFolder = {
       ],
     }),
     // ── Downstream: recreate group with professor + student ───────────────────
+    loginRequest('rector'),
     makeItem({
       name: 'Create Group (downstream)',
       method: 'POST', url: '{{baseUrl}}/groups/create',
-      headers: jsonHeader(),
-      body: { name: 'Grupo Downstream 2026', profesorId: '{{newProfessorId}}', users: ['{{studentId}}'] },
+      headers: tenantHeaders(),
+      body: {
+        name: 'Grupo Downstream 2026',
+        profesorId: '{{newProfessorId}}',
+        institutionId: '{{institutionId}}',
+        categoryId: '{{categoryId}}',
+        users: ['{{studentId}}'],
+      },
       tests: [
         "pm.test('Status 201', () => pm.response.to.have.status(201));",
         "pm.environment.set('groupId', pm.response.json().uid);",
@@ -708,7 +946,7 @@ const stylesFolder = {
     }),
     makeItem({
       name: 'Get Styles by Category (public)',
-      method: 'GET', url: '{{baseUrl}}/styles/all/ARTES',
+      method: 'GET', url: '{{baseUrl}}/styles/all/{{categoryId}}',
       tests: [
         "pm.test('Status 200', () => pm.response.to.have.status(200));",
         "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));",
@@ -719,7 +957,7 @@ const stylesFolder = {
       name: 'Create Style (professor)',
       method: 'POST', url: '{{baseUrl}}/styles/create',
       headers: jsonHeader(),
-      body: { name: 'Impresionismo Test', description: 'Estilo de prueba', groupId: '{{groupId}}', category: 'ARTES' },
+      body: { name: 'Impresionismo Test', description: 'Estilo de prueba', groupId: '{{groupId}}', categoryId: '{{categoryId}}' },
       tests: [
         "pm.test('Status 201', () => pm.response.to.have.status(201));",
         "const json = pm.response.json();",
@@ -1087,11 +1325,11 @@ const scheduleFolder = {
 const collection = {
   info: {
     _postman_id: 'usta-gallery-api-tests',
-    name: 'UstaGallery API Tests',
-    description: 'Full Newman test suite — Auth, User, Groups, Photos, Products, Styles, Events, Classes, Schedule',
+    name: 'Quyca API Tests',
+    description: 'Full Newman test suite — Auth, User, Institutions, Categories, Groups, Photos, Products, Styles, Events, Classes, Schedule',
     schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
   },
-  item: [authFolder, userFolder, groupsFolder, photosFolder, productsFolder, stylesFolder, eventsFolder, classesFolder, scheduleFolder],
+  item: [authFolder, userFolder, institutionsFolder, categoriesFolder, groupsFolder, photosFolder, productsFolder, stylesFolder, eventsFolder, classesFolder, scheduleFolder],
 };
 
 const outPath = path.join(__dirname, 'collections', 'server-api', 'collection.json');
