@@ -66,6 +66,23 @@ export class UserService {
     return user;
   }
 
+  async getMe(uid: string) {
+    const user = await this.prismaService.users.findUnique({
+      where: { uid },
+      select: {
+        ...USER_SELECT,
+        userInstitutions: {
+          select: {
+            contextRole: true,
+            institution: { select: { uid: true, slug: true, name: true } },
+          },
+        },
+      },
+    });
+    if (!user) throw new NotFoundException(`User not found`);
+    return user;
+  }
+
   async getInfoAuthor(uid: string): Promise<AuthorInfo> {
     const user = await this.prismaService.users.findUnique({
       where: { uid },

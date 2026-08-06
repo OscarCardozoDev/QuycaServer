@@ -91,7 +91,7 @@ export class UserController {
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async getCurrentUser(@CurrentUser() user: JwtPayload) {
-    return this.userService.getUser(user.uid);
+    return this.userService.getMe(user.uid);
   }
 
   @Get('author/:uid')
