@@ -4,7 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { InstitutionController } from './Institution.controller';
 import { InstitutionService } from './Institution.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
-import { TenantGuard } from 'src/guards/tenant.guard';
+import { TenantGuard } from 'src/tenant/tenant.guard';
 import { ContextRoleGuard } from 'src/guards/context-role.guard';
 
 @Module({

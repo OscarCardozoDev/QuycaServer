@@ -2,7 +2,7 @@ import { Controller, Get, Post, Patch, Body, Param, UseGuards, Req } from '@nest
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CategoriesService } from './Categories.service';
 import { AuthGuard } from 'src/middleware/jwt.guard';
-import { TenantGuard } from 'src/guards/tenant.guard';
+import { TenantGuard } from 'src/tenant/tenant.guard';
 import { ContextRoleGuard } from 'src/guards/context-role.guard';
 import { RequireContextRole } from 'src/decorators/context-role.decorator';
 import { Roles } from 'src/decorators/roles.decorator';

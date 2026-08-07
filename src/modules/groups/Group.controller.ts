@@ -26,7 +26,7 @@ import {
   UpdateStudentsDto,
   ChangeProfesorDto,
 } from './Group.dto';
-import { TenantGuard } from 'src/guards/tenant.guard';
+import { TenantGuard } from 'src/tenant/tenant.guard';
 import { ContextRoleGuard } from 'src/guards/context-role.guard';
 import { FeatureGuard } from 'src/guards/feature.guard';
 import { RequireContextRole } from 'src/decorators/context-role.decorator';

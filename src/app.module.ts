@@ -3,7 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { ConfigModule } from '@nestjs/config';
 import { SqlInjectionGuard } from 'src/middleware/sql.guard';
-import { TenantMiddleware } from 'src/middleware/tenant.middleware';
+import { TenantMiddleware } from 'src/tenant/tenant.middleware';
 import { AuthModule } from 'src/modules/auth/Auth.module';
 import { UserModule } from 'src/modules/user/User.module';
 import { PhotosModule } from 'src/modules/photos/Photos.module';

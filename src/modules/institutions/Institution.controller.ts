@@ -4,7 +4,7 @@ import {
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { InstitutionService } from './Institution.service';
 import { AuthGuard } from 'src/middleware/jwt.guard';
-import { TenantGuard } from 'src/guards/tenant.guard';
+import { TenantGuard } from 'src/tenant/tenant.guard';
 import { ContextRoleGuard } from 'src/guards/context-role.guard';
 import { RequireContextRole } from 'src/decorators/context-role.decorator';
 import { Institution } from 'src/decorators/institution.decorator';
