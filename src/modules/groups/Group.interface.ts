@@ -45,6 +45,7 @@ export interface ChangeProfesorUseCase {
 export interface AddStudentToGroupsUseCase {
   userId: string;
   groupIds: string[];
+  institutionId: string;
 }
 
 export interface AddStudentToGroupUseCase {
@@ -55,6 +56,7 @@ export interface AddStudentToGroupUseCase {
 export interface UpdateStudentsByGroupUseCase {
   groupId: string;
   users: string[];
+  institutionId: string;
 }
 
 export interface DeleteStudentByGroupUseCase {

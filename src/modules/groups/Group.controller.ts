@@ -114,11 +114,13 @@ export class GroupController {
   async addStudent(
     @CurrentUser('uid') uid: string,
     @Body() body: AddStudentDto,
+    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
   ) {
     const userId = body.userId ?? uid;
     return this.groupService.addStudentToGroups({
       userId,
       groupIds: body.groupIds,
+      institutionId: institution.uid,
     });
   }
 
@@ -159,10 +161,12 @@ export class GroupController {
   async updateStudents(
     @Param('groupId') groupId: string,
     @Body() body: UpdateStudentsDto,
+    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
   ) {
     return this.groupService.updateStudentsByGroup({
       groupId,
       users: body.users,
+      institutionId: institution.uid,
     });
   }
 }

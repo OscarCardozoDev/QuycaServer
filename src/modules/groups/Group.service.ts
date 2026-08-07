@@ -3,6 +3,7 @@ import {
   Inject,
   NotFoundException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -25,10 +26,39 @@ export class GroupService {
   ) {}
 
   /* =========================
+   * MEMBERSHIP GUARD
+   * `Users`/`UserInstitution` are NOT tenant-scoped models — a userId
+   * coming from the client could belong to any institution. Any use
+   * case that enrolls a user into a group (profesor or student) must
+   * validate membership explicitly before touching `usersGroups`.
+   * ========================= */
+  private async assertActiveMembers(userIds: string[], institutionId: string) {
+    const unique = [...new Set(userIds)];
+    if (!unique.length) return;
+
+    const members = await this.prisma.userInstitution.findMany({
+      where: { userId: { in: unique }, institutionId, isActive: true },
+      select: { userId: true },
+    });
+
+    const memberIds = new Set(members.map((m) => m.userId));
+    const invalid = unique.filter((id) => !memberIds.has(id));
+
+    if (invalid.length) {
+      throw new ForbiddenException(
+        `User(s) not an active member of this institution: ${invalid.join(', ')}`,
+      );
+    }
+  }
+
+  /* =========================
    * CREATE
    * ========================= */
   async createGroupUseCase(data: CreateGroupUseCase) {
     const { name, profesorId, institutionId, categoryId, users } = data;
+
+    const idsToValidate = [...(profesorId ? [profesorId] : []), ...(users ?? [])];
+    await this.assertActiveMembers(idsToValidate, institutionId);
 
     return this.prisma.$transaction(async (tx) => {
       // 1️⃣ Crear grupo
@@ -251,9 +281,9 @@ export class GroupService {
    * ========================= */
 
   async addStudentToGroups(data: AddStudentToGroupsUseCase) {
-    const { userId, groupIds } = data;
+    const { userId, groupIds, institutionId } = data;
 
-    // Validar que existan los grupos
+    // Validar que existan los grupos (ya scoped automáticamente al tenant activo)
     const groups = await this.prisma.groups.findMany({
       where: { uid: { in: groupIds } },
       select: { uid: true },
@@ -274,6 +304,9 @@ export class GroupService {
     if (!user) {
       throw new NotFoundException(`User not found: ${userId}`);
     }
+
+    // Validar que el usuario sea miembro activo de esta institución
+    await this.assertActiveMembers([userId], institutionId);
 
     // Intentar agregar a todos los grupos
     const results = await Promise.allSettled(
@@ -313,6 +346,14 @@ export class GroupService {
    * GET ALL STUDENTS BY GROUP
    * ========================= */
   async getAllStudentsByGroup(groupId: string) {
+    const group = await this.prisma.groups.findUnique({
+      where: { uid: groupId },
+    });
+
+    if (!group) {
+      throw new NotFoundException('Group not found');
+    }
+
     const userTypeId = this.configService.get<string>('config.roles.user');
 
     return this.prisma.usersGroups.findMany({
@@ -336,6 +377,14 @@ export class GroupService {
    * DELETE ALL STUDENTS BY GROUP
    * ========================= */
   async deleteStudentsByGroup(groupId: string) {
+    const group = await this.prisma.groups.findUnique({
+      where: { uid: groupId },
+    });
+
+    if (!group) {
+      throw new NotFoundException('Group not found');
+    }
+
     return this.prisma.usersGroups.deleteMany({
       where: { groupId },
     });
@@ -371,7 +420,7 @@ export class GroupService {
    * UPDATE STUDENTS BY GROUP
    * ========================= */
   async updateStudentsByGroup(data: UpdateStudentsByGroupUseCase) {
-    const { groupId, users } = data;
+    const { groupId, users, institutionId } = data;
 
     const group = await this.prisma.groups.findUnique({
       where: { uid: groupId },
@@ -380,6 +429,8 @@ export class GroupService {
     if (!group) {
       throw new NotFoundException('Group not found');
     }
+
+    await this.assertActiveMembers(users, institutionId);
 
     return this.prisma.$transaction(async (tx) => {
       // Eliminar relaciones actuales
