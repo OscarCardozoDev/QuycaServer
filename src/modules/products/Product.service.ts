@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Decimal } from '@prisma/client/runtime/client';
 import {
@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class ProductService {
   constructor(
-    private readonly prisma: PrismaService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
     private readonly photosService: PhotosService,
   ) {}
 

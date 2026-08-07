@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/prisma/prisma.service';
 import type { CreateScheduleUseCase, UpdateScheduleUseCase } from './Schedule.interface';
@@ -6,7 +6,7 @@ import type { CreateScheduleUseCase, UpdateScheduleUseCase } from './Schedule.in
 @Injectable()
 export class ScheduleService {
   constructor(
-    private readonly prisma: PrismaService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
     private readonly config: ConfigService,
   ) {}
 

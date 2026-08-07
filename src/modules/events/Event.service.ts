@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Inject,
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
@@ -37,7 +38,7 @@ type LazyCompleteBase = {
 @Injectable()
 export class EventService {
   constructor(
-    private readonly prisma: PrismaService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
     private readonly photosService: PhotosService,
   ) {}
 

@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  Inject,
   BadRequestException,
   NotFoundException,
   ForbiddenException,
@@ -12,7 +13,7 @@ import { tenantStorage } from './tenant-context';
 
 @Injectable()
 export class TenantGuard implements CanActivate {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prismaService: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();

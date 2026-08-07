@@ -1,6 +1,7 @@
 // server/src/modules/user/User.service.ts
 import {
   Injectable,
+  Inject,
   NotFoundException,
   BadRequestException,
   ConflictException,
@@ -44,7 +45,7 @@ const USER_SELECT = {
 @Injectable()
 export class UserService {
   constructor(
-    private readonly prismaService: PrismaService,
+    @Inject(PrismaService) private readonly prismaService: PrismaService,
     private readonly photosService: PhotosService,
     private readonly configService: ConfigService,
   ) {}

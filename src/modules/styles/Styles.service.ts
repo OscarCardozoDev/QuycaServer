@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   Style,
@@ -9,7 +9,7 @@ import {
 
 @Injectable()
 export class StylesService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(@Inject(PrismaService) private prismaService: PrismaService) {}
 
   async getAll(): Promise<Style[]> {
     return this.prismaService.styles.findMany({

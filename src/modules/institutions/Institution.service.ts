@@ -1,5 +1,5 @@
 import {
-  Injectable, NotFoundException, ConflictException, BadRequestException,
+  Injectable, Inject, NotFoundException, ConflictException, BadRequestException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -12,7 +12,7 @@ import {
 @Injectable()
 export class InstitutionService {
   constructor(
-    private readonly prismaService: PrismaService,
+    @Inject(PrismaService) private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
   ) {}
 

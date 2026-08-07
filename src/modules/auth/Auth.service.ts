@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Inject,
   BadRequestException,
   NotFoundException,
   InternalServerErrorException,
@@ -18,7 +19,7 @@ import { randomInt } from 'crypto';
 @Injectable()
 export class AuthService {
   constructor(
-    private prismaService: PrismaService,
+    @Inject(PrismaService) private prismaService: PrismaService,
     private readonly configService: ConfigService,
   ) {}
 
