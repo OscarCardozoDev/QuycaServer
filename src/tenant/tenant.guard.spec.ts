@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { ExecutionContext, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { TenantGuard } from './tenant.guard';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { tenantStorage } from './tenant-context';
 
 const mockInstitution = {
   uid: 'inst-uid',
@@ -10,7 +11,7 @@ const mockInstitution = {
   subscriptionPlan: { features: ['groups_create'] },
 };
 
-const mockMembership = { contextRole: 'rector' };
+const mockMembership = { contextRole: 'rector', isActive: true };
 
 function makeContext(overrides: Partial<{ slug: string; uid: string }> = {}): ExecutionContext {
   const req = {
@@ -75,5 +76,26 @@ describe('TenantGuard', () => {
     expect(result).toBe(true);
     expect(req.institution).toEqual(mockInstitution);
     expect(req.contextRole).toBe('rector');
+  });
+
+  it('rechaza si la membresía está inactiva', async () => {
+    prismaMock.institution.findUnique.mockResolvedValue(mockInstitution);
+    prismaMock.userInstitution.findUnique.mockResolvedValue(null);
+
+    await expect(guard.canActivate(makeContext())).rejects.toThrow(
+      'User is not a member of this institution',
+    );
+  });
+
+  it('deposita el institutionId en el store de tenant', async () => {
+    prismaMock.institution.findUnique.mockResolvedValue(mockInstitution);
+    prismaMock.userInstitution.findUnique.mockResolvedValue(mockMembership);
+
+    const store = { institutionId: null as string | null, bypass: false };
+    await tenantStorage.run(store, async () => {
+      await guard.canActivate(makeContext());
+    });
+
+    expect(store.institutionId).toBe('inst-uid');
   });
 });

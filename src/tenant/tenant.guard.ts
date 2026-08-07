@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import type { AuthenticatedRequest } from 'src/interface/jwtPayload';
+import { tenantStorage } from './tenant-context';
 
 @Injectable()
 export class TenantGuard implements CanActivate {
@@ -43,12 +44,16 @@ export class TenantGuard implements CanActivate {
       },
     });
 
-    if (!membership) {
+    if (!membership || !membership.isActive) {
       throw new ForbiddenException('User is not a member of this institution');
     }
 
     request.institution = institution as any;
     request.contextRole = membership.contextRole;
+
+    const store = tenantStorage.getStore();
+    if (store) store.institutionId = institution.uid;
+
     return true;
   }
 }
