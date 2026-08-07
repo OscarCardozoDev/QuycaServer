@@ -6,32 +6,49 @@ import * as dotenv from 'dotenv';
 
 dotenv.config({ path: path.join(__dirname, 'development.env') });
 
+export const USER_TYPE_IDS = {
+  super_admin: '00000000-0000-4000-8000-000000000001',
+  institution: '00000000-0000-4000-8000-000000000002',
+  professor:   '00000000-0000-4000-8000-000000000003',
+  user:        '00000000-0000-4000-8000-000000000004',
+} as const;
+
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) as any });
 
 async function main() {
   console.log('🌱 Seeding static data...');
 
-  // 1. UserTypes — upsert by name (existing rows may already exist)
-  const userTypes = [
-    { name: 'super_admin' },
-    { name: 'institution' },
-    { name: 'professor' },
-    { name: 'user' },
-  ];
-
-  for (const ut of userTypes) {
-    const existing = await prisma.userTypes.findFirst({ where: { name: ut.name } });
-    if (!existing) {
-      const created = await prisma.userTypes.create({ data: ut, select: { uid: true, name: true } });
-      console.log(`  ✅ UserType "${ut.name}" created — uid: ${created.uid}`);
-      console.log(`     → Add to development.env: ID_${ut.name.toUpperCase()}=${created.uid}`);
-    } else {
-      console.log(`  ⏭  UserType "${ut.name}" already exists — uid: ${existing.uid}`);
-    }
+  // 1. UserTypes
+  for (const [name, uid] of Object.entries(USER_TYPE_IDS)) {
+    await prisma.userTypes.upsert({
+      where: { uid },
+      update: { name },
+      create: { uid, name },
+    });
+    console.log(`  ✅ UserType "${name}" — uid: ${uid}`);
   }
 
-  // 2. SubscriptionPlans
+  // 2. Roles
+  const roles = [
+    { name: 'Estudiante',              slug: 'student' },
+    { name: 'Autodidacta',             slug: 'self-taught' },
+    { name: 'Docente institucional',   slug: 'institutional' },
+    { name: 'Docente independiente',   slug: 'independent' },
+    { name: 'Rector',                  slug: 'rector' },
+    { name: 'Coordinador',             slug: 'coordinator' },
+  ];
+
+  for (const role of roles) {
+    await prisma.roles.upsert({
+      where: { slug: role.slug },
+      update: { name: role.name },
+      create: role,
+    });
+    console.log(`  ✅ Role "${role.slug}"`);
+  }
+
+  // 3. SubscriptionPlans
   const plans = [
     {
       name: 'Empírico',
@@ -82,7 +99,7 @@ async function main() {
     }
   }
 
-  // 3. GroupCategories
+  // 4. GroupCategories
   const categories = [
     { name: 'Artes Plásticas', slug: 'artes', iconSlug: 'palette' },
     { name: 'Teatro', slug: 'teatro', iconSlug: 'theater' },
@@ -101,7 +118,7 @@ async function main() {
     }
   }
 
-  // 4. Institution: quyca-platform
+  // 5. Institution: quyca-platform
   if (!empiricoUid) {
     throw new Error('Empírico plan uid not found — run plans seed first');
   }
