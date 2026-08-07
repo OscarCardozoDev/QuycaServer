@@ -6,6 +6,7 @@ import { CategoriesService } from './Categories.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { TenantGuard } from 'src/tenant/tenant.guard';
 import { ContextRoleGuard } from 'src/guards/context-role.guard';
+import { CrossTenantGuard } from 'src/tenant/cross-tenant.guard';
 
 @Module({
   imports: [
@@ -19,6 +20,6 @@ import { ContextRoleGuard } from 'src/guards/context-role.guard';
     }),
   ],
   controllers: [CategoriesController],
-  providers: [CategoriesService, TenantGuard, ContextRoleGuard],
+  providers: [CategoriesService, TenantGuard, ContextRoleGuard, CrossTenantGuard],
 })
 export class CategoriesModule {}

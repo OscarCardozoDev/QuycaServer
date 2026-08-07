@@ -57,9 +57,8 @@ export class CategoriesService {
     });
   }
 
-  async getInstitutionContentRequests(institutionId: string) {
+  async getInstitutionContentRequests() {
     return this.prismaService.contentRequest.findMany({
-      where: { institutionId },
       orderBy: { createdAt: 'desc' },
     });
   }

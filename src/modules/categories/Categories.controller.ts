@@ -7,6 +7,8 @@ import { ContextRoleGuard } from 'src/guards/context-role.guard';
 import { RequireContextRole } from 'src/decorators/context-role.decorator';
 import { Roles } from 'src/decorators/roles.decorator';
 import { Institution } from 'src/decorators/institution.decorator';
+import { AllowCrossTenant } from 'src/decorators/cross-tenant.decorator';
+import { CrossTenantGuard } from 'src/tenant/cross-tenant.guard';
 import type { AuthenticatedRequest } from 'src/interface/jwtPayload';
 import {
   CreateCategoryDto, UpdateCategoryDto,
@@ -58,8 +60,9 @@ export class CategoriesController {
   }
 
   @Get('content-requests')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, CrossTenantGuard)
   @Roles('super_admin')
+  @AllowCrossTenant()
   @ApiOperation({ summary: 'Listar todas las solicitudes (SUPER_ADMIN)' })
   getAllRequests() {
     return this.categoriesService.getAllContentRequests();
@@ -68,13 +71,14 @@ export class CategoriesController {
   @Get('content-requests/mine')
   @UseGuards(AuthGuard, TenantGuard)
   @ApiOperation({ summary: 'Listar solicitudes de la institución activa' })
-  getMyRequests(@Institution() institution: { uid: string }) {
-    return this.categoriesService.getInstitutionContentRequests(institution.uid);
+  getMyRequests() {
+    return this.categoriesService.getInstitutionContentRequests();
   }
 
   @Patch('content-requests/:id/review')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, CrossTenantGuard)
   @Roles('super_admin')
+  @AllowCrossTenant()
   @ApiOperation({ summary: 'Aprobar o rechazar solicitud (SUPER_ADMIN)' })
   reviewRequest(
     @Param('id') id: string,
