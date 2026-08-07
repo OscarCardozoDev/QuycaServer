@@ -36,6 +36,16 @@ function isThenable(value: unknown): value is PromiseLike<unknown> {
  * una Promise nativa. Eso engancha la resolución lazy de Prisma al store
  * correcto, sin mutar `bypass` y sin forzar un `await` que rompería el caso
  * síncrono.
+ *
+ * LIMITACIÓN: el valor devuelto es una `Promise` nativa, no el `PrismaPromise`
+ * original. `PrismaPromise` expone un método interno `requestTransaction()`
+ * que la forma en arreglo de `prisma.$transaction([...])` necesita para
+ * encolar la query en una transacción por lote; una `Promise` nativa no lo
+ * tiene. Por eso, el valor que devuelve `runWithoutTenant` NO debe pasarse
+ * dentro de `prisma.$transaction([...])`. La forma callback,
+ * `$transaction(async (tx) => ...)`, no se ve afectada — no depende de
+ * `requestTransaction()` — y es, además, la única forma usada hoy en este
+ * codebase (todos los `$transaction` actuales son de la forma callback).
  */
 export function runWithoutTenant<T>(fn: () => T): T {
   const current = tenantStorage.getStore();
