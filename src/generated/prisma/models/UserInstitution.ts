@@ -29,7 +29,9 @@ export type UserInstitutionMinAggregateOutputType = {
   userId: string | null
   institutionId: string | null
   contextRole: string | null
+  isActive: boolean | null
   joinedAt: Date | null
+  leftAt: Date | null
 }
 
 export type UserInstitutionMaxAggregateOutputType = {
@@ -37,7 +39,9 @@ export type UserInstitutionMaxAggregateOutputType = {
   userId: string | null
   institutionId: string | null
   contextRole: string | null
+  isActive: boolean | null
   joinedAt: Date | null
+  leftAt: Date | null
 }
 
 export type UserInstitutionCountAggregateOutputType = {
@@ -45,7 +49,9 @@ export type UserInstitutionCountAggregateOutputType = {
   userId: number
   institutionId: number
   contextRole: number
+  isActive: number
   joinedAt: number
+  leftAt: number
   _all: number
 }
 
@@ -55,7 +61,9 @@ export type UserInstitutionMinAggregateInputType = {
   userId?: true
   institutionId?: true
   contextRole?: true
+  isActive?: true
   joinedAt?: true
+  leftAt?: true
 }
 
 export type UserInstitutionMaxAggregateInputType = {
@@ -63,7 +71,9 @@ export type UserInstitutionMaxAggregateInputType = {
   userId?: true
   institutionId?: true
   contextRole?: true
+  isActive?: true
   joinedAt?: true
+  leftAt?: true
 }
 
 export type UserInstitutionCountAggregateInputType = {
@@ -71,7 +81,9 @@ export type UserInstitutionCountAggregateInputType = {
   userId?: true
   institutionId?: true
   contextRole?: true
+  isActive?: true
   joinedAt?: true
+  leftAt?: true
   _all?: true
 }
 
@@ -152,7 +164,9 @@ export type UserInstitutionGroupByOutputType = {
   userId: string
   institutionId: string
   contextRole: string
+  isActive: boolean
   joinedAt: Date
+  leftAt: Date | null
   _count: UserInstitutionCountAggregateOutputType | null
   _min: UserInstitutionMinAggregateOutputType | null
   _max: UserInstitutionMaxAggregateOutputType | null
@@ -181,7 +195,9 @@ export type UserInstitutionWhereInput = {
   userId?: Prisma.UuidFilter<"UserInstitution"> | string
   institutionId?: Prisma.UuidFilter<"UserInstitution"> | string
   contextRole?: Prisma.StringFilter<"UserInstitution"> | string
+  isActive?: Prisma.BoolFilter<"UserInstitution"> | boolean
   joinedAt?: Prisma.DateTimeFilter<"UserInstitution"> | Date | string
+  leftAt?: Prisma.DateTimeNullableFilter<"UserInstitution"> | Date | string | null
   user?: Prisma.XOR<Prisma.UsersScalarRelationFilter, Prisma.UsersWhereInput>
   institution?: Prisma.XOR<Prisma.InstitutionScalarRelationFilter, Prisma.InstitutionWhereInput>
 }
@@ -191,7 +207,9 @@ export type UserInstitutionOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   contextRole?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   joinedAt?: Prisma.SortOrder
+  leftAt?: Prisma.SortOrderInput | Prisma.SortOrder
   user?: Prisma.UsersOrderByWithRelationInput
   institution?: Prisma.InstitutionOrderByWithRelationInput
 }
@@ -205,7 +223,9 @@ export type UserInstitutionWhereUniqueInput = Prisma.AtLeast<{
   userId?: Prisma.UuidFilter<"UserInstitution"> | string
   institutionId?: Prisma.UuidFilter<"UserInstitution"> | string
   contextRole?: Prisma.StringFilter<"UserInstitution"> | string
+  isActive?: Prisma.BoolFilter<"UserInstitution"> | boolean
   joinedAt?: Prisma.DateTimeFilter<"UserInstitution"> | Date | string
+  leftAt?: Prisma.DateTimeNullableFilter<"UserInstitution"> | Date | string | null
   user?: Prisma.XOR<Prisma.UsersScalarRelationFilter, Prisma.UsersWhereInput>
   institution?: Prisma.XOR<Prisma.InstitutionScalarRelationFilter, Prisma.InstitutionWhereInput>
 }, "uid" | "userId_institutionId">
@@ -215,7 +235,9 @@ export type UserInstitutionOrderByWithAggregationInput = {
   userId?: Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   contextRole?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   joinedAt?: Prisma.SortOrder
+  leftAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserInstitutionCountOrderByAggregateInput
   _max?: Prisma.UserInstitutionMaxOrderByAggregateInput
   _min?: Prisma.UserInstitutionMinOrderByAggregateInput
@@ -229,13 +251,17 @@ export type UserInstitutionScalarWhereWithAggregatesInput = {
   userId?: Prisma.UuidWithAggregatesFilter<"UserInstitution"> | string
   institutionId?: Prisma.UuidWithAggregatesFilter<"UserInstitution"> | string
   contextRole?: Prisma.StringWithAggregatesFilter<"UserInstitution"> | string
+  isActive?: Prisma.BoolWithAggregatesFilter<"UserInstitution"> | boolean
   joinedAt?: Prisma.DateTimeWithAggregatesFilter<"UserInstitution"> | Date | string
+  leftAt?: Prisma.DateTimeNullableWithAggregatesFilter<"UserInstitution"> | Date | string | null
 }
 
 export type UserInstitutionCreateInput = {
   uid?: string
   contextRole: string
+  isActive?: boolean
   joinedAt?: Date | string
+  leftAt?: Date | string | null
   user: Prisma.UsersCreateNestedOneWithoutUserInstitutionsInput
   institution: Prisma.InstitutionCreateNestedOneWithoutUserInstitutionsInput
 }
@@ -245,13 +271,17 @@ export type UserInstitutionUncheckedCreateInput = {
   userId: string
   institutionId: string
   contextRole: string
+  isActive?: boolean
   joinedAt?: Date | string
+  leftAt?: Date | string | null
 }
 
 export type UserInstitutionUpdateInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   contextRole?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UsersUpdateOneRequiredWithoutUserInstitutionsNestedInput
   institution?: Prisma.InstitutionUpdateOneRequiredWithoutUserInstitutionsNestedInput
 }
@@ -261,7 +291,9 @@ export type UserInstitutionUncheckedUpdateInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   contextRole?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UserInstitutionCreateManyInput = {
@@ -269,13 +301,17 @@ export type UserInstitutionCreateManyInput = {
   userId: string
   institutionId: string
   contextRole: string
+  isActive?: boolean
   joinedAt?: Date | string
+  leftAt?: Date | string | null
 }
 
 export type UserInstitutionUpdateManyMutationInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   contextRole?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UserInstitutionUncheckedUpdateManyInput = {
@@ -283,7 +319,9 @@ export type UserInstitutionUncheckedUpdateManyInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   contextRole?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UserInstitutionListRelationFilter = {
@@ -306,7 +344,9 @@ export type UserInstitutionCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   contextRole?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   joinedAt?: Prisma.SortOrder
+  leftAt?: Prisma.SortOrder
 }
 
 export type UserInstitutionMaxOrderByAggregateInput = {
@@ -314,7 +354,9 @@ export type UserInstitutionMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   contextRole?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   joinedAt?: Prisma.SortOrder
+  leftAt?: Prisma.SortOrder
 }
 
 export type UserInstitutionMinOrderByAggregateInput = {
@@ -322,7 +364,9 @@ export type UserInstitutionMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   contextRole?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
   joinedAt?: Prisma.SortOrder
+  leftAt?: Prisma.SortOrder
 }
 
 export type UserInstitutionCreateNestedManyWithoutUserInput = {
@@ -412,7 +456,9 @@ export type UserInstitutionUncheckedUpdateManyWithoutInstitutionNestedInput = {
 export type UserInstitutionCreateWithoutUserInput = {
   uid?: string
   contextRole: string
+  isActive?: boolean
   joinedAt?: Date | string
+  leftAt?: Date | string | null
   institution: Prisma.InstitutionCreateNestedOneWithoutUserInstitutionsInput
 }
 
@@ -420,7 +466,9 @@ export type UserInstitutionUncheckedCreateWithoutUserInput = {
   uid?: string
   institutionId: string
   contextRole: string
+  isActive?: boolean
   joinedAt?: Date | string
+  leftAt?: Date | string | null
 }
 
 export type UserInstitutionCreateOrConnectWithoutUserInput = {
@@ -457,13 +505,17 @@ export type UserInstitutionScalarWhereInput = {
   userId?: Prisma.UuidFilter<"UserInstitution"> | string
   institutionId?: Prisma.UuidFilter<"UserInstitution"> | string
   contextRole?: Prisma.StringFilter<"UserInstitution"> | string
+  isActive?: Prisma.BoolFilter<"UserInstitution"> | boolean
   joinedAt?: Prisma.DateTimeFilter<"UserInstitution"> | Date | string
+  leftAt?: Prisma.DateTimeNullableFilter<"UserInstitution"> | Date | string | null
 }
 
 export type UserInstitutionCreateWithoutInstitutionInput = {
   uid?: string
   contextRole: string
+  isActive?: boolean
   joinedAt?: Date | string
+  leftAt?: Date | string | null
   user: Prisma.UsersCreateNestedOneWithoutUserInstitutionsInput
 }
 
@@ -471,7 +523,9 @@ export type UserInstitutionUncheckedCreateWithoutInstitutionInput = {
   uid?: string
   userId: string
   contextRole: string
+  isActive?: boolean
   joinedAt?: Date | string
+  leftAt?: Date | string | null
 }
 
 export type UserInstitutionCreateOrConnectWithoutInstitutionInput = {
@@ -504,13 +558,17 @@ export type UserInstitutionCreateManyUserInput = {
   uid?: string
   institutionId: string
   contextRole: string
+  isActive?: boolean
   joinedAt?: Date | string
+  leftAt?: Date | string | null
 }
 
 export type UserInstitutionUpdateWithoutUserInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   contextRole?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   institution?: Prisma.InstitutionUpdateOneRequiredWithoutUserInstitutionsNestedInput
 }
 
@@ -518,27 +576,35 @@ export type UserInstitutionUncheckedUpdateWithoutUserInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   contextRole?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UserInstitutionUncheckedUpdateManyWithoutUserInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   contextRole?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UserInstitutionCreateManyInstitutionInput = {
   uid?: string
   userId: string
   contextRole: string
+  isActive?: boolean
   joinedAt?: Date | string
+  leftAt?: Date | string | null
 }
 
 export type UserInstitutionUpdateWithoutInstitutionInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   contextRole?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   user?: Prisma.UsersUpdateOneRequiredWithoutUserInstitutionsNestedInput
 }
 
@@ -546,14 +612,18 @@ export type UserInstitutionUncheckedUpdateWithoutInstitutionInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   contextRole?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UserInstitutionUncheckedUpdateManyWithoutInstitutionInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   contextRole?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  leftAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -563,7 +633,9 @@ export type UserInstitutionSelect<ExtArgs extends runtime.Types.Extensions.Inter
   userId?: boolean
   institutionId?: boolean
   contextRole?: boolean
+  isActive?: boolean
   joinedAt?: boolean
+  leftAt?: boolean
   user?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
   institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["userInstitution"]>
@@ -573,7 +645,9 @@ export type UserInstitutionSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   userId?: boolean
   institutionId?: boolean
   contextRole?: boolean
+  isActive?: boolean
   joinedAt?: boolean
+  leftAt?: boolean
   user?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
   institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["userInstitution"]>
@@ -583,7 +657,9 @@ export type UserInstitutionSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   userId?: boolean
   institutionId?: boolean
   contextRole?: boolean
+  isActive?: boolean
   joinedAt?: boolean
+  leftAt?: boolean
   user?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
   institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["userInstitution"]>
@@ -593,10 +669,12 @@ export type UserInstitutionSelectScalar = {
   userId?: boolean
   institutionId?: boolean
   contextRole?: boolean
+  isActive?: boolean
   joinedAt?: boolean
+  leftAt?: boolean
 }
 
-export type UserInstitutionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "userId" | "institutionId" | "contextRole" | "joinedAt", ExtArgs["result"]["userInstitution"]>
+export type UserInstitutionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "userId" | "institutionId" | "contextRole" | "isActive" | "joinedAt" | "leftAt", ExtArgs["result"]["userInstitution"]>
 export type UserInstitutionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
   institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
@@ -621,7 +699,9 @@ export type $UserInstitutionPayload<ExtArgs extends runtime.Types.Extensions.Int
     userId: string
     institutionId: string
     contextRole: string
+    isActive: boolean
     joinedAt: Date
+    leftAt: Date | null
   }, ExtArgs["result"]["userInstitution"]>
   composites: {}
 }
@@ -1051,7 +1131,9 @@ export interface UserInstitutionFieldRefs {
   readonly userId: Prisma.FieldRef<"UserInstitution", 'String'>
   readonly institutionId: Prisma.FieldRef<"UserInstitution", 'String'>
   readonly contextRole: Prisma.FieldRef<"UserInstitution", 'String'>
+  readonly isActive: Prisma.FieldRef<"UserInstitution", 'Boolean'>
   readonly joinedAt: Prisma.FieldRef<"UserInstitution", 'DateTime'>
+  readonly leftAt: Prisma.FieldRef<"UserInstitution", 'DateTime'>
 }
     
 

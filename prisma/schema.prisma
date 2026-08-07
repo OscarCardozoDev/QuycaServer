@@ -183,6 +183,8 @@ model Groups {
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([institutionId])
 }
 
 model UsersGroups {
@@ -218,6 +220,9 @@ model Products {
   groupId      String        @db.Uuid
   group        Groups        @relation(fields: [groupId], references: [uid])
 
+  institutionId String       @db.Uuid
+  institution   Institution  @relation(fields: [institutionId], references: [uid])
+
   styles       ProductStyle[]
   photos       ProductPhoto[]
   events       EventProduct[]
@@ -225,6 +230,9 @@ model Products {
 
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+
+  @@index([institutionId])
+  @@index([institutionId, status])
 }
 
 //////////////////////////////////////////////////////
@@ -245,8 +253,13 @@ model Styles {
     groupId      String          @db.Uuid
   group        Groups          @relation(fields: [groupId], references: [uid])
 
+  institutionId String         @db.Uuid
+  institution   Institution    @relation(fields: [institutionId], references: [uid])
+
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
+
+  @@index([institutionId])
 }
 
 model ProductStyle {
@@ -315,6 +328,9 @@ model Events {
   createdBy    Users       @relation("EventCreator", fields: [createdById], references: [uid])
   createdById  String      @db.Uuid
 
+  institutionId String      @db.Uuid
+  institution   Institution @relation(fields: [institutionId], references: [uid])
+
   products     EventProduct[]
   photos       EventPhoto[]
   groups       GroupEvent[]
@@ -322,6 +338,9 @@ model Events {
 
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+
+  @@index([institutionId])
+  @@index([institutionId, startDate])
 }
 
 model EventProduct {
@@ -420,8 +439,13 @@ model Schedule {
   group      Groups   @relation(fields: [groupId], references: [uid])
   classes    Classes[]
 
+  institutionId String      @db.Uuid
+  institution   Institution @relation(fields: [institutionId], references: [uid])
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  @@index([institutionId])
 }
 
 model Classes {
@@ -439,8 +463,14 @@ model Classes {
   schedule   Schedule? @relation(fields: [scheduleId], references: [uid])
   attendance Attendance[]
 
+  institutionId String      @db.Uuid
+  institution   Institution @relation(fields: [institutionId], references: [uid])
+
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
+
+  @@index([institutionId])
+  @@index([institutionId, date])
 }
 
 model Attendance {
@@ -452,7 +482,11 @@ model Attendance {
   class    Classes  @relation(fields: [classId], references: [uid])
   user     Users    @relation(fields: [userId], references: [uid])
 
+  institutionId String      @db.Uuid
+  institution   Institution @relation(fields: [institutionId], references: [uid])
+
   @@unique([classId, userId])
+  @@index([institutionId])
 }
 
 //////////////////////////////////////////////////////
@@ -496,6 +530,13 @@ model Institution {
   invitations       InstitutionInvitation[]
   contentRequests   ContentRequest[]
 
+  events            Events[]
+  products          Products[]
+  styles            Styles[]
+  classes           Classes[]
+  schedules         Schedule[]
+  attendances       Attendance[]
+
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
@@ -505,12 +546,15 @@ model UserInstitution {
   userId        String      @db.Uuid
   institutionId String      @db.Uuid
   contextRole   String      @db.VarChar(30)
+  isActive      Boolean     @default(true)
   joinedAt      DateTime    @default(now())
+  leftAt        DateTime?
 
   user          Users       @relation(fields: [userId], references: [uid])
   institution   Institution @relation(fields: [institutionId], references: [uid])
 
   @@unique([userId, institutionId])
+  @@index([institutionId, isActive])
 }
 
 //////////////////////////////////////////////////////

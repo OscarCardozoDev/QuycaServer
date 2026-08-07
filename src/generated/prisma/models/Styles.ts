@@ -31,6 +31,7 @@ export type StylesMinAggregateOutputType = {
   isActive: boolean | null
   categoryId: string | null
   groupId: string | null
+  institutionId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -42,6 +43,7 @@ export type StylesMaxAggregateOutputType = {
   isActive: boolean | null
   categoryId: string | null
   groupId: string | null
+  institutionId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -53,6 +55,7 @@ export type StylesCountAggregateOutputType = {
   isActive: number
   categoryId: number
   groupId: number
+  institutionId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -66,6 +69,7 @@ export type StylesMinAggregateInputType = {
   isActive?: true
   categoryId?: true
   groupId?: true
+  institutionId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -77,6 +81,7 @@ export type StylesMaxAggregateInputType = {
   isActive?: true
   categoryId?: true
   groupId?: true
+  institutionId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -88,6 +93,7 @@ export type StylesCountAggregateInputType = {
   isActive?: true
   categoryId?: true
   groupId?: true
+  institutionId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -172,6 +178,7 @@ export type StylesGroupByOutputType = {
   isActive: boolean
   categoryId: string
   groupId: string
+  institutionId: string
   createdAt: Date
   updatedAt: Date
   _count: StylesCountAggregateOutputType | null
@@ -204,11 +211,13 @@ export type StylesWhereInput = {
   isActive?: Prisma.BoolFilter<"Styles"> | boolean
   categoryId?: Prisma.UuidFilter<"Styles"> | string
   groupId?: Prisma.UuidFilter<"Styles"> | string
+  institutionId?: Prisma.UuidFilter<"Styles"> | string
   createdAt?: Prisma.DateTimeFilter<"Styles"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Styles"> | Date | string
   groupCategory?: Prisma.XOR<Prisma.GroupCategoryScalarRelationFilter, Prisma.GroupCategoryWhereInput>
   products?: Prisma.ProductStyleListRelationFilter
   group?: Prisma.XOR<Prisma.GroupsScalarRelationFilter, Prisma.GroupsWhereInput>
+  institution?: Prisma.XOR<Prisma.InstitutionScalarRelationFilter, Prisma.InstitutionWhereInput>
 }
 
 export type StylesOrderByWithRelationInput = {
@@ -218,11 +227,13 @@ export type StylesOrderByWithRelationInput = {
   isActive?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   groupCategory?: Prisma.GroupCategoryOrderByWithRelationInput
   products?: Prisma.ProductStyleOrderByRelationAggregateInput
   group?: Prisma.GroupsOrderByWithRelationInput
+  institution?: Prisma.InstitutionOrderByWithRelationInput
 }
 
 export type StylesWhereUniqueInput = Prisma.AtLeast<{
@@ -235,11 +246,13 @@ export type StylesWhereUniqueInput = Prisma.AtLeast<{
   isActive?: Prisma.BoolFilter<"Styles"> | boolean
   categoryId?: Prisma.UuidFilter<"Styles"> | string
   groupId?: Prisma.UuidFilter<"Styles"> | string
+  institutionId?: Prisma.UuidFilter<"Styles"> | string
   createdAt?: Prisma.DateTimeFilter<"Styles"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Styles"> | Date | string
   groupCategory?: Prisma.XOR<Prisma.GroupCategoryScalarRelationFilter, Prisma.GroupCategoryWhereInput>
   products?: Prisma.ProductStyleListRelationFilter
   group?: Prisma.XOR<Prisma.GroupsScalarRelationFilter, Prisma.GroupsWhereInput>
+  institution?: Prisma.XOR<Prisma.InstitutionScalarRelationFilter, Prisma.InstitutionWhereInput>
 }, "uid">
 
 export type StylesOrderByWithAggregationInput = {
@@ -249,6 +262,7 @@ export type StylesOrderByWithAggregationInput = {
   isActive?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.StylesCountOrderByAggregateInput
@@ -266,6 +280,7 @@ export type StylesScalarWhereWithAggregatesInput = {
   isActive?: Prisma.BoolWithAggregatesFilter<"Styles"> | boolean
   categoryId?: Prisma.UuidWithAggregatesFilter<"Styles"> | string
   groupId?: Prisma.UuidWithAggregatesFilter<"Styles"> | string
+  institutionId?: Prisma.UuidWithAggregatesFilter<"Styles"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Styles"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Styles"> | Date | string
 }
@@ -280,6 +295,7 @@ export type StylesCreateInput = {
   groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutStylesInput
   products?: Prisma.ProductStyleCreateNestedManyWithoutStyleInput
   group: Prisma.GroupsCreateNestedOneWithoutStylesInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutStylesInput
 }
 
 export type StylesUncheckedCreateInput = {
@@ -289,6 +305,7 @@ export type StylesUncheckedCreateInput = {
   isActive?: boolean
   categoryId: string
   groupId: string
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.ProductStyleUncheckedCreateNestedManyWithoutStyleInput
@@ -304,6 +321,7 @@ export type StylesUpdateInput = {
   groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutStylesNestedInput
   products?: Prisma.ProductStyleUpdateManyWithoutStyleNestedInput
   group?: Prisma.GroupsUpdateOneRequiredWithoutStylesNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutStylesNestedInput
 }
 
 export type StylesUncheckedUpdateInput = {
@@ -313,6 +331,7 @@ export type StylesUncheckedUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.ProductStyleUncheckedUpdateManyWithoutStyleNestedInput
@@ -325,6 +344,7 @@ export type StylesCreateManyInput = {
   isActive?: boolean
   categoryId: string
   groupId: string
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -345,6 +365,7 @@ export type StylesUncheckedUpdateManyInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -366,6 +387,7 @@ export type StylesCountOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -377,6 +399,7 @@ export type StylesMaxOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -388,6 +411,7 @@ export type StylesMinOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -453,6 +477,48 @@ export type StylesUpdateOneRequiredWithoutProductsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.StylesUpdateToOneWithWhereWithoutProductsInput, Prisma.StylesUpdateWithoutProductsInput>, Prisma.StylesUncheckedUpdateWithoutProductsInput>
 }
 
+export type StylesCreateNestedManyWithoutInstitutionInput = {
+  create?: Prisma.XOR<Prisma.StylesCreateWithoutInstitutionInput, Prisma.StylesUncheckedCreateWithoutInstitutionInput> | Prisma.StylesCreateWithoutInstitutionInput[] | Prisma.StylesUncheckedCreateWithoutInstitutionInput[]
+  connectOrCreate?: Prisma.StylesCreateOrConnectWithoutInstitutionInput | Prisma.StylesCreateOrConnectWithoutInstitutionInput[]
+  createMany?: Prisma.StylesCreateManyInstitutionInputEnvelope
+  connect?: Prisma.StylesWhereUniqueInput | Prisma.StylesWhereUniqueInput[]
+}
+
+export type StylesUncheckedCreateNestedManyWithoutInstitutionInput = {
+  create?: Prisma.XOR<Prisma.StylesCreateWithoutInstitutionInput, Prisma.StylesUncheckedCreateWithoutInstitutionInput> | Prisma.StylesCreateWithoutInstitutionInput[] | Prisma.StylesUncheckedCreateWithoutInstitutionInput[]
+  connectOrCreate?: Prisma.StylesCreateOrConnectWithoutInstitutionInput | Prisma.StylesCreateOrConnectWithoutInstitutionInput[]
+  createMany?: Prisma.StylesCreateManyInstitutionInputEnvelope
+  connect?: Prisma.StylesWhereUniqueInput | Prisma.StylesWhereUniqueInput[]
+}
+
+export type StylesUpdateManyWithoutInstitutionNestedInput = {
+  create?: Prisma.XOR<Prisma.StylesCreateWithoutInstitutionInput, Prisma.StylesUncheckedCreateWithoutInstitutionInput> | Prisma.StylesCreateWithoutInstitutionInput[] | Prisma.StylesUncheckedCreateWithoutInstitutionInput[]
+  connectOrCreate?: Prisma.StylesCreateOrConnectWithoutInstitutionInput | Prisma.StylesCreateOrConnectWithoutInstitutionInput[]
+  upsert?: Prisma.StylesUpsertWithWhereUniqueWithoutInstitutionInput | Prisma.StylesUpsertWithWhereUniqueWithoutInstitutionInput[]
+  createMany?: Prisma.StylesCreateManyInstitutionInputEnvelope
+  set?: Prisma.StylesWhereUniqueInput | Prisma.StylesWhereUniqueInput[]
+  disconnect?: Prisma.StylesWhereUniqueInput | Prisma.StylesWhereUniqueInput[]
+  delete?: Prisma.StylesWhereUniqueInput | Prisma.StylesWhereUniqueInput[]
+  connect?: Prisma.StylesWhereUniqueInput | Prisma.StylesWhereUniqueInput[]
+  update?: Prisma.StylesUpdateWithWhereUniqueWithoutInstitutionInput | Prisma.StylesUpdateWithWhereUniqueWithoutInstitutionInput[]
+  updateMany?: Prisma.StylesUpdateManyWithWhereWithoutInstitutionInput | Prisma.StylesUpdateManyWithWhereWithoutInstitutionInput[]
+  deleteMany?: Prisma.StylesScalarWhereInput | Prisma.StylesScalarWhereInput[]
+}
+
+export type StylesUncheckedUpdateManyWithoutInstitutionNestedInput = {
+  create?: Prisma.XOR<Prisma.StylesCreateWithoutInstitutionInput, Prisma.StylesUncheckedCreateWithoutInstitutionInput> | Prisma.StylesCreateWithoutInstitutionInput[] | Prisma.StylesUncheckedCreateWithoutInstitutionInput[]
+  connectOrCreate?: Prisma.StylesCreateOrConnectWithoutInstitutionInput | Prisma.StylesCreateOrConnectWithoutInstitutionInput[]
+  upsert?: Prisma.StylesUpsertWithWhereUniqueWithoutInstitutionInput | Prisma.StylesUpsertWithWhereUniqueWithoutInstitutionInput[]
+  createMany?: Prisma.StylesCreateManyInstitutionInputEnvelope
+  set?: Prisma.StylesWhereUniqueInput | Prisma.StylesWhereUniqueInput[]
+  disconnect?: Prisma.StylesWhereUniqueInput | Prisma.StylesWhereUniqueInput[]
+  delete?: Prisma.StylesWhereUniqueInput | Prisma.StylesWhereUniqueInput[]
+  connect?: Prisma.StylesWhereUniqueInput | Prisma.StylesWhereUniqueInput[]
+  update?: Prisma.StylesUpdateWithWhereUniqueWithoutInstitutionInput | Prisma.StylesUpdateWithWhereUniqueWithoutInstitutionInput[]
+  updateMany?: Prisma.StylesUpdateManyWithWhereWithoutInstitutionInput | Prisma.StylesUpdateManyWithWhereWithoutInstitutionInput[]
+  deleteMany?: Prisma.StylesScalarWhereInput | Prisma.StylesScalarWhereInput[]
+}
+
 export type StylesCreateNestedManyWithoutGroupCategoryInput = {
   create?: Prisma.XOR<Prisma.StylesCreateWithoutGroupCategoryInput, Prisma.StylesUncheckedCreateWithoutGroupCategoryInput> | Prisma.StylesCreateWithoutGroupCategoryInput[] | Prisma.StylesUncheckedCreateWithoutGroupCategoryInput[]
   connectOrCreate?: Prisma.StylesCreateOrConnectWithoutGroupCategoryInput | Prisma.StylesCreateOrConnectWithoutGroupCategoryInput[]
@@ -504,6 +570,7 @@ export type StylesCreateWithoutGroupInput = {
   updatedAt?: Date | string
   groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutStylesInput
   products?: Prisma.ProductStyleCreateNestedManyWithoutStyleInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutStylesInput
 }
 
 export type StylesUncheckedCreateWithoutGroupInput = {
@@ -512,6 +579,7 @@ export type StylesUncheckedCreateWithoutGroupInput = {
   description: string
   isActive?: boolean
   categoryId: string
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.ProductStyleUncheckedCreateNestedManyWithoutStyleInput
@@ -553,6 +621,7 @@ export type StylesScalarWhereInput = {
   isActive?: Prisma.BoolFilter<"Styles"> | boolean
   categoryId?: Prisma.UuidFilter<"Styles"> | string
   groupId?: Prisma.UuidFilter<"Styles"> | string
+  institutionId?: Prisma.UuidFilter<"Styles"> | string
   createdAt?: Prisma.DateTimeFilter<"Styles"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Styles"> | Date | string
 }
@@ -566,6 +635,7 @@ export type StylesCreateWithoutProductsInput = {
   updatedAt?: Date | string
   groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutStylesInput
   group: Prisma.GroupsCreateNestedOneWithoutStylesInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutStylesInput
 }
 
 export type StylesUncheckedCreateWithoutProductsInput = {
@@ -575,6 +645,7 @@ export type StylesUncheckedCreateWithoutProductsInput = {
   isActive?: boolean
   categoryId: string
   groupId: string
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -604,6 +675,7 @@ export type StylesUpdateWithoutProductsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutStylesNestedInput
   group?: Prisma.GroupsUpdateOneRequiredWithoutStylesNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutStylesNestedInput
 }
 
 export type StylesUncheckedUpdateWithoutProductsInput = {
@@ -613,8 +685,59 @@ export type StylesUncheckedUpdateWithoutProductsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type StylesCreateWithoutInstitutionInput = {
+  uid?: string
+  name: string
+  description: string
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutStylesInput
+  products?: Prisma.ProductStyleCreateNestedManyWithoutStyleInput
+  group: Prisma.GroupsCreateNestedOneWithoutStylesInput
+}
+
+export type StylesUncheckedCreateWithoutInstitutionInput = {
+  uid?: string
+  name: string
+  description: string
+  isActive?: boolean
+  categoryId: string
+  groupId: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  products?: Prisma.ProductStyleUncheckedCreateNestedManyWithoutStyleInput
+}
+
+export type StylesCreateOrConnectWithoutInstitutionInput = {
+  where: Prisma.StylesWhereUniqueInput
+  create: Prisma.XOR<Prisma.StylesCreateWithoutInstitutionInput, Prisma.StylesUncheckedCreateWithoutInstitutionInput>
+}
+
+export type StylesCreateManyInstitutionInputEnvelope = {
+  data: Prisma.StylesCreateManyInstitutionInput | Prisma.StylesCreateManyInstitutionInput[]
+  skipDuplicates?: boolean
+}
+
+export type StylesUpsertWithWhereUniqueWithoutInstitutionInput = {
+  where: Prisma.StylesWhereUniqueInput
+  update: Prisma.XOR<Prisma.StylesUpdateWithoutInstitutionInput, Prisma.StylesUncheckedUpdateWithoutInstitutionInput>
+  create: Prisma.XOR<Prisma.StylesCreateWithoutInstitutionInput, Prisma.StylesUncheckedCreateWithoutInstitutionInput>
+}
+
+export type StylesUpdateWithWhereUniqueWithoutInstitutionInput = {
+  where: Prisma.StylesWhereUniqueInput
+  data: Prisma.XOR<Prisma.StylesUpdateWithoutInstitutionInput, Prisma.StylesUncheckedUpdateWithoutInstitutionInput>
+}
+
+export type StylesUpdateManyWithWhereWithoutInstitutionInput = {
+  where: Prisma.StylesScalarWhereInput
+  data: Prisma.XOR<Prisma.StylesUpdateManyMutationInput, Prisma.StylesUncheckedUpdateManyWithoutInstitutionInput>
 }
 
 export type StylesCreateWithoutGroupCategoryInput = {
@@ -626,6 +749,7 @@ export type StylesCreateWithoutGroupCategoryInput = {
   updatedAt?: Date | string
   products?: Prisma.ProductStyleCreateNestedManyWithoutStyleInput
   group: Prisma.GroupsCreateNestedOneWithoutStylesInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutStylesInput
 }
 
 export type StylesUncheckedCreateWithoutGroupCategoryInput = {
@@ -634,6 +758,7 @@ export type StylesUncheckedCreateWithoutGroupCategoryInput = {
   description: string
   isActive?: boolean
   groupId: string
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.ProductStyleUncheckedCreateNestedManyWithoutStyleInput
@@ -671,6 +796,7 @@ export type StylesCreateManyGroupInput = {
   description: string
   isActive?: boolean
   categoryId: string
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -684,6 +810,7 @@ export type StylesUpdateWithoutGroupInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutStylesNestedInput
   products?: Prisma.ProductStyleUpdateManyWithoutStyleNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutStylesNestedInput
 }
 
 export type StylesUncheckedUpdateWithoutGroupInput = {
@@ -692,6 +819,7 @@ export type StylesUncheckedUpdateWithoutGroupInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.ProductStyleUncheckedUpdateManyWithoutStyleNestedInput
@@ -703,6 +831,53 @@ export type StylesUncheckedUpdateManyWithoutGroupInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type StylesCreateManyInstitutionInput = {
+  uid?: string
+  name: string
+  description: string
+  isActive?: boolean
+  categoryId: string
+  groupId: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type StylesUpdateWithoutInstitutionInput = {
+  uid?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutStylesNestedInput
+  products?: Prisma.ProductStyleUpdateManyWithoutStyleNestedInput
+  group?: Prisma.GroupsUpdateOneRequiredWithoutStylesNestedInput
+}
+
+export type StylesUncheckedUpdateWithoutInstitutionInput = {
+  uid?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  products?: Prisma.ProductStyleUncheckedUpdateManyWithoutStyleNestedInput
+}
+
+export type StylesUncheckedUpdateManyWithoutInstitutionInput = {
+  uid?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -713,6 +888,7 @@ export type StylesCreateManyGroupCategoryInput = {
   description: string
   isActive?: boolean
   groupId: string
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -726,6 +902,7 @@ export type StylesUpdateWithoutGroupCategoryInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.ProductStyleUpdateManyWithoutStyleNestedInput
   group?: Prisma.GroupsUpdateOneRequiredWithoutStylesNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutStylesNestedInput
 }
 
 export type StylesUncheckedUpdateWithoutGroupCategoryInput = {
@@ -734,6 +911,7 @@ export type StylesUncheckedUpdateWithoutGroupCategoryInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.ProductStyleUncheckedUpdateManyWithoutStyleNestedInput
@@ -745,6 +923,7 @@ export type StylesUncheckedUpdateManyWithoutGroupCategoryInput = {
   description?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -787,11 +966,13 @@ export type StylesSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   isActive?: boolean
   categoryId?: boolean
   groupId?: boolean
+  institutionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   products?: boolean | Prisma.Styles$productsArgs<ExtArgs>
   group?: boolean | Prisma.GroupsDefaultArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.StylesCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["styles"]>
 
@@ -802,10 +983,12 @@ export type StylesSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   isActive?: boolean
   categoryId?: boolean
   groupId?: boolean
+  institutionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   group?: boolean | Prisma.GroupsDefaultArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["styles"]>
 
 export type StylesSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -815,10 +998,12 @@ export type StylesSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   isActive?: boolean
   categoryId?: boolean
   groupId?: boolean
+  institutionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   group?: boolean | Prisma.GroupsDefaultArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["styles"]>
 
 export type StylesSelectScalar = {
@@ -828,24 +1013,28 @@ export type StylesSelectScalar = {
   isActive?: boolean
   categoryId?: boolean
   groupId?: boolean
+  institutionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type StylesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "name" | "description" | "isActive" | "categoryId" | "groupId" | "createdAt" | "updatedAt", ExtArgs["result"]["styles"]>
+export type StylesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "name" | "description" | "isActive" | "categoryId" | "groupId" | "institutionId" | "createdAt" | "updatedAt", ExtArgs["result"]["styles"]>
 export type StylesInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   products?: boolean | Prisma.Styles$productsArgs<ExtArgs>
   group?: boolean | Prisma.GroupsDefaultArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.StylesCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type StylesIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   group?: boolean | Prisma.GroupsDefaultArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
 }
 export type StylesIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   group?: boolean | Prisma.GroupsDefaultArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
 }
 
 export type $StylesPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -854,6 +1043,7 @@ export type $StylesPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     groupCategory: Prisma.$GroupCategoryPayload<ExtArgs>
     products: Prisma.$ProductStylePayload<ExtArgs>[]
     group: Prisma.$GroupsPayload<ExtArgs>
+    institution: Prisma.$InstitutionPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     uid: string
@@ -862,6 +1052,7 @@ export type $StylesPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     isActive: boolean
     categoryId: string
     groupId: string
+    institutionId: string
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["styles"]>
@@ -1261,6 +1452,7 @@ export interface Prisma__StylesClient<T, Null = never, ExtArgs extends runtime.T
   groupCategory<T extends Prisma.GroupCategoryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GroupCategoryDefaultArgs<ExtArgs>>): Prisma.Prisma__GroupCategoryClient<runtime.Types.Result.GetResult<Prisma.$GroupCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   products<T extends Prisma.Styles$productsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Styles$productsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductStylePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   group<T extends Prisma.GroupsDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GroupsDefaultArgs<ExtArgs>>): Prisma.Prisma__GroupsClient<runtime.Types.Result.GetResult<Prisma.$GroupsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  institution<T extends Prisma.InstitutionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InstitutionDefaultArgs<ExtArgs>>): Prisma.Prisma__InstitutionClient<runtime.Types.Result.GetResult<Prisma.$InstitutionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1296,6 +1488,7 @@ export interface StylesFieldRefs {
   readonly isActive: Prisma.FieldRef<"Styles", 'Boolean'>
   readonly categoryId: Prisma.FieldRef<"Styles", 'String'>
   readonly groupId: Prisma.FieldRef<"Styles", 'String'>
+  readonly institutionId: Prisma.FieldRef<"Styles", 'String'>
   readonly createdAt: Prisma.FieldRef<"Styles", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Styles", 'DateTime'>
 }

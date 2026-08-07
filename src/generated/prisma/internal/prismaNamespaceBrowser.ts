@@ -198,6 +198,7 @@ export const ProductsScalarFieldEnum = {
   isSold: 'isSold',
   madeAt: 'madeAt',
   groupId: 'groupId',
+  institutionId: 'institutionId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -212,6 +213,7 @@ export const StylesScalarFieldEnum = {
   isActive: 'isActive',
   categoryId: 'categoryId',
   groupId: 'groupId',
+  institutionId: 'institutionId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -266,6 +268,7 @@ export const EventsScalarFieldEnum = {
   streamingUrl: 'streamingUrl',
   isActive: 'isActive',
   createdById: 'createdById',
+  institutionId: 'institutionId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -338,6 +341,7 @@ export const ScheduleScalarFieldEnum = {
   startTime: 'startTime',
   endTime: 'endTime',
   isActive: 'isActive',
+  institutionId: 'institutionId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -355,6 +359,7 @@ export const ClassesScalarFieldEnum = {
   topic: 'topic',
   review: 'review',
   isActive: 'isActive',
+  institutionId: 'institutionId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -366,7 +371,8 @@ export const AttendanceScalarFieldEnum = {
   uid: 'uid',
   classId: 'classId',
   userId: 'userId',
-  takenAt: 'takenAt'
+  takenAt: 'takenAt',
+  institutionId: 'institutionId'
 } as const
 
 export type AttendanceScalarFieldEnum = (typeof AttendanceScalarFieldEnum)[keyof typeof AttendanceScalarFieldEnum]
@@ -410,7 +416,9 @@ export const UserInstitutionScalarFieldEnum = {
   userId: 'userId',
   institutionId: 'institutionId',
   contextRole: 'contextRole',
-  joinedAt: 'joinedAt'
+  isActive: 'isActive',
+  joinedAt: 'joinedAt',
+  leftAt: 'leftAt'
 } as const
 
 export type UserInstitutionScalarFieldEnum = (typeof UserInstitutionScalarFieldEnum)[keyof typeof UserInstitutionScalarFieldEnum]

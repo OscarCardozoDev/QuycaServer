@@ -34,6 +34,7 @@ export type ClassesMinAggregateOutputType = {
   topic: string | null
   review: string | null
   isActive: boolean | null
+  institutionId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -48,6 +49,7 @@ export type ClassesMaxAggregateOutputType = {
   topic: string | null
   review: string | null
   isActive: boolean | null
+  institutionId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -62,6 +64,7 @@ export type ClassesCountAggregateOutputType = {
   topic: number
   review: number
   isActive: number
+  institutionId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -78,6 +81,7 @@ export type ClassesMinAggregateInputType = {
   topic?: true
   review?: true
   isActive?: true
+  institutionId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -92,6 +96,7 @@ export type ClassesMaxAggregateInputType = {
   topic?: true
   review?: true
   isActive?: true
+  institutionId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -106,6 +111,7 @@ export type ClassesCountAggregateInputType = {
   topic?: true
   review?: true
   isActive?: true
+  institutionId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -193,6 +199,7 @@ export type ClassesGroupByOutputType = {
   topic: string | null
   review: string | null
   isActive: boolean
+  institutionId: string
   createdAt: Date
   updatedAt: Date
   _count: ClassesCountAggregateOutputType | null
@@ -228,11 +235,13 @@ export type ClassesWhereInput = {
   topic?: Prisma.StringNullableFilter<"Classes"> | string | null
   review?: Prisma.StringNullableFilter<"Classes"> | string | null
   isActive?: Prisma.BoolFilter<"Classes"> | boolean
+  institutionId?: Prisma.UuidFilter<"Classes"> | string
   createdAt?: Prisma.DateTimeFilter<"Classes"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Classes"> | Date | string
   group?: Prisma.XOR<Prisma.GroupsScalarRelationFilter, Prisma.GroupsWhereInput>
   schedule?: Prisma.XOR<Prisma.ScheduleNullableScalarRelationFilter, Prisma.ScheduleWhereInput> | null
   attendance?: Prisma.AttendanceListRelationFilter
+  institution?: Prisma.XOR<Prisma.InstitutionScalarRelationFilter, Prisma.InstitutionWhereInput>
 }
 
 export type ClassesOrderByWithRelationInput = {
@@ -245,11 +254,13 @@ export type ClassesOrderByWithRelationInput = {
   topic?: Prisma.SortOrderInput | Prisma.SortOrder
   review?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   group?: Prisma.GroupsOrderByWithRelationInput
   schedule?: Prisma.ScheduleOrderByWithRelationInput
   attendance?: Prisma.AttendanceOrderByRelationAggregateInput
+  institution?: Prisma.InstitutionOrderByWithRelationInput
 }
 
 export type ClassesWhereUniqueInput = Prisma.AtLeast<{
@@ -265,11 +276,13 @@ export type ClassesWhereUniqueInput = Prisma.AtLeast<{
   topic?: Prisma.StringNullableFilter<"Classes"> | string | null
   review?: Prisma.StringNullableFilter<"Classes"> | string | null
   isActive?: Prisma.BoolFilter<"Classes"> | boolean
+  institutionId?: Prisma.UuidFilter<"Classes"> | string
   createdAt?: Prisma.DateTimeFilter<"Classes"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Classes"> | Date | string
   group?: Prisma.XOR<Prisma.GroupsScalarRelationFilter, Prisma.GroupsWhereInput>
   schedule?: Prisma.XOR<Prisma.ScheduleNullableScalarRelationFilter, Prisma.ScheduleWhereInput> | null
   attendance?: Prisma.AttendanceListRelationFilter
+  institution?: Prisma.XOR<Prisma.InstitutionScalarRelationFilter, Prisma.InstitutionWhereInput>
 }, "uid">
 
 export type ClassesOrderByWithAggregationInput = {
@@ -282,6 +295,7 @@ export type ClassesOrderByWithAggregationInput = {
   topic?: Prisma.SortOrderInput | Prisma.SortOrder
   review?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ClassesCountOrderByAggregateInput
@@ -302,6 +316,7 @@ export type ClassesScalarWhereWithAggregatesInput = {
   topic?: Prisma.StringNullableWithAggregatesFilter<"Classes"> | string | null
   review?: Prisma.StringNullableWithAggregatesFilter<"Classes"> | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"Classes"> | boolean
+  institutionId?: Prisma.UuidWithAggregatesFilter<"Classes"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Classes"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Classes"> | Date | string
 }
@@ -319,6 +334,7 @@ export type ClassesCreateInput = {
   group: Prisma.GroupsCreateNestedOneWithoutClassesInput
   schedule?: Prisma.ScheduleCreateNestedOneWithoutClassesInput
   attendance?: Prisma.AttendanceCreateNestedManyWithoutClassInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutClassesInput
 }
 
 export type ClassesUncheckedCreateInput = {
@@ -331,6 +347,7 @@ export type ClassesUncheckedCreateInput = {
   topic?: string | null
   review?: string | null
   isActive?: boolean
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutClassInput
@@ -349,6 +366,7 @@ export type ClassesUpdateInput = {
   group?: Prisma.GroupsUpdateOneRequiredWithoutClassesNestedInput
   schedule?: Prisma.ScheduleUpdateOneWithoutClassesNestedInput
   attendance?: Prisma.AttendanceUpdateManyWithoutClassNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutClassesNestedInput
 }
 
 export type ClassesUncheckedUpdateInput = {
@@ -361,6 +379,7 @@ export type ClassesUncheckedUpdateInput = {
   topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   review?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutClassNestedInput
@@ -376,6 +395,7 @@ export type ClassesCreateManyInput = {
   topic?: string | null
   review?: string | null
   isActive?: boolean
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -402,6 +422,7 @@ export type ClassesUncheckedUpdateManyInput = {
   topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   review?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -426,6 +447,7 @@ export type ClassesCountOrderByAggregateInput = {
   topic?: Prisma.SortOrder
   review?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -440,6 +462,7 @@ export type ClassesMaxOrderByAggregateInput = {
   topic?: Prisma.SortOrder
   review?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -454,6 +477,7 @@ export type ClassesMinOrderByAggregateInput = {
   topic?: Prisma.SortOrder
   review?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -561,6 +585,48 @@ export type ClassesUpdateOneRequiredWithoutAttendanceNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ClassesUpdateToOneWithWhereWithoutAttendanceInput, Prisma.ClassesUpdateWithoutAttendanceInput>, Prisma.ClassesUncheckedUpdateWithoutAttendanceInput>
 }
 
+export type ClassesCreateNestedManyWithoutInstitutionInput = {
+  create?: Prisma.XOR<Prisma.ClassesCreateWithoutInstitutionInput, Prisma.ClassesUncheckedCreateWithoutInstitutionInput> | Prisma.ClassesCreateWithoutInstitutionInput[] | Prisma.ClassesUncheckedCreateWithoutInstitutionInput[]
+  connectOrCreate?: Prisma.ClassesCreateOrConnectWithoutInstitutionInput | Prisma.ClassesCreateOrConnectWithoutInstitutionInput[]
+  createMany?: Prisma.ClassesCreateManyInstitutionInputEnvelope
+  connect?: Prisma.ClassesWhereUniqueInput | Prisma.ClassesWhereUniqueInput[]
+}
+
+export type ClassesUncheckedCreateNestedManyWithoutInstitutionInput = {
+  create?: Prisma.XOR<Prisma.ClassesCreateWithoutInstitutionInput, Prisma.ClassesUncheckedCreateWithoutInstitutionInput> | Prisma.ClassesCreateWithoutInstitutionInput[] | Prisma.ClassesUncheckedCreateWithoutInstitutionInput[]
+  connectOrCreate?: Prisma.ClassesCreateOrConnectWithoutInstitutionInput | Prisma.ClassesCreateOrConnectWithoutInstitutionInput[]
+  createMany?: Prisma.ClassesCreateManyInstitutionInputEnvelope
+  connect?: Prisma.ClassesWhereUniqueInput | Prisma.ClassesWhereUniqueInput[]
+}
+
+export type ClassesUpdateManyWithoutInstitutionNestedInput = {
+  create?: Prisma.XOR<Prisma.ClassesCreateWithoutInstitutionInput, Prisma.ClassesUncheckedCreateWithoutInstitutionInput> | Prisma.ClassesCreateWithoutInstitutionInput[] | Prisma.ClassesUncheckedCreateWithoutInstitutionInput[]
+  connectOrCreate?: Prisma.ClassesCreateOrConnectWithoutInstitutionInput | Prisma.ClassesCreateOrConnectWithoutInstitutionInput[]
+  upsert?: Prisma.ClassesUpsertWithWhereUniqueWithoutInstitutionInput | Prisma.ClassesUpsertWithWhereUniqueWithoutInstitutionInput[]
+  createMany?: Prisma.ClassesCreateManyInstitutionInputEnvelope
+  set?: Prisma.ClassesWhereUniqueInput | Prisma.ClassesWhereUniqueInput[]
+  disconnect?: Prisma.ClassesWhereUniqueInput | Prisma.ClassesWhereUniqueInput[]
+  delete?: Prisma.ClassesWhereUniqueInput | Prisma.ClassesWhereUniqueInput[]
+  connect?: Prisma.ClassesWhereUniqueInput | Prisma.ClassesWhereUniqueInput[]
+  update?: Prisma.ClassesUpdateWithWhereUniqueWithoutInstitutionInput | Prisma.ClassesUpdateWithWhereUniqueWithoutInstitutionInput[]
+  updateMany?: Prisma.ClassesUpdateManyWithWhereWithoutInstitutionInput | Prisma.ClassesUpdateManyWithWhereWithoutInstitutionInput[]
+  deleteMany?: Prisma.ClassesScalarWhereInput | Prisma.ClassesScalarWhereInput[]
+}
+
+export type ClassesUncheckedUpdateManyWithoutInstitutionNestedInput = {
+  create?: Prisma.XOR<Prisma.ClassesCreateWithoutInstitutionInput, Prisma.ClassesUncheckedCreateWithoutInstitutionInput> | Prisma.ClassesCreateWithoutInstitutionInput[] | Prisma.ClassesUncheckedCreateWithoutInstitutionInput[]
+  connectOrCreate?: Prisma.ClassesCreateOrConnectWithoutInstitutionInput | Prisma.ClassesCreateOrConnectWithoutInstitutionInput[]
+  upsert?: Prisma.ClassesUpsertWithWhereUniqueWithoutInstitutionInput | Prisma.ClassesUpsertWithWhereUniqueWithoutInstitutionInput[]
+  createMany?: Prisma.ClassesCreateManyInstitutionInputEnvelope
+  set?: Prisma.ClassesWhereUniqueInput | Prisma.ClassesWhereUniqueInput[]
+  disconnect?: Prisma.ClassesWhereUniqueInput | Prisma.ClassesWhereUniqueInput[]
+  delete?: Prisma.ClassesWhereUniqueInput | Prisma.ClassesWhereUniqueInput[]
+  connect?: Prisma.ClassesWhereUniqueInput | Prisma.ClassesWhereUniqueInput[]
+  update?: Prisma.ClassesUpdateWithWhereUniqueWithoutInstitutionInput | Prisma.ClassesUpdateWithWhereUniqueWithoutInstitutionInput[]
+  updateMany?: Prisma.ClassesUpdateManyWithWhereWithoutInstitutionInput | Prisma.ClassesUpdateManyWithWhereWithoutInstitutionInput[]
+  deleteMany?: Prisma.ClassesScalarWhereInput | Prisma.ClassesScalarWhereInput[]
+}
+
 export type ClassesCreateWithoutGroupInput = {
   uid?: string
   date: Date | string
@@ -573,6 +639,7 @@ export type ClassesCreateWithoutGroupInput = {
   updatedAt?: Date | string
   schedule?: Prisma.ScheduleCreateNestedOneWithoutClassesInput
   attendance?: Prisma.AttendanceCreateNestedManyWithoutClassInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutClassesInput
 }
 
 export type ClassesUncheckedCreateWithoutGroupInput = {
@@ -584,6 +651,7 @@ export type ClassesUncheckedCreateWithoutGroupInput = {
   topic?: string | null
   review?: string | null
   isActive?: boolean
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutClassInput
@@ -628,6 +696,7 @@ export type ClassesScalarWhereInput = {
   topic?: Prisma.StringNullableFilter<"Classes"> | string | null
   review?: Prisma.StringNullableFilter<"Classes"> | string | null
   isActive?: Prisma.BoolFilter<"Classes"> | boolean
+  institutionId?: Prisma.UuidFilter<"Classes"> | string
   createdAt?: Prisma.DateTimeFilter<"Classes"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Classes"> | Date | string
 }
@@ -644,6 +713,7 @@ export type ClassesCreateWithoutScheduleInput = {
   updatedAt?: Date | string
   group: Prisma.GroupsCreateNestedOneWithoutClassesInput
   attendance?: Prisma.AttendanceCreateNestedManyWithoutClassInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutClassesInput
 }
 
 export type ClassesUncheckedCreateWithoutScheduleInput = {
@@ -655,6 +725,7 @@ export type ClassesUncheckedCreateWithoutScheduleInput = {
   topic?: string | null
   review?: string | null
   isActive?: boolean
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutClassInput
@@ -698,6 +769,7 @@ export type ClassesCreateWithoutAttendanceInput = {
   updatedAt?: Date | string
   group: Prisma.GroupsCreateNestedOneWithoutClassesInput
   schedule?: Prisma.ScheduleCreateNestedOneWithoutClassesInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutClassesInput
 }
 
 export type ClassesUncheckedCreateWithoutAttendanceInput = {
@@ -710,6 +782,7 @@ export type ClassesUncheckedCreateWithoutAttendanceInput = {
   topic?: string | null
   review?: string | null
   isActive?: boolean
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -742,6 +815,7 @@ export type ClassesUpdateWithoutAttendanceInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   group?: Prisma.GroupsUpdateOneRequiredWithoutClassesNestedInput
   schedule?: Prisma.ScheduleUpdateOneWithoutClassesNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutClassesNestedInput
 }
 
 export type ClassesUncheckedUpdateWithoutAttendanceInput = {
@@ -754,8 +828,65 @@ export type ClassesUncheckedUpdateWithoutAttendanceInput = {
   topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   review?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ClassesCreateWithoutInstitutionInput = {
+  uid?: string
+  date: Date | string
+  startTime: string
+  endTime: string
+  topic?: string | null
+  review?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  group: Prisma.GroupsCreateNestedOneWithoutClassesInput
+  schedule?: Prisma.ScheduleCreateNestedOneWithoutClassesInput
+  attendance?: Prisma.AttendanceCreateNestedManyWithoutClassInput
+}
+
+export type ClassesUncheckedCreateWithoutInstitutionInput = {
+  uid?: string
+  groupId: string
+  scheduleId?: string | null
+  date: Date | string
+  startTime: string
+  endTime: string
+  topic?: string | null
+  review?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  attendance?: Prisma.AttendanceUncheckedCreateNestedManyWithoutClassInput
+}
+
+export type ClassesCreateOrConnectWithoutInstitutionInput = {
+  where: Prisma.ClassesWhereUniqueInput
+  create: Prisma.XOR<Prisma.ClassesCreateWithoutInstitutionInput, Prisma.ClassesUncheckedCreateWithoutInstitutionInput>
+}
+
+export type ClassesCreateManyInstitutionInputEnvelope = {
+  data: Prisma.ClassesCreateManyInstitutionInput | Prisma.ClassesCreateManyInstitutionInput[]
+  skipDuplicates?: boolean
+}
+
+export type ClassesUpsertWithWhereUniqueWithoutInstitutionInput = {
+  where: Prisma.ClassesWhereUniqueInput
+  update: Prisma.XOR<Prisma.ClassesUpdateWithoutInstitutionInput, Prisma.ClassesUncheckedUpdateWithoutInstitutionInput>
+  create: Prisma.XOR<Prisma.ClassesCreateWithoutInstitutionInput, Prisma.ClassesUncheckedCreateWithoutInstitutionInput>
+}
+
+export type ClassesUpdateWithWhereUniqueWithoutInstitutionInput = {
+  where: Prisma.ClassesWhereUniqueInput
+  data: Prisma.XOR<Prisma.ClassesUpdateWithoutInstitutionInput, Prisma.ClassesUncheckedUpdateWithoutInstitutionInput>
+}
+
+export type ClassesUpdateManyWithWhereWithoutInstitutionInput = {
+  where: Prisma.ClassesScalarWhereInput
+  data: Prisma.XOR<Prisma.ClassesUpdateManyMutationInput, Prisma.ClassesUncheckedUpdateManyWithoutInstitutionInput>
 }
 
 export type ClassesCreateManyGroupInput = {
@@ -767,6 +898,7 @@ export type ClassesCreateManyGroupInput = {
   topic?: string | null
   review?: string | null
   isActive?: boolean
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -783,6 +915,7 @@ export type ClassesUpdateWithoutGroupInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   schedule?: Prisma.ScheduleUpdateOneWithoutClassesNestedInput
   attendance?: Prisma.AttendanceUpdateManyWithoutClassNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutClassesNestedInput
 }
 
 export type ClassesUncheckedUpdateWithoutGroupInput = {
@@ -794,6 +927,7 @@ export type ClassesUncheckedUpdateWithoutGroupInput = {
   topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   review?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutClassNestedInput
@@ -808,6 +942,7 @@ export type ClassesUncheckedUpdateManyWithoutGroupInput = {
   topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   review?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -821,6 +956,7 @@ export type ClassesCreateManyScheduleInput = {
   topic?: string | null
   review?: string | null
   isActive?: boolean
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -837,6 +973,7 @@ export type ClassesUpdateWithoutScheduleInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   group?: Prisma.GroupsUpdateOneRequiredWithoutClassesNestedInput
   attendance?: Prisma.AttendanceUpdateManyWithoutClassNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutClassesNestedInput
 }
 
 export type ClassesUncheckedUpdateWithoutScheduleInput = {
@@ -848,6 +985,7 @@ export type ClassesUncheckedUpdateWithoutScheduleInput = {
   topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   review?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutClassNestedInput
@@ -856,6 +994,65 @@ export type ClassesUncheckedUpdateWithoutScheduleInput = {
 export type ClassesUncheckedUpdateManyWithoutScheduleInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.StringFieldUpdateOperationsInput | string
+  endTime?: Prisma.StringFieldUpdateOperationsInput | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  review?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type ClassesCreateManyInstitutionInput = {
+  uid?: string
+  groupId: string
+  scheduleId?: string | null
+  date: Date | string
+  startTime: string
+  endTime: string
+  topic?: string | null
+  review?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ClassesUpdateWithoutInstitutionInput = {
+  uid?: Prisma.StringFieldUpdateOperationsInput | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.StringFieldUpdateOperationsInput | string
+  endTime?: Prisma.StringFieldUpdateOperationsInput | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  review?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  group?: Prisma.GroupsUpdateOneRequiredWithoutClassesNestedInput
+  schedule?: Prisma.ScheduleUpdateOneWithoutClassesNestedInput
+  attendance?: Prisma.AttendanceUpdateManyWithoutClassNestedInput
+}
+
+export type ClassesUncheckedUpdateWithoutInstitutionInput = {
+  uid?: Prisma.StringFieldUpdateOperationsInput | string
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  startTime?: Prisma.StringFieldUpdateOperationsInput | string
+  endTime?: Prisma.StringFieldUpdateOperationsInput | string
+  topic?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  review?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  attendance?: Prisma.AttendanceUncheckedUpdateManyWithoutClassNestedInput
+}
+
+export type ClassesUncheckedUpdateManyWithoutInstitutionInput = {
+  uid?: Prisma.StringFieldUpdateOperationsInput | string
+  groupId?: Prisma.StringFieldUpdateOperationsInput | string
+  scheduleId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startTime?: Prisma.StringFieldUpdateOperationsInput | string
   endTime?: Prisma.StringFieldUpdateOperationsInput | string
@@ -907,11 +1104,13 @@ export type ClassesSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   topic?: boolean
   review?: boolean
   isActive?: boolean
+  institutionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   group?: boolean | Prisma.GroupsDefaultArgs<ExtArgs>
   schedule?: boolean | Prisma.Classes$scheduleArgs<ExtArgs>
   attendance?: boolean | Prisma.Classes$attendanceArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.ClassesCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["classes"]>
 
@@ -925,10 +1124,12 @@ export type ClassesSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   topic?: boolean
   review?: boolean
   isActive?: boolean
+  institutionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   group?: boolean | Prisma.GroupsDefaultArgs<ExtArgs>
   schedule?: boolean | Prisma.Classes$scheduleArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["classes"]>
 
 export type ClassesSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -941,10 +1142,12 @@ export type ClassesSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   topic?: boolean
   review?: boolean
   isActive?: boolean
+  institutionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   group?: boolean | Prisma.GroupsDefaultArgs<ExtArgs>
   schedule?: boolean | Prisma.Classes$scheduleArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["classes"]>
 
 export type ClassesSelectScalar = {
@@ -957,24 +1160,28 @@ export type ClassesSelectScalar = {
   topic?: boolean
   review?: boolean
   isActive?: boolean
+  institutionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ClassesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "groupId" | "scheduleId" | "date" | "startTime" | "endTime" | "topic" | "review" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["classes"]>
+export type ClassesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "groupId" | "scheduleId" | "date" | "startTime" | "endTime" | "topic" | "review" | "isActive" | "institutionId" | "createdAt" | "updatedAt", ExtArgs["result"]["classes"]>
 export type ClassesInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   group?: boolean | Prisma.GroupsDefaultArgs<ExtArgs>
   schedule?: boolean | Prisma.Classes$scheduleArgs<ExtArgs>
   attendance?: boolean | Prisma.Classes$attendanceArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.ClassesCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ClassesIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   group?: boolean | Prisma.GroupsDefaultArgs<ExtArgs>
   schedule?: boolean | Prisma.Classes$scheduleArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
 }
 export type ClassesIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   group?: boolean | Prisma.GroupsDefaultArgs<ExtArgs>
   schedule?: boolean | Prisma.Classes$scheduleArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
 }
 
 export type $ClassesPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -983,6 +1190,7 @@ export type $ClassesPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     group: Prisma.$GroupsPayload<ExtArgs>
     schedule: Prisma.$SchedulePayload<ExtArgs> | null
     attendance: Prisma.$AttendancePayload<ExtArgs>[]
+    institution: Prisma.$InstitutionPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     uid: string
@@ -994,6 +1202,7 @@ export type $ClassesPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     topic: string | null
     review: string | null
     isActive: boolean
+    institutionId: string
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["classes"]>
@@ -1393,6 +1602,7 @@ export interface Prisma__ClassesClient<T, Null = never, ExtArgs extends runtime.
   group<T extends Prisma.GroupsDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GroupsDefaultArgs<ExtArgs>>): Prisma.Prisma__GroupsClient<runtime.Types.Result.GetResult<Prisma.$GroupsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   schedule<T extends Prisma.Classes$scheduleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Classes$scheduleArgs<ExtArgs>>): Prisma.Prisma__ScheduleClient<runtime.Types.Result.GetResult<Prisma.$SchedulePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   attendance<T extends Prisma.Classes$attendanceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Classes$attendanceArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AttendancePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  institution<T extends Prisma.InstitutionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InstitutionDefaultArgs<ExtArgs>>): Prisma.Prisma__InstitutionClient<runtime.Types.Result.GetResult<Prisma.$InstitutionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1431,6 +1641,7 @@ export interface ClassesFieldRefs {
   readonly topic: Prisma.FieldRef<"Classes", 'String'>
   readonly review: Prisma.FieldRef<"Classes", 'String'>
   readonly isActive: Prisma.FieldRef<"Classes", 'Boolean'>
+  readonly institutionId: Prisma.FieldRef<"Classes", 'String'>
   readonly createdAt: Prisma.FieldRef<"Classes", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Classes", 'DateTime'>
 }
