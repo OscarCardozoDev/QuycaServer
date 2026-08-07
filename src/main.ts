@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
+import { PrismaService } from './prisma/prisma.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -35,6 +36,15 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);
+
+  // Se usa una query real (SELECT 1) en lugar de $connect() porque, con el
+  // driver adapter de pg (@prisma/adapter-pg), $connect() es un no-op: no
+  // abre ningun socket y por lo tanto no puede detectar una base de datos
+  // inalcanzable. El pool subyacente solo conecta de forma perezosa en la
+  // primera query real. Si se "simplifica" esto de vuelta a $connect(), se
+  // pierde silenciosamente la validacion fail-fast al arrancar.
+  const prisma = app.get(PrismaService);
+  await prisma.$queryRaw`SELECT 1`;
 
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 }
