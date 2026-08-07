@@ -23,7 +23,7 @@ export interface GroupStudentParams {
 
 export interface CreateGroupUseCase {
   name: string;
-  profesorId: string;
+  profesorId?: string;
   institutionId: string;
   categoryId: string;
   users?: string[];

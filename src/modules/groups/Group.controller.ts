@@ -15,7 +15,6 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CurrentUser } from 'src/decorators/currentUser';
 import { GroupService } from './Group.service';
 import { AuthGuard } from 'src/middleware/jwt.guard';
-import { Roles } from 'src/decorators/roles.decorator';
 import {
   GroupParamsDto,
   GetGroupsDto,
@@ -35,13 +34,13 @@ import { Institution } from 'src/decorators/institution.decorator';
 import type { Institution as InstitutionModel, SubscriptionPlan } from 'src/generated/prisma/client';
 
 @ApiTags('groups')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, TenantGuard)
 @Controller('groups')
 export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 
   @Post('create')
-  @UseGuards(TenantGuard, ContextRoleGuard, FeatureGuard)
+  @UseGuards(ContextRoleGuard, FeatureGuard)
   @RequireContextRole('rector', 'coordinator')
   @RequireFeature('groups_create')
   @ApiOperation({ summary: 'Crear grupo' })
@@ -56,13 +55,9 @@ export class GroupController {
   }
 
   @Get('get')
-  @UseGuards(TenantGuard)
   @ApiOperation({ summary: 'Obtener todos los grupos' })
-  async getAll(
-    @Query() query: GetGroupsDto,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
-  ) {
-    return this.groupService.getAll({ ...query, institutionId: institution.uid });
+  async getAll(@Query() query: GetGroupsDto) {
+    return this.groupService.getAll(query);
   }
 
   @Get('get/:uid')
@@ -78,7 +73,8 @@ export class GroupController {
   }
 
   @Put('update/:uid')
-  @Roles('admin')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @ApiOperation({ summary: 'Actualizar grupo' })
   async update(@Param() params: GroupParamsDto, @Body() body: UpdateGroupDto) {
     return this.groupService.updateGroupUseCase({
@@ -91,7 +87,8 @@ export class GroupController {
   }
 
   @Delete('delete/:uid')
-  @Roles('admin')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @ApiOperation({ summary: 'Eliminar grupo' })
   async delete(@Param() params: GroupParamsDto) {
     await this.groupService.deleteGroup(params.uid);
@@ -99,7 +96,8 @@ export class GroupController {
   }
 
   @Patch('change-profesor/:uid')
-  @Roles('admin')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @ApiOperation({ summary: 'Cambiar el profesor asignado al grupo' })
   async changeProfesor(
     @Param() params: GroupParamsDto,
@@ -131,7 +129,8 @@ export class GroupController {
   }
 
   @Delete('student/delete/:groupId')
-  @Roles('admin', 'professor')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator', 'institutional')
   @ApiOperation({ summary: 'Eliminar un estudiante del grupo' })
   async deleteStudent(
     @Param('groupId') groupId: string,
@@ -145,7 +144,8 @@ export class GroupController {
   }
 
   @Delete('student/deleteAll/:groupId')
-  @Roles('admin')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @ApiOperation({ summary: 'Eliminar todos los estudiantes del grupo' })
   async deleteAllStudents(@Param('groupId') groupId: string) {
     await this.groupService.deleteStudentsByGroup(groupId);
@@ -153,7 +153,8 @@ export class GroupController {
   }
 
   @Put('student/update/:groupId')
-  @Roles('admin', 'professor')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator', 'institutional')
   @ApiOperation({ summary: 'Actualizar lista de estudiantes del grupo' })
   async updateStudents(
     @Param('groupId') groupId: string,

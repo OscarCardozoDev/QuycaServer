@@ -42,13 +42,15 @@ export class GroupService {
         select: { uid: true },
       });
 
-      // 2️⃣ Profesor como miembro del grupo
-      await tx.usersGroups.create({
-        data: {
-          userId: profesorId,
-          groupId: group.uid,
-        },
-      });
+      // 2️⃣ Profesor como miembro del grupo (si vino)
+      if (profesorId) {
+        await tx.usersGroups.create({
+          data: {
+            userId: profesorId,
+            groupId: group.uid,
+          },
+        });
+      }
 
       // 3️⃣ Usuarios iniciales
       if (users?.length) {
@@ -69,10 +71,9 @@ export class GroupService {
    * GET ALL
    * ========================= */
   async getAll(options: GetGroupsOptions = {}) {
-    const { page = 1, limit = 10, institutionId } = options;
+    const { page = 1, limit = 10 } = options;
 
     return this.prisma.groups.findMany({
-      where: institutionId ? { institutionId } : undefined,
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { createdAt: 'desc' },
@@ -312,14 +313,12 @@ export class GroupService {
    * GET ALL STUDENTS BY GROUP
    * ========================= */
   async getAllStudentsByGroup(groupId: string) {
-    const studentTypeId = this.configService.get<string>(
-      'config.roles.student',
-    );
+    const userTypeId = this.configService.get<string>('config.roles.user');
 
     return this.prisma.usersGroups.findMany({
       where: {
         groupId,
-        user: { userTypeId: studentTypeId },
+        user: { userTypeId },
       },
       select: {
         user: {

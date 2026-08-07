@@ -4,6 +4,7 @@ import { Transform } from 'class-transformer';
 
 export class GroupParamsDto {
   @ApiProperty({ example: 'uuid-del-grupo' })
+  @IsString()
   uid: string;
 }
 
@@ -24,13 +25,10 @@ export class CreateGroupDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ example: 'uuid-del-profesor' })
+  @ApiPropertyOptional({ example: 'uuid-del-profesor' })
+  @IsOptional()
   @IsString()
-  profesorId: string;
-
-  @ApiProperty({ example: 'uuid-de-institution' })
-  @IsString()
-  institutionId: string;
+  profesorId?: string;
 
   @ApiProperty({ example: 'uuid-de-categoria' })
   @IsString()
