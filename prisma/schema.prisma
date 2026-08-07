@@ -73,7 +73,7 @@ enum RequestStatus {
 
 model UserTypes {
   uid        String   @id @default(uuid()) @db.Uuid
-  name       String   @db.VarChar(30)
+  name       String   @db.VarChar(30) @unique
 
   users      Users[]
 

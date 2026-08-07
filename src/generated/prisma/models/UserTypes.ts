@@ -187,14 +187,14 @@ export type UserTypesOrderByWithRelationInput = {
 
 export type UserTypesWhereUniqueInput = Prisma.AtLeast<{
   uid?: string
+  name?: string
   AND?: Prisma.UserTypesWhereInput | Prisma.UserTypesWhereInput[]
   OR?: Prisma.UserTypesWhereInput[]
   NOT?: Prisma.UserTypesWhereInput | Prisma.UserTypesWhereInput[]
-  name?: Prisma.StringFilter<"UserTypes"> | string
   createdAt?: Prisma.DateTimeFilter<"UserTypes"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"UserTypes"> | Date | string
   users?: Prisma.UsersListRelationFilter
-}, "uid">
+}, "uid" | "name">
 
 export type UserTypesOrderByWithAggregationInput = {
   uid?: Prisma.SortOrder
