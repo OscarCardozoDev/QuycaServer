@@ -80,7 +80,10 @@ describe('TenantGuard', () => {
 
   it('rechaza si la membresía está inactiva', async () => {
     prismaMock.institution.findUnique.mockResolvedValue(mockInstitution);
-    prismaMock.userInstitution.findUnique.mockResolvedValue(null);
+    prismaMock.userInstitution.findUnique.mockResolvedValue({
+      contextRole: 'rector',
+      isActive: false,
+    });
 
     await expect(guard.canActivate(makeContext())).rejects.toThrow(
       'User is not a member of this institution',
