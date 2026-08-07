@@ -1,6 +1,6 @@
 import { ForbiddenException } from '@nestjs/common';
 import { tenantStorage } from './tenant-context';
-import { SCOPED_MODELS, resolveTenantAction } from './tenant.extension';
+import { SCOPED_MODELS, resolveTenantAction, buildScopedArgs } from './tenant.extension';
 
 describe('SCOPED_MODELS', () => {
   it('incluye los 8 modelos scoped', () => {
@@ -51,5 +51,90 @@ describe('resolveTenantAction', () => {
     tenantStorage.run(store, () => {
       expect(() => resolveTenantAction('Groups')).toThrow(ForbiddenException);
     });
+  });
+});
+
+describe('buildScopedArgs', () => {
+  const inst = 'inst-a';
+
+  it('inyecta el where en findMany', () => {
+    const args = buildScopedArgs('findMany', { where: { isActive: true } }, inst);
+    expect(args.where).toEqual({
+      AND: [{ isActive: true }, { institutionId: inst }],
+    });
+  });
+
+  it('inyecta el where en findMany sin where previo', () => {
+    const args = buildScopedArgs('findMany', {}, inst);
+    expect(args.where).toEqual({ AND: [{}, { institutionId: inst }] });
+  });
+
+  it('inyecta el where en findUnique', () => {
+    const args = buildScopedArgs('findUnique', { where: { uid: 'g1' } }, inst);
+    expect(args.where).toEqual({
+      AND: [{ uid: 'g1' }, { institutionId: inst }],
+    });
+  });
+
+  it('inyecta institutionId en create', () => {
+    const args = buildScopedArgs('create', { data: { name: 'Grupo A' } }, inst);
+    expect(args.data).toEqual({ name: 'Grupo A', institutionId: inst });
+  });
+
+  it('SOBRESCRIBE un institutionId de otro tenant en create', () => {
+    const args = buildScopedArgs(
+      'create',
+      { data: { name: 'Grupo A', institutionId: 'inst-INTRUSA' } },
+      inst,
+    );
+    expect(args.data).toEqual({ name: 'Grupo A', institutionId: inst });
+  });
+
+  it('SOBRESCRIBE institutionId en cada fila de createMany', () => {
+    const args = buildScopedArgs(
+      'createMany',
+      { data: [{ name: 'A', institutionId: 'inst-INTRUSA' }, { name: 'B' }] },
+      inst,
+    );
+    expect(args.data).toEqual([
+      { name: 'A', institutionId: inst },
+      { name: 'B', institutionId: inst },
+    ]);
+  });
+
+  it('inyecta institutionId en cada fila de createMany', () => {
+    const args = buildScopedArgs('createMany', { data: [{ name: 'A' }, { name: 'B' }] }, inst);
+    expect(args.data).toEqual([
+      { name: 'A', institutionId: inst },
+      { name: 'B', institutionId: inst },
+    ]);
+  });
+
+  it('inyecta where y create en upsert', () => {
+    const args = buildScopedArgs(
+      'upsert',
+      { where: { uid: 'g1' }, create: { name: 'A' }, update: { name: 'B' } },
+      inst,
+    );
+    expect(args.where).toEqual({ AND: [{ uid: 'g1' }, { institutionId: inst }] });
+    expect(args.create).toEqual({ name: 'A', institutionId: inst });
+    expect(args.update).toEqual({ name: 'B' });
+  });
+
+  it('inyecta el where en delete', () => {
+    const args = buildScopedArgs('delete', { where: { uid: 'g1' } }, inst);
+    expect(args.where).toEqual({ AND: [{ uid: 'g1' }, { institutionId: inst }] });
+  });
+
+  it('inyecta el where en updateMany', () => {
+    const args = buildScopedArgs('updateMany', { where: {}, data: { isActive: false } }, inst);
+    expect(args.where).toEqual({ AND: [{}, { institutionId: inst }] });
+    expect(args.data).toEqual({ isActive: false });
+  });
+
+  it('no muta el objeto original', () => {
+    const original = { where: { uid: 'g1' } };
+    buildScopedArgs('findUnique', original, inst);
+    expect(original.where).toEqual({ uid: 'g1' });
   });
 });
