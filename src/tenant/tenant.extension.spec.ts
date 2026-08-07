@@ -1,6 +1,11 @@
 import { ForbiddenException } from '@nestjs/common';
 import { tenantStorage } from './tenant-context';
-import { SCOPED_MODELS, resolveTenantAction, buildScopedArgs } from './tenant.extension';
+import {
+  SCOPED_MODELS,
+  resolveTenantAction,
+  buildScopedArgs,
+  resolveScopedArgs,
+} from './tenant.extension';
 
 describe('SCOPED_MODELS', () => {
   it('incluye los 8 modelos scoped', () => {
@@ -136,5 +141,84 @@ describe('buildScopedArgs', () => {
     const original = { where: { uid: 'g1' } };
     buildScopedArgs('findUnique', original, inst);
     expect(original.where).toEqual({ uid: 'g1' });
+  });
+
+  it('inyecta institutionId en cada fila de createManyAndReturn', () => {
+    const args = buildScopedArgs(
+      'createManyAndReturn',
+      { data: [{ name: 'A' }, { name: 'B' }] },
+      inst,
+    );
+    expect(args.data).toEqual([
+      { name: 'A', institutionId: inst },
+      { name: 'B', institutionId: inst },
+    ]);
+  });
+
+  it('SOBRESCRIBE institutionId en cada fila de createManyAndReturn', () => {
+    const args = buildScopedArgs(
+      'createManyAndReturn',
+      { data: [{ name: 'A', institutionId: 'inst-INTRUSA' }, { name: 'B' }] },
+      inst,
+    );
+    expect(args.data).toEqual([
+      { name: 'A', institutionId: inst },
+      { name: 'B', institutionId: inst },
+    ]);
+  });
+
+  it('inyecta el where en updateManyAndReturn', () => {
+    const args = buildScopedArgs(
+      'updateManyAndReturn',
+      { where: {}, data: { isActive: false } },
+      inst,
+    );
+    expect(args.where).toEqual({ AND: [{}, { institutionId: inst }] });
+    expect(args.data).toEqual({ isActive: false });
+  });
+
+  it('lanza para una operación desconocida', () => {
+    expect(() => buildScopedArgs('someFutureOp', {}, inst, 'Groups')).toThrow(
+      /someFutureOp.*Groups/,
+    );
+  });
+});
+
+describe('resolveScopedArgs', () => {
+  it('lanza cuando la operación es desconocida en un modelo scoped con tenant resuelto', () => {
+    const store = { institutionId: 'inst-a', bypass: false };
+    tenantStorage.run(store, () => {
+      expect(() => resolveScopedArgs('Groups', 'someFutureOp', {})).toThrow(
+        /someFutureOp.*Groups/,
+      );
+    });
+  });
+
+  it('no lanza y deja los args intactos para una operación desconocida en un modelo no scoped', () => {
+    const args = { foo: 'bar' };
+    expect(resolveScopedArgs('Users', 'someFutureOp', args)).toBe(args);
+  });
+
+  it('no lanza y deja los args intactos cuando no hay store (seed/script CLI)', () => {
+    const args = { foo: 'bar' };
+    expect(resolveScopedArgs('Groups', 'someFutureOp', args)).toBe(args);
+  });
+
+  it('no lanza y deja los args intactos bajo bypass', () => {
+    const store = { institutionId: 'inst-a', bypass: true };
+    const args = { foo: 'bar' };
+    tenantStorage.run(store, () => {
+      expect(resolveScopedArgs('Groups', 'someFutureOp', args)).toBe(args);
+    });
+  });
+
+  it('reescribe los args para una operación conocida en un modelo scoped', () => {
+    const store = { institutionId: 'inst-a', bypass: false };
+    tenantStorage.run(store, () => {
+      const args = resolveScopedArgs('Groups', 'findMany', { where: { isActive: true } });
+      expect(args.where).toEqual({
+        AND: [{ isActive: true }, { institutionId: 'inst-a' }],
+      });
+    });
   });
 });
