@@ -277,15 +277,22 @@ export class UserService {
     if (!membership) throw new NotFoundException('User not found');
   }
 
-  async updateUser(
+  // ─── updateUser: self-service vs. administrative ──────────────────────
+  //
+  // Split into two named methods rather than one method with an optional
+  // institutionId. An optional parameter is opt-in: nothing stops a future
+  // call site from omitting it and silently skipping the tenant check —
+  // exactly the failure mode that already bit this project five times in
+  // groups and six more in events (caller discipline, not the type system,
+  // was the only thing enforcing scoping). Splitting makes the two shapes
+  // impossible to confuse: updateOwnUser has no institutionId parameter to
+  // forget (structurally can't touch another tenant's user — uid always
+  // comes from the caller's own JWT), and updateUserAsAdmin's institutionId
+  // is required, so a call site that omits it fails to compile.
+  private async applyUserUpdate(
     uid: string,
     userData: UpdateUserDto,
-    institutionId?: string,
   ): Promise<UserUidResult> {
-    if (institutionId) {
-      await this.assertMemberOfInstitution(uid, institutionId);
-    }
-
     const existing = await this.prismaService.users.findUnique({
       where: { uid },
       select: { uid: true },
@@ -312,15 +319,29 @@ export class UserService {
     return { uid: updated.uid };
   }
 
-  async updateUserPhoto(
+  /** Self-service: uid is always the caller's own, from the JWT. */
+  async updateOwnUser(
+    uid: string,
+    userData: UpdateUserDto,
+  ): Promise<UserUidResult> {
+    return this.applyUserUpdate(uid, userData);
+  }
+
+  /** Administrative: uid is an arbitrary target. institutionId is required. */
+  async updateUserAsAdmin(
+    uid: string,
+    userData: UpdateUserDto,
+    institutionId: string,
+  ): Promise<UserUidResult> {
+    await this.assertMemberOfInstitution(uid, institutionId);
+    return this.applyUserUpdate(uid, userData);
+  }
+
+  // ─── updateUserPhoto: self-service vs. administrative ─────────────────
+  private async applyUserPhotoUpdate(
     uid: string,
     photo: { base64: string; name: string; folder: string },
-    institutionId?: string,
   ): Promise<UserUidResult> {
-    if (institutionId) {
-      await this.assertMemberOfInstitution(uid, institutionId);
-    }
-
     const existing = await this.prismaService.users.findUnique({
       where: { uid },
       select: { uid: true, photoId: true },
@@ -347,14 +368,26 @@ export class UserService {
     return { uid: existing.uid, photo: { uid: created.uid } };
   }
 
-  async deactivateUser(
+  /** Self-service: uid is always the caller's own, from the JWT. */
+  async updateOwnUserPhoto(
     uid: string,
-    institutionId?: string,
+    photo: { base64: string; name: string; folder: string },
   ): Promise<UserUidResult> {
-    if (institutionId) {
-      await this.assertMemberOfInstitution(uid, institutionId);
-    }
+    return this.applyUserPhotoUpdate(uid, photo);
+  }
 
+  /** Administrative: uid is an arbitrary target. institutionId is required. */
+  async updateUserPhotoAsAdmin(
+    uid: string,
+    photo: { base64: string; name: string; folder: string },
+    institutionId: string,
+  ): Promise<UserUidResult> {
+    await this.assertMemberOfInstitution(uid, institutionId);
+    return this.applyUserPhotoUpdate(uid, photo);
+  }
+
+  // ─── deactivateUser: self-service vs. administrative ───────────────────
+  private async applyDeactivation(uid: string): Promise<UserUidResult> {
     const user = await this.prismaService.users.findUnique({
       where: { uid },
       select: { uid: true },
@@ -369,13 +402,27 @@ export class UserService {
     return { uid: updated.uid };
   }
 
-  async reactivateUser(
+  /** Self-service: uid is always the caller's own, from the JWT. */
+  async deactivateOwnUser(uid: string): Promise<UserUidResult> {
+    return this.applyDeactivation(uid);
+  }
+
+  /** Administrative: uid is an arbitrary target. institutionId is required. */
+  async deactivateUserAsAdmin(
     uid: string,
-    institutionId?: string,
+    institutionId: string,
   ): Promise<UserUidResult> {
-    if (institutionId) {
-      await this.assertMemberOfInstitution(uid, institutionId);
-    }
+    await this.assertMemberOfInstitution(uid, institutionId);
+    return this.applyDeactivation(uid);
+  }
+
+  // ─── reactivateUser: administrative only — no self-service route exists ──
+  /** Administrative: uid is an arbitrary target. institutionId is required. */
+  async reactivateUserAsAdmin(
+    uid: string,
+    institutionId: string,
+  ): Promise<UserUidResult> {
+    await this.assertMemberOfInstitution(uid, institutionId);
 
     const user = await this.prismaService.users.findUnique({
       where: { uid },

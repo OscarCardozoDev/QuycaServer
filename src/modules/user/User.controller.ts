@@ -121,7 +121,7 @@ export class UserController {
     @CurrentUser() user: JwtPayload,
     @Body() body: UpdateUserDto,
   ) {
-    return this.userService.updateUser(user.uid, body);
+    return this.userService.updateOwnUser(user.uid, body);
   }
 
   @Put(':uid')
@@ -134,7 +134,7 @@ export class UserController {
     @Body() body: UpdateUserDto,
     @Institution() institution: { uid: string },
   ) {
-    return this.userService.updateUser(uid, body, institution.uid);
+    return this.userService.updateUserAsAdmin(uid, body, institution.uid);
   }
 
   @Patch('photo')
@@ -145,7 +145,7 @@ export class UserController {
     @CurrentUser() user: JwtPayload,
     @Body() body: UpdateUserPhotoDto,
   ) {
-    return this.userService.updateUserPhoto(user.uid, body);
+    return this.userService.updateOwnUserPhoto(user.uid, body);
   }
 
   @Patch(':uid/photo')
@@ -158,7 +158,7 @@ export class UserController {
     @Body() body: UpdateUserPhotoDto,
     @Institution() institution: { uid: string },
   ) {
-    return this.userService.updateUserPhoto(uid, body, institution.uid);
+    return this.userService.updateUserPhotoAsAdmin(uid, body, institution.uid);
   }
 
   @Patch('deactivate')
@@ -166,7 +166,7 @@ export class UserController {
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async deactivateCurrentUser(@CurrentUser() user: JwtPayload) {
-    return this.userService.deactivateUser(user.uid);
+    return this.userService.deactivateOwnUser(user.uid);
   }
 
   @Patch(':uid/deactivate')
@@ -178,7 +178,7 @@ export class UserController {
     @Param('uid') uid: string,
     @Institution() institution: { uid: string },
   ) {
-    return this.userService.deactivateUser(uid, institution.uid);
+    return this.userService.deactivateUserAsAdmin(uid, institution.uid);
   }
 
   @Patch(':uid/reactivate')
@@ -190,6 +190,6 @@ export class UserController {
     @Param('uid') uid: string,
     @Institution() institution: { uid: string },
   ) {
-    return this.userService.reactivateUser(uid, institution.uid);
+    return this.userService.reactivateUserAsAdmin(uid, institution.uid);
   }
 }

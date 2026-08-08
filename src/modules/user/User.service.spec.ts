@@ -15,7 +15,7 @@ const mockPhotos = {
   deletePhotoUseCase: jest.fn(),
 };
 
-describe('UserService.updateUserPhoto', () => {
+describe('UserService.updateOwnUserPhoto', () => {
   let service: UserService;
 
   beforeEach(async () => {
@@ -36,7 +36,7 @@ describe('UserService.updateUserPhoto', () => {
   it('throws NotFoundException when user does not exist', async () => {
     mockPrisma.users.findUnique.mockResolvedValue(null);
     await expect(
-      service.updateUserPhoto('u1', { base64: 'b64', name: 'img.jpg', folder: 'users' }),
+      service.updateOwnUserPhoto('u1', { base64: 'b64', name: 'img.jpg', folder: 'users' }),
     ).rejects.toThrow(NotFoundException);
   });
 
@@ -46,7 +46,7 @@ describe('UserService.updateUserPhoto', () => {
     mockPrisma.users.update.mockResolvedValue({ uid: 'u1' });
     mockPhotos.deletePhotoUseCase.mockResolvedValue(undefined);
 
-    await service.updateUserPhoto('u1', { base64: 'b64', name: 'img.jpg', folder: 'users' });
+    await service.updateOwnUserPhoto('u1', { base64: 'b64', name: 'img.jpg', folder: 'users' });
 
     expect(mockPhotos.deletePhotoUseCase).toHaveBeenCalledWith('photo-old');
   });
@@ -56,16 +56,23 @@ describe('UserService.updateUserPhoto', () => {
     mockPhotos.createPhotoUseCase.mockResolvedValue(NEW_PHOTO);
     mockPrisma.users.update.mockResolvedValue({ uid: 'u1' });
 
-    await service.updateUserPhoto('u1', { base64: 'b64', name: 'img.jpg', folder: 'users' });
+    await service.updateOwnUserPhoto('u1', { base64: 'b64', name: 'img.jpg', folder: 'users' });
 
     expect(mockPhotos.deletePhotoUseCase).not.toHaveBeenCalled();
   });
 });
 
-// Task 11 fix round 2: PUT /user/:uid and PATCH /user/:uid/deactivate must not let a
-// rector/coordinator of one institution act on a user who isn't an active member of
-// their own institution. See task-11-report.md, Finding A, for the exploit chain this
-// closes (self-register an institution → become its rector → reach any user platform-wide).
+// Task 11 fix round 2: the *AsAdmin methods must not let a rector/coordinator of one
+// institution act on a user who isn't an active member of their own institution. See
+// task-11-report.md, Finding A, for the exploit chain this closes (self-register an
+// institution → become its rector → reach any user platform-wide).
+//
+// Fix round 3: institutionId used to be an optional parameter on shared methods, which
+// meant a future call site could omit it and silently skip the check — caller discipline,
+// not the type system, was the only thing enforcing scoping (exactly the failure mode that
+// already bit groups and events). Split into named self-service (updateOwnUser,
+// updateOwnUserPhoto, deactivateOwnUser — no institutionId parameter to forget) vs.
+// administrative (*AsAdmin — institutionId required, won't compile without it) methods.
 describe('UserService — institution-scoped admin actions', () => {
   let service: UserService;
 
@@ -82,12 +89,12 @@ describe('UserService — institution-scoped admin actions', () => {
     jest.clearAllMocks();
   });
 
-  describe('updateUser', () => {
+  describe('updateUserAsAdmin', () => {
     it('throws NotFoundException and issues no update when the target uid is not an active member of the active institution', async () => {
       mockPrisma.userInstitution.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.updateUser('other-uid', { name: 'Hacked' }, 'inst-active'),
+        service.updateUserAsAdmin('other-uid', { name: 'Hacked' }, 'inst-active'),
       ).rejects.toThrow(NotFoundException);
 
       expect(mockPrisma.userInstitution.findFirst).toHaveBeenCalledWith({
@@ -102,7 +109,7 @@ describe('UserService — institution-scoped admin actions', () => {
       mockPrisma.users.findUnique.mockResolvedValue({ uid: 'u1' });
       mockPrisma.users.update.mockResolvedValue({ uid: 'u1' });
 
-      const result = await service.updateUser('u1', { name: 'Juan' }, 'inst-active');
+      const result = await service.updateUserAsAdmin('u1', { name: 'Juan' }, 'inst-active');
 
       expect(result).toEqual({ uid: 'u1' });
       expect(mockPrisma.users.update).toHaveBeenCalledWith({
@@ -111,16 +118,18 @@ describe('UserService — institution-scoped admin actions', () => {
         select: { uid: true },
       });
     });
+  });
 
+  describe('updateOwnUser', () => {
     it('drops userTypeId even if present on the payload — cannot be used to change platform-level type', async () => {
       mockPrisma.users.findUnique.mockResolvedValue({ uid: 'u1' });
       mockPrisma.users.update.mockResolvedValue({ uid: 'u1' });
 
-      // No institutionId here on purpose: this is the self-service path
-      // (PUT /user/update), which never carries one. userTypeId isn't on
-      // UpdateUserDto anymore, so this cast simulates a caller bypassing
-      // the type system / DTO layer to smuggle it in anyway.
-      await service.updateUser('u1', {
+      // updateOwnUser has no institutionId parameter at all (self-service, uid is
+      // always the caller's own from the JWT). userTypeId isn't on UpdateUserDto
+      // anymore, so this cast simulates a caller bypassing the type system / DTO
+      // layer to smuggle it in anyway.
+      await service.updateOwnUser('u1', {
         name: 'Juan',
         userTypeId: '00000000-0000-4000-8000-000000000001',
       } as any);
@@ -133,12 +142,33 @@ describe('UserService — institution-scoped admin actions', () => {
     });
   });
 
-  describe('deactivateUser', () => {
+  describe('updateUserPhotoAsAdmin', () => {
     it('throws NotFoundException and issues no update when the target uid is not an active member of the active institution', async () => {
       mockPrisma.userInstitution.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.deactivateUser('other-uid', 'inst-active'),
+        service.updateUserPhotoAsAdmin(
+          'other-uid',
+          { base64: 'b64', name: 'img.jpg', folder: 'users' },
+          'inst-active',
+        ),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(mockPrisma.userInstitution.findFirst).toHaveBeenCalledWith({
+        where: { userId: 'other-uid', institutionId: 'inst-active', isActive: true },
+      });
+      expect(mockPrisma.users.findUnique).not.toHaveBeenCalled();
+      expect(mockPhotos.createPhotoUseCase).not.toHaveBeenCalled();
+      expect(mockPrisma.users.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('deactivateUserAsAdmin', () => {
+    it('throws NotFoundException and issues no update when the target uid is not an active member of the active institution', async () => {
+      mockPrisma.userInstitution.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.deactivateUserAsAdmin('other-uid', 'inst-active'),
       ).rejects.toThrow(NotFoundException);
 
       expect(mockPrisma.userInstitution.findFirst).toHaveBeenCalledWith({
@@ -153,7 +183,34 @@ describe('UserService — institution-scoped admin actions', () => {
       mockPrisma.users.findUnique.mockResolvedValue({ uid: 'u1' });
       mockPrisma.users.update.mockResolvedValue({ uid: 'u1' });
 
-      const result = await service.deactivateUser('u1', 'inst-active');
+      const result = await service.deactivateUserAsAdmin('u1', 'inst-active');
+
+      expect(result).toEqual({ uid: 'u1' });
+      expect(mockPrisma.users.update).toHaveBeenCalled();
+    });
+  });
+
+  describe('reactivateUserAsAdmin', () => {
+    it('throws NotFoundException and issues no update when the target uid is not an active member of the active institution', async () => {
+      mockPrisma.userInstitution.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.reactivateUserAsAdmin('other-uid', 'inst-active'),
+      ).rejects.toThrow(NotFoundException);
+
+      expect(mockPrisma.userInstitution.findFirst).toHaveBeenCalledWith({
+        where: { userId: 'other-uid', institutionId: 'inst-active', isActive: true },
+      });
+      expect(mockPrisma.users.findUnique).not.toHaveBeenCalled();
+      expect(mockPrisma.users.update).not.toHaveBeenCalled();
+    });
+
+    it('proceeds when the target uid IS an active member of the active institution', async () => {
+      mockPrisma.userInstitution.findFirst.mockResolvedValue({ uid: 'ui1' });
+      mockPrisma.users.findUnique.mockResolvedValue({ uid: 'u1' });
+      mockPrisma.users.update.mockResolvedValue({ uid: 'u1' });
+
+      const result = await service.reactivateUserAsAdmin('u1', 'inst-active');
 
       expect(result).toEqual({ uid: 'u1' });
       expect(mockPrisma.users.update).toHaveBeenCalled();
