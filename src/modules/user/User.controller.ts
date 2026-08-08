@@ -48,7 +48,6 @@ export class UserController {
         description: body.description,
         gender: body.gender,
         telNumber: body.telNumber,
-        roleId: body.roleId,
         roleData: body.roleData,
       },
       photo: body.photo,

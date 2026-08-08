@@ -41,7 +41,6 @@ export interface CreateStudentUseCase {
     description?: string;
     gender: string;
     telNumber: string;
-    roleId: string;
     roleData: unknown;
   };
   photo?: { base64: string; name: string; folder: string };

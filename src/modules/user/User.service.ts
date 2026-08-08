@@ -112,11 +112,23 @@ export class UserService {
     const userTypeId = this.configService.get<string>('config.roles.user');
     if (!userTypeId) throw new BadRequestException('User type not configured');
 
+    // The role is resolved server-side, never taken from the client. Self-
+    // registration (this endpoint) can only ever produce a 'self-taught'
+    // member of quyca-platform — institution-affiliated roles (rector,
+    // coordinator, institutional, independent) only ever arrive through
+    // POST /institutions or an invitation, both of which set contextRole
+    // themselves. Letting a caller pick any Roles row by uid (the previous
+    // behavior) let a plain registrant grant themselves 'rector' — see
+    // Task 11 report, fix round 5.
     const role = await this.prismaService.roles.findUnique({
-      where: { uid: user.roleId },
-      select: { slug: true },
+      where: { slug: 'self-taught' },
+      select: { uid: true, slug: true },
     });
-    if (!role) throw new BadRequestException('Invalid roleId');
+    if (!role) {
+      throw new BadRequestException(
+        'Role "self-taught" not found — run prisma:seed:static',
+      );
+    }
 
     const validation = validateRoleData(role.slug, user.roleData);
     if (!validation.valid) {
@@ -152,7 +164,7 @@ export class UserService {
             gender: user.gender,
             telNumber: user.telNumber,
             userType: { connect: { uid: userTypeId } },
-            role: { connect: { uid: user.roleId } },
+            role: { connect: { uid: role.uid } },
             roleData: sanitized,
             ...(photoResult && {
               photo: { connect: { uid: photoResult.uid } },

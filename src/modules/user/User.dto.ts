@@ -42,10 +42,6 @@ export class CreateStudentDto {
   @IsString()
   telNumber: string;
 
-  @ApiProperty({ example: 'uuid-del-rol' })
-  @IsString()
-  roleId: string;
-
   @ApiProperty({ example: { career: 'Ingeniería de Sistemas', semester: '5' } })
   @IsObject()
   roleData: Record<string, string>;
