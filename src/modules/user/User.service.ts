@@ -50,9 +50,12 @@ export class UserService {
     private readonly configService: ConfigService,
   ) {}
 
-  async getActiveUsers(): Promise<UserWithRelations[]> {
+  async getActiveUsers(institutionId: string): Promise<UserWithRelations[]> {
     return this.prismaService.users.findMany({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        userInstitutions: { some: { institutionId, isActive: true } },
+      },
       select: USER_SELECT,
     });
   }
@@ -107,11 +110,8 @@ export class UserService {
   ): Promise<UserUidResult> {
     const { uid, user, photo } = data;
 
-    const studentTypeId = this.configService.get<string>(
-      'config.roles.student',
-    );
-    if (!studentTypeId)
-      throw new BadRequestException('Student type not configured');
+    const userTypeId = this.configService.get<string>('config.roles.user');
+    if (!userTypeId) throw new BadRequestException('User type not configured');
 
     const role = await this.prismaService.roles.findUnique({
       where: { uid: user.roleId },
@@ -124,6 +124,16 @@ export class UserService {
       throw new BadRequestException(validation.errors.join('; '));
     }
     const sanitized = sanitizeRoleData(role.slug, user.roleData);
+
+    const platform = await this.prismaService.institution.findUnique({
+      where: { slug: 'quyca-platform' },
+      select: { uid: true },
+    });
+    if (!platform) {
+      throw new BadRequestException(
+        'Institution "quyca-platform" not found — run prisma:seed:static',
+      );
+    }
 
     let photoResult: { uid: string } | null = null;
     if (photo) {
@@ -142,7 +152,7 @@ export class UserService {
             description: user.description,
             gender: user.gender,
             telNumber: user.telNumber,
-            userType: { connect: { uid: studentTypeId } },
+            userType: { connect: { uid: userTypeId } },
             role: { connect: { uid: user.roleId } },
             roleData: sanitized,
             ...(photoResult && {
@@ -150,6 +160,14 @@ export class UserService {
             }),
           },
           select: { uid: true },
+        });
+
+        await tx.userInstitution.create({
+          data: {
+            userId: created.uid,
+            institutionId: platform.uid,
+            contextRole: role.slug,
+          },
         });
 
         return { uid: created.uid, ...(photoResult && { photo: photoResult }) };
@@ -176,12 +194,23 @@ export class UserService {
     if (!professorTypeId)
       throw new BadRequestException('Professor type not configured');
 
-    const particularRole = await this.prismaService.roles.findUnique({
-      where: { slug: 'particular' },
+    const role = await this.prismaService.roles.findUnique({
+      where: { slug: 'independent' },
+      select: { uid: true, slug: true },
+    });
+    if (!role) {
+      throw new BadRequestException('Role "independent" not found — run seed');
+    }
+
+    const platform = await this.prismaService.institution.findUnique({
+      where: { slug: 'quyca-platform' },
       select: { uid: true },
     });
-    if (!particularRole)
-      throw new BadRequestException('Role "particular" not found — run seed');
+    if (!platform) {
+      throw new BadRequestException(
+        'Institution "quyca-platform" not found — run prisma:seed:static',
+      );
+    }
 
     let photoResult: { uid: string } | null = null;
     if (photo) {
@@ -201,13 +230,21 @@ export class UserService {
             gender: user.gender,
             telNumber: user.telNumber,
             userType: { connect: { uid: professorTypeId } },
-            role: { connect: { uid: particularRole.uid } },
+            role: { connect: { uid: role.uid } },
             roleData: {},
             ...(photoResult && {
               photo: { connect: { uid: photoResult.uid } },
             }),
           },
           select: { uid: true },
+        });
+
+        await tx.userInstitution.create({
+          data: {
+            userId: created.uid,
+            institutionId: platform.uid,
+            contextRole: 'independent',
+          },
         });
 
         return { uid: created.uid, ...(photoResult && { photo: photoResult }) };
