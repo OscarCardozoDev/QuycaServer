@@ -12,8 +12,15 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { Roles } from 'src/decorators/roles.decorator';
 import { AuthGuard } from 'src/middleware/jwt.guard';
+import { TenantGuard } from 'src/tenant/tenant.guard';
+import { ContextRoleGuard } from 'src/guards/context-role.guard';
+import { RequireContextRole } from 'src/decorators/context-role.decorator';
+import { Institution } from 'src/decorators/institution.decorator';
+import type {
+  Institution as InstitutionModel,
+  SubscriptionPlan,
+} from 'src/generated/prisma/client';
 import { EventService } from './Event.service';
 import {
   CreateEventDto,
@@ -39,9 +46,13 @@ export class EventController {
 
   @Post('create')
   @ApiOperation({ summary: 'Crear un evento' })
-  @UseGuards(AuthGuard)
-  @Roles('professor', 'admin')
-  async create(@Body() body: CreateEventDto) {
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('institutional', 'rector', 'coordinator')
+  async create(
+    @Body() body: CreateEventDto,
+    @Institution()
+    institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+  ) {
     return this.eventService.createEventUseCase({
       event: {
         name: body.name,
@@ -53,6 +64,7 @@ export class EventController {
         isVirtual: body.isVirtual,
         streamingUrl: body.streamingUrl,
         createdById: body.createdById,
+        institutionId: institution.uid,
       },
       groupIds: body.groupIds,
       productIds: body.productIds,
@@ -63,9 +75,9 @@ export class EventController {
   // ─── READ ─────────────────────────────────────────────────────────────────
 
   @Get('getAll')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
   @ApiOperation({ summary: 'Obtener todos los eventos paginados (admin)' })
-  @Roles('admin')
+  @RequireContextRole('rector', 'coordinator')
   async getAll(@Query() query: GetEventsDto) {
     return this.eventService.getAll(query);
   }
@@ -100,11 +112,11 @@ export class EventController {
   }
 
   @Get('available-products/:groupId')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
   @ApiOperation({
     summary: 'Obtener obras APPROVED del grupo disponibles para un evento',
   })
-  @Roles('professor', 'admin')
+  @RequireContextRole('institutional', 'rector', 'coordinator')
   async getAvailableProducts(
     @Param('groupId', new ParseUUIDPipe()) groupId: string,
   ) {
@@ -112,11 +124,11 @@ export class EventController {
   }
 
   @Get('invitations/pending')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
   @ApiOperation({
     summary: 'Ver invitaciones pendientes del profesor autenticado',
   })
-  @Roles('professor', 'admin')
+  @RequireContextRole('institutional', 'rector', 'coordinator')
   async getPendingInvitations(@Query('profesorId') profesorId: string) {
     return this.eventService.getPendingInvitations(profesorId);
   }
@@ -133,8 +145,8 @@ export class EventController {
   @ApiOperation({
     summary: 'Editar info general del evento (vuelve a PENDING)',
   })
-  @UseGuards(AuthGuard)
-  @Roles('professor', 'admin')
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('institutional', 'rector', 'coordinator')
   async update(@Param() params: EventParamsDto, @Body() body: UpdateEventDto) {
     return this.eventService.updateEventUseCase({
       eventId: params.uid,
@@ -153,8 +165,8 @@ export class EventController {
 
   @Patch('status/:uid')
   @ApiOperation({ summary: 'Cambiar el status de un evento (admin)' })
-  @UseGuards(AuthGuard)
-  @Roles('admin')
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   async updateStatus(
     @Param('uid', new ParseUUIDPipe()) uid: string,
     @Body() dto: UpdateEventStatusDto,
@@ -168,8 +180,8 @@ export class EventController {
 
   @Patch('deactivate/:uid')
   @ApiOperation({ summary: 'Desactivar un evento (soft delete, admin)' })
-  @UseGuards(AuthGuard)
-  @Roles('admin')
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   async deactivate(@Param('uid', new ParseUUIDPipe()) uid: string) {
     return this.eventService.deactivate(uid);
   }
@@ -177,11 +189,11 @@ export class EventController {
   // ─── PRODUCTS DEL EVENTO ──────────────────────────────────────────────────
 
   @Put(':uid/products')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
   @ApiOperation({
     summary: 'Actualizar obras del grupo en el evento (vuelve a PENDING)',
   })
-  @Roles('professor', 'admin')
+  @RequireContextRole('institutional', 'rector', 'coordinator')
   async updateProducts(
     @Param() params: EventParamsDto,
     @Body() body: UpdateEventProductsDto,
@@ -200,7 +212,8 @@ export class EventController {
     summary:
       'Agregar foto al evento (HERO/PROMO: coordinador/admin · MEMORY: participante)',
   })
-  @Roles('professor', 'admin')
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('institutional', 'rector', 'coordinator')
   async addPhoto(
     @Param() params: EventParamsDto,
     @Body() body: AddEventPhotoDto,
@@ -212,9 +225,9 @@ export class EventController {
   }
 
   @Delete(':uid/photos/:photoId')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
   @ApiOperation({ summary: 'Eliminar una foto del evento' })
-  @Roles('professor', 'admin')
+  @RequireContextRole('institutional', 'rector', 'coordinator')
   async removePhoto(@Param() params: EventPhotoParamsDto) {
     return this.eventService.removePhoto(params.uid, params.photoId);
   }
@@ -223,8 +236,8 @@ export class EventController {
 
   @Post(':uid/invite')
   @ApiOperation({ summary: 'Enviar invitación a un grupo (coordinador/admin)' })
-  @Roles('professor', 'admin')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('institutional', 'rector', 'coordinator')
   async sendInvitation(
     @Param() params: EventParamsDto,
     @Body() body: SendInvitationDto,
@@ -233,11 +246,11 @@ export class EventController {
   }
 
   @Patch('invitations/:uid/respond')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
   @ApiOperation({
     summary: 'Aceptar o rechazar una invitación (profesor invitado)',
   })
-  @Roles('professor')
+  @RequireContextRole('institutional')
   async respondInvitation(
     @Param() params: InvitationParamsDto,
     @Body() dto: RespondInvitationDto,
@@ -249,21 +262,21 @@ export class EventController {
   }
 
   @Delete(':uid/invite/:groupId')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
   @ApiOperation({
     summary: 'Revocar invitación de un grupo (coordinador/admin)',
   })
-  @Roles('professor', 'admin')
+  @RequireContextRole('institutional', 'rector', 'coordinator')
   async revokeInvitation(@Param() params: EventGroupParamsDto) {
     return this.eventService.revokeInvitation(params.uid, params.groupId);
   }
 
   @Delete(':uid/groups/:groupId')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
   @ApiOperation({
     summary: 'Quitar un grupo del evento directamente (coordinador/admin)',
   })
-  @Roles('professor', 'admin')
+  @RequireContextRole('institutional', 'rector', 'coordinator')
   async removeGroup(@Param() params: EventGroupParamsDto) {
     return this.eventService.removeGroupFromEvent(params.uid, params.groupId);
   }

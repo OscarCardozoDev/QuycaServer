@@ -3,6 +3,7 @@ import {
   Inject,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PhotosService } from 'src/modules/photos/Photos.service';
@@ -70,6 +71,39 @@ export class EventService {
 
   async createEventUseCase(data: CreateEventUseCase): Promise<{ uid: string }> {
     const { event, groupIds, productIds, coverPhoto } = data;
+
+    // FASE 0️⃣ — Validar que los grupos y obras pertenecen a la institución activa.
+    // GroupEvent/EventProduct son tablas puente sin institutionId propio: si no se
+    // valida acá, groupIds/productIds de otra institución quedarían vinculados
+    // directamente al evento sin pasar por invitación.
+    if (groupIds?.length) {
+      const validGroups = await this.prisma.groups.findMany({
+        where: { uid: { in: groupIds } },
+        select: { uid: true },
+      });
+      if (validGroups.length !== new Set(groupIds).size) {
+        throw new BadRequestException(
+          'Some groups do not exist or do not belong to this institution',
+        );
+      }
+    }
+
+    if (productIds?.length) {
+      const validProducts = await this.prisma.products.findMany({
+        where: {
+          uid: { in: productIds },
+          groupId: { in: groupIds ?? [] },
+          status: 'APPROVED',
+          isActive: true,
+        },
+        select: { uid: true },
+      });
+      if (validProducts.length !== new Set(productIds).size) {
+        throw new BadRequestException(
+          'Some products are not APPROVED or do not belong to the given groups',
+        );
+      }
+    }
 
     // FASE 1️⃣ — Subir foto de portada (fuera de transacción)
     let coverPhotoId: string | null = null;
@@ -584,6 +618,14 @@ export class EventService {
   }
 
   async removePhoto(eventId: string, photoId: string) {
+    // EventPhoto no tiene institutionId propio: se valida el evento primero
+    // (scoped) para no permitir borrar la foto de un evento de otra institución.
+    const event = await this.prisma.events.findUnique({
+      where: { uid: eventId },
+      select: { uid: true },
+    });
+    if (!event) throw new NotFoundException('Event not found');
+
     const eventPhoto = await this.prisma.eventPhoto.findFirst({
       where: { eventId, photoId },
     });
@@ -614,6 +656,19 @@ export class EventService {
       );
     }
 
+    const group = await this.prisma.groups.findUnique({
+      where: { uid: groupId },
+      select: { uid: true, institutionId: true },
+    });
+
+    if (!group) throw new NotFoundException('Group not found');
+
+    if (group.institutionId !== event.institutionId) {
+      throw new ForbiddenException(
+        'Cannot invite a group from a different institution',
+      );
+    }
+
     // Verificar que el grupo no esté ya vinculado directamente
     const alreadyJoined = await this.prisma.groupEvent.findFirst({
       where: { eventId, groupId },
@@ -637,10 +692,22 @@ export class EventService {
    * filtradas por los grupos que él administra.
    */
   async getPendingInvitations(profesorId: string) {
+    // EventInvitation no tiene institutionId propio y el filtro `group: { profesorId }`
+    // es una condición anidada que la extensión de tenant NO reescribe (solo
+    // intercepta la operación de nivel superior). Sin este paso, cualquier
+    // profesorId ajeno a la institución activa filtraría invitaciones de otra
+    // institución. Groups sí está scoped, así que resolver los grupos primero
+    // acota correctamente a la institución activa.
+    const groups = await this.prisma.groups.findMany({
+      where: { profesorId },
+      select: { uid: true },
+    });
+    if (!groups.length) return [];
+
     return this.prisma.eventInvitation.findMany({
       where: {
         status: InvitationStatus.PENDING,
-        group: { profesorId },
+        groupId: { in: groups.map((g) => g.uid) },
       },
       include: {
         event: {
@@ -670,6 +737,15 @@ export class EventService {
     });
 
     if (!invitation) throw new NotFoundException('Invitation not found');
+
+    // EventInvitation no tiene institutionId propio: se valida contra Events
+    // (scoped) para que un invitationId de otra institución no pueda ser
+    // aceptado/rechazado por un usuario de la institución activa.
+    const event = await this.prisma.events.findUnique({
+      where: { uid: invitation.eventId },
+      select: { uid: true },
+    });
+    if (!event) throw new NotFoundException('Invitation not found');
 
     if (invitation.status !== InvitationStatus.PENDING) {
       throw new BadRequestException(
@@ -701,6 +777,15 @@ export class EventService {
     eventId: string,
     groupId: string,
   ): Promise<{ removed: boolean }> {
+    // GroupEvent no tiene institutionId propio: se valida el evento primero
+    // (scoped) para que un eventId de otra institución no pueda usarse para
+    // desvincular un grupo o reabrir ese evento a PENDING.
+    const event = await this.prisma.events.findUnique({
+      where: { uid: eventId },
+      select: { uid: true },
+    });
+    if (!event) throw new NotFoundException('Event not found');
+
     const groupEvent = await this.prisma.groupEvent.findFirst({
       where: { eventId, groupId },
     });
@@ -726,6 +811,15 @@ export class EventService {
     eventId: string,
     groupId: string,
   ): Promise<{ revoked: boolean }> {
+    // EventInvitation no tiene institutionId propio: se valida el evento primero
+    // (scoped) para que un eventId de otra institución no pueda usarse para
+    // revocar una invitación / desvincular un grupo ajenos.
+    const event = await this.prisma.events.findUnique({
+      where: { uid: eventId },
+      select: { uid: true },
+    });
+    if (!event) throw new NotFoundException('Event not found');
+
     const invitation = await this.prisma.eventInvitation.findFirst({
       where: { eventId, groupId },
     });

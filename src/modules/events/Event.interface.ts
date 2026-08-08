@@ -56,6 +56,7 @@ export interface CreateEventUseCase {
     isVirtual: boolean;
     streamingUrl?: string;
     createdById: string;
+    institutionId: string;
   };
   // Grupos propios del coordinador (entran directo a GroupEvent, sin invitación)
   groupIds: string[];
