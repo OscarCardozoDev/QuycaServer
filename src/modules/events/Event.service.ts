@@ -318,63 +318,74 @@ export class EventService {
     );
   }
 
-  // NOT wrapped in runWithoutTenant — see Task 13 report.
-  // The controller's `get/:uid` route is public (no guard), but this query's
-  // `invitations` include exposes EventInvitation status per group (pending/
-  // accepted/rejected) — internal coordination state, not public-gallery
-  // content. Wrapping this as-is would newly expose that data to
-  // unauthenticated visitors. Flagged for a product decision rather than
-  // silently made public; the route stays 403 until that's resolved.
+  // Público: alimenta la galería sin sesión, ver Event.controller.ts.
+  // El controlador de `get/:uid` no tiene AuthGuard hoy — la ruta ya era
+  // alcanzable por cualquiera antes de la extensión de tenant; envolverla
+  // aquí no amplía el acceso, solo evita que la extensión la bloquee con
+  // 403. (Distinto de envolver una ruta autenticada, que sí sería un
+  // defecto grave: esa ruta exige `AuthGuard`/`TenantGuard`, esta no exige
+  // ninguno de los dos.)
+  //
+  // `invitations` fue removido del `include` (antes exponía el estado de
+  // EventInvitation — status pendiente/aceptada/rechazada por grupo — que
+  // es coordinación interna, no contenido de galería). Se verificó contra
+  // el frontend (UstaGallery) que ningún consumidor de esta respuesta lee
+  // `.invitations`; el único uso de "invitations" en el frontend son clases
+  // CSS en Invitations.tsx, que llama a un endpoint distinto. El resto del
+  // payload (`groups`, `products`, `photos`, `createdBy`) sí se consume
+  // desde EventDetail.tsx/EditEvent.tsx y es contenido de galería (nombre
+  // de grupos expositores, obras, fotos del evento, nombre del organizador
+  // — sin datos de contacto).
   async getById(uid: string) {
-    const event = await this.prisma.events.findUnique({
-      where: { uid },
-      include: {
-        groups: {
-          select: {
-            group: { select: { uid: true, name: true, categoryId: true } },
+    // Envuelve el findUnique Y el update condicional de lazyComplete en un
+    // único runWithoutTenant: lazyComplete dispara su propio
+    // `prisma.events.update` (modelo scoped) cuando el evento está APPROVED
+    // y ya pasó su fecha, y ese update queda fuera del bypass si solo se
+    // envuelve el fetch inicial.
+    return runWithoutTenant(async () => {
+      const event = await this.prisma.events.findUnique({
+        where: { uid },
+        include: {
+          groups: {
+            select: {
+              group: { select: { uid: true, name: true, categoryId: true } },
+            },
           },
-        },
-        products: {
-          select: {
-            product: {
-              select: {
-                uid: true,
-                name: true,
-                description: true,
-                photos: {
-                  where: { isMain: true },
-                  select: {
-                    photo: { select: { uid: true, url: true } },
+          products: {
+            select: {
+              product: {
+                select: {
+                  uid: true,
+                  name: true,
+                  description: true,
+                  photos: {
+                    where: { isMain: true },
+                    select: {
+                      photo: { select: { uid: true, url: true } },
+                    },
+                    take: 1,
                   },
-                  take: 1,
                 },
               },
             },
           },
-        },
-        photos: {
-          select: {
-            photoType: true,
-            photo: { select: { uid: true, url: true } },
+          photos: {
+            select: {
+              photoType: true,
+              photo: { select: { uid: true, url: true } },
+            },
+          },
+          createdBy: {
+            select: { uid: true, name: true, lastName: true },
           },
         },
-        createdBy: {
-          select: { uid: true, name: true, lastName: true },
-        },
-        invitations: {
-          select: {
-            uid: true,
-            status: true,
-            group: { select: { uid: true, name: true } },
-          },
-        },
-      },
+      });
+
+      if (!event) throw new NotFoundException('Event not found');
+
+      // Variable separada para no reasignar `event` y mantener el tipo de Prisma intacto
+      return this.lazyComplete(event);
     });
-
-    if (!event) throw new NotFoundException('Event not found');
-
-    // Variable separada para no reasignar `event` y mantener el tipo de Prisma intacto
-    return this.lazyComplete(event);
   }
 
   // Público: alimenta la galería sin sesión, ver Event.controller.ts.
