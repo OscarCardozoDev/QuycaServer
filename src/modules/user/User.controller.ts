@@ -16,7 +16,6 @@ import { CurrentUser } from 'src/decorators/currentUser';
 import { UserService } from './User.service';
 import {
   CreateStudentDto,
-  CreateProfessorDto,
   UpdateUserDto,
   UpdateUserPhotoDto,
 } from './User.dto';
@@ -51,33 +50,6 @@ export class UserController {
         telNumber: body.telNumber,
         roleId: body.roleId,
         roleData: body.roleData,
-      },
-      photo: body.photo,
-    });
-  }
-
-  @Post('professor')
-  @ApiOperation({
-    summary:
-      'Crear perfil de profesor (solo rector/coordinador) — el profesor debe haber hecho register primero',
-  })
-  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
-  @RequireContextRole('rector', 'coordinator')
-  @HttpCode(HttpStatus.CREATED)
-  async createProfessor(@Body() body: CreateProfessorDto) {
-    // uid viene del body (UID de las Credentials del profesor), no del admin que hace la petición.
-    // No hay membresía de destino que validar: este flujo SIEMPRE otorga el rol
-    // 'independent' en quyca-platform, no en la institución activa del llamador — ver
-    // Task 11 report, Finding A / createProfessor, para la limitación conocida.
-    return this.userService.createProfessorUseCase({
-      uid: body.uid,
-      user: {
-        name: body.name,
-        lastName: body.lastName,
-        username: body.username,
-        description: body.description,
-        gender: body.gender,
-        telNumber: body.telNumber,
       },
       photo: body.photo,
     });

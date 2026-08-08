@@ -16,7 +16,6 @@ import {
 } from 'src/utils/role-data.validator';
 import {
   CreateStudentUseCase,
-  CreateProfessorUseCase,
   UserWithRelations,
   UserUidResult,
   AuthorInfo,
@@ -167,83 +166,6 @@ export class UserService {
             userId: created.uid,
             institutionId: platform.uid,
             contextRole: role.slug,
-          },
-        });
-
-        return { uid: created.uid, ...(photoResult && { photo: photoResult }) };
-      });
-    } catch (e) {
-      if (
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === 'P2002'
-      ) {
-        throw new ConflictException('username or uid already in use');
-      }
-      throw e;
-    }
-  }
-
-  async createProfessorUseCase(
-    data: CreateProfessorUseCase,
-  ): Promise<UserUidResult> {
-    const { uid, user, photo } = data;
-
-    const professorTypeId = this.configService.get<string>(
-      'config.roles.professor',
-    );
-    if (!professorTypeId)
-      throw new BadRequestException('Professor type not configured');
-
-    const role = await this.prismaService.roles.findUnique({
-      where: { slug: 'independent' },
-      select: { uid: true, slug: true },
-    });
-    if (!role) {
-      throw new BadRequestException('Role "independent" not found — run seed');
-    }
-
-    const platform = await this.prismaService.institution.findUnique({
-      where: { slug: 'quyca-platform' },
-      select: { uid: true },
-    });
-    if (!platform) {
-      throw new BadRequestException(
-        'Institution "quyca-platform" not found — run prisma:seed:static',
-      );
-    }
-
-    let photoResult: { uid: string } | null = null;
-    if (photo) {
-      const created = await this.photosService.createPhotoUseCase(photo);
-      photoResult = { uid: created.uid };
-    }
-
-    try {
-      return await this.prismaService.$transaction(async (tx) => {
-        const created = await tx.users.create({
-          data: {
-            uid,
-            name: user.name,
-            lastName: user.lastName,
-            username: user.username,
-            description: user.description,
-            gender: user.gender,
-            telNumber: user.telNumber,
-            userType: { connect: { uid: professorTypeId } },
-            role: { connect: { uid: role.uid } },
-            roleData: {},
-            ...(photoResult && {
-              photo: { connect: { uid: photoResult.uid } },
-            }),
-          },
-          select: { uid: true },
-        });
-
-        await tx.userInstitution.create({
-          data: {
-            userId: created.uid,
-            institutionId: platform.uid,
-            contextRole: 'independent',
           },
         });
 

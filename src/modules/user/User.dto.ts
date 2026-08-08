@@ -55,41 +55,6 @@ export class CreateStudentDto {
   photo?: PhotoDto;
 }
 
-export class CreateProfessorDto {
-  @ApiProperty({ description: 'UID de las Credentials del profesor (ya debe haber hecho register)' })
-  @IsString()
-  uid: string;
-
-  @ApiProperty({ example: 'María' })
-  @IsString()
-  name: string;
-
-  @ApiProperty({ example: 'López' })
-  @IsString()
-  lastName: string;
-
-  @ApiProperty({ example: 'maria_lopez' })
-  @IsString()
-  username: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  description?: string;
-
-  @ApiProperty({ example: 'F' })
-  @IsString()
-  gender: string;
-
-  @ApiProperty({ example: '3009876543' })
-  @IsString()
-  telNumber: string;
-
-  @ApiPropertyOptional({ type: PhotoDto })
-  @IsOptional()
-  photo?: PhotoDto;
-}
-
 export class UpdateUserDto {
   @ApiPropertyOptional({ example: 'Juan' })
   @IsOptional()
