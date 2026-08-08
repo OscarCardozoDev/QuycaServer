@@ -40,6 +40,7 @@ export interface UpdateGroupUseCase {
 export interface ChangeProfesorUseCase {
   groupId: string;
   newProfesorId: string;
+  institutionId: string;
 }
 
 export interface AddStudentToGroupsUseCase {

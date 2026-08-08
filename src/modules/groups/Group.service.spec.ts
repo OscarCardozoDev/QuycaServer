@@ -21,12 +21,13 @@ describe('GroupService — tenant & membership enforcement', () => {
 
   beforeEach(async () => {
     prisma = {
-      groups: { findUnique: jest.fn(), findMany: jest.fn() },
+      groups: { findUnique: jest.fn(), findMany: jest.fn(), update: jest.fn() },
       usersGroups: {
         findMany: jest.fn(),
         deleteMany: jest.fn(),
         create: jest.fn(),
         createMany: jest.fn(),
+        delete: jest.fn(),
       },
       users: { findUnique: jest.fn() },
       userInstitution: { findMany: jest.fn() },

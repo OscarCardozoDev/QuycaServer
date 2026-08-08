@@ -102,10 +102,12 @@ export class GroupController {
   async changeProfesor(
     @Param() params: GroupParamsDto,
     @Body() body: ChangeProfesorDto,
+    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
   ) {
     return this.groupService.changeProfesor({
       groupId: params.uid,
       newProfesorId: body.newProfesorId,
+      institutionId: institution.uid,
     });
   }
 

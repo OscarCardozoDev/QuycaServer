@@ -181,7 +181,7 @@ export class GroupService {
    * CHANGE PROFESOR
    * ========================= */
   async changeProfesor(data: ChangeProfesorUseCase) {
-    const { groupId, newProfesorId } = data;
+    const { groupId, newProfesorId, institutionId } = data;
 
     // 1️⃣ Verificar que el grupo existe
     const group = await this.prisma.groups.findUnique({
@@ -192,7 +192,8 @@ export class GroupService {
       throw new NotFoundException('Group not found');
     }
 
-    // 2️⃣ Verificar que el nuevo profesor existe
+    // 2️⃣ Verificar que el nuevo profesor existe (Users no está scoped;
+    // esto solo cubre el caso "no existe en absoluto")
     const newProfesor = await this.prisma.users.findUnique({
       where: { uid: newProfesorId },
       select: { uid: true, name: true },
@@ -202,16 +203,20 @@ export class GroupService {
       throw new NotFoundException('Profesor not found');
     }
 
+    // 3️⃣ Verificar que el nuevo profesor sea miembro activo de esta
+    // institución — el chequeo que realmente cierra el límite de tenant
+    await this.assertActiveMembers([newProfesorId], institutionId);
+
     return this.prisma.$transaction(async (tx) => {
       const oldProfesorId = group.profesorId;
 
-      // 3️⃣ Actualizar el profesor del grupo
+      // 4️⃣ Actualizar el profesor del grupo
       await tx.groups.update({
         where: { uid: groupId },
         data: { profesorId: newProfesorId },
       });
 
-      // 4️⃣ Eliminar al antiguo profesor como miembro (si no es el mismo)
+      // 5️⃣ Eliminar al antiguo profesor como miembro (si no es el mismo)
       if (oldProfesorId && oldProfesorId !== newProfesorId) {
         await tx.usersGroups
           .delete({
@@ -227,7 +232,7 @@ export class GroupService {
           });
       }
 
-      // 5️⃣ Agregar al nuevo profesor como miembro (si no está ya)
+      // 6️⃣ Agregar al nuevo profesor como miembro (si no está ya)
       await tx.usersGroups
         .create({
           data: {
