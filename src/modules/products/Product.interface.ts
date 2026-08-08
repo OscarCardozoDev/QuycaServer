@@ -52,6 +52,7 @@ export interface CreateProductUseCase {
     folder: string;
     isMain?: boolean;
   }[];
+  institutionId: string;
 }
 
 export interface UpdateProductImageUseCase {

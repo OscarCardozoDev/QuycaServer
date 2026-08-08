@@ -68,6 +68,7 @@ export class StylesService {
         description: style.description,
         groupId: style.groupId,
         categoryId: style.categoryId,
+        institutionId: style.institutionId,
       },
       select: { uid: true },
     });

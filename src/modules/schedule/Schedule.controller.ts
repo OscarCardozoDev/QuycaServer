@@ -11,7 +11,11 @@ import {
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ScheduleService } from './Schedule.service';
 import { AuthGuard } from 'src/middleware/jwt.guard';
-import { Roles } from 'src/decorators/roles.decorator';
+import { TenantGuard } from 'src/tenant/tenant.guard';
+import { ContextRoleGuard } from 'src/guards/context-role.guard';
+import { RequireContextRole } from 'src/decorators/context-role.decorator';
+import { Institution } from 'src/decorators/institution.decorator';
+import type { Institution as InstitutionModel, SubscriptionPlan } from 'src/generated/prisma/client';
 import {
   CreateScheduleDto,
   UpdateScheduleDto,
@@ -20,37 +24,50 @@ import {
 } from './Schedule.dto';
 
 @ApiTags('schedule')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, TenantGuard)
 @Controller('schedule')
 export class ScheduleController {
   constructor(private readonly scheduleService: ScheduleService) {}
 
   @Post('create')
-  @Roles('professor', 'admin')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator', 'institutional')
   @ApiOperation({ summary: 'Crear horario y generar sesiones del semestre' })
-  async create(@Body() body: CreateScheduleDto) {
-    return this.scheduleService.create(body);
+  async create(
+    @Body() body: CreateScheduleDto,
+    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+  ) {
+    return this.scheduleService.create({
+      ...body,
+      institutionId: institution.uid,
+    });
   }
 
   @Get('group/:groupId')
-  @Roles('professor', 'admin', 'student')
   @ApiOperation({ summary: 'Obtener horarios activos del grupo' })
   async getByGroup(@Param() params: GroupParamDto) {
     return this.scheduleService.getByGroup(params.groupId);
   }
 
   @Put(':uid')
-  @Roles('professor', 'admin')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator', 'institutional')
   @ApiOperation({ summary: 'Actualizar horario y regenerar sesiones futuras' })
   async update(
     @Param() params: ScheduleParamsDto,
     @Body() body: UpdateScheduleDto,
+    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
   ) {
-    return this.scheduleService.update({ scheduleId: params.uid, data: body });
+    return this.scheduleService.update({
+      scheduleId: params.uid,
+      data: body,
+      institutionId: institution.uid,
+    });
   }
 
   @Delete(':uid')
-  @Roles('professor', 'admin')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator', 'institutional')
   @ApiOperation({
     summary: 'Desactivar horario y eliminar sesiones futuras sin asistencia',
   })

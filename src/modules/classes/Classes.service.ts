@@ -91,6 +91,7 @@ export class ClassesService {
         endTime: data.endTime,
         topic: data.topic,
         scheduleId: null,
+        institutionId: data.institutionId,
       },
       select: { uid: true },
     });
@@ -139,7 +140,7 @@ export class ClassesService {
     return active ? { active: true, classId: active.uid } : { active: false };
   }
 
-  async attend({ classId, userId }: AttendUseCase) {
+  async attend({ classId, userId, institutionId }: AttendUseCase) {
     const cls = await this.prisma.classes.findUnique({
       where: { uid: classId },
       select: {
@@ -168,7 +169,9 @@ export class ClassesService {
     if (!membership) throw new ForbiddenException('User not in this group');
 
     try {
-      await this.prisma.attendance.create({ data: { classId, userId } });
+      await this.prisma.attendance.create({
+        data: { classId, userId, institutionId },
+      });
       return { success: true };
     } catch (e: unknown) {
       if ((e as { code?: string }).code === 'P2002') {

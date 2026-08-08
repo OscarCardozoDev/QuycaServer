@@ -9,11 +9,9 @@ export default registerAs('config', () => ({
   emailFrom: process.env.RESEND_EMAIL_FROM,
   semesterEndDate: process.env.SEMESTER_END_DATE,
   roles: {
-    student: process.env.ID_STUDENT,
-    professor: process.env.ID_PROFESSOR,
-    admin: process.env.ID_ADMIN,
     super_admin: process.env.ID_SUPER_ADMIN,
     institution: process.env.ID_INSTITUTION,
+    professor: process.env.ID_PROFESSOR,
     user: process.env.ID_USER,
   },
 }));

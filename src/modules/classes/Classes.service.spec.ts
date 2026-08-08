@@ -106,7 +106,7 @@ describe('ClassesService', () => {
   // ─── attend ─────────────────────────────────────────────────────────────────
 
   describe('attend', () => {
-    const params = { classId: 'class-1', userId: 'user-1' };
+    const params = { classId: 'class-1', userId: 'user-1', institutionId: 'inst-1' };
 
     it('throws NotFoundException when class does not exist', async () => {
       mockPrisma.classes.findUnique.mockResolvedValue(null);
@@ -163,7 +163,7 @@ describe('ClassesService', () => {
 
       expect(result).toEqual({ success: true });
       expect(mockPrisma.attendance.create).toHaveBeenCalledWith({
-        data: { classId: 'class-1', userId: 'user-1' },
+        data: { classId: 'class-1', userId: 'user-1', institutionId: 'inst-1' },
       });
     });
   });

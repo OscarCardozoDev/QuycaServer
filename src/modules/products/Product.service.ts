@@ -1,4 +1,10 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Decimal } from '@prisma/client/runtime/client';
 import {
@@ -20,10 +26,67 @@ export class ProductService {
   ) {}
 
   /* =========================
+   * BRIDGE-TABLE GUARDS
+   * `UserProduct` y `ProductStyle` no tienen `institutionId` propio (son
+   * tablas puente) y la extensión de tenant no las filtra. Un userId o
+   * styleId que llegue del cliente podría pertenecer a otra institución;
+   * se valida explícitamente antes de escribir la relación.
+   * ========================= */
+  private async assertActiveMembers(userIds: string[], institutionId: string) {
+    const unique = [...new Set(userIds)];
+    if (!unique.length) return;
+
+    const members = await this.prisma.userInstitution.findMany({
+      where: { userId: { in: unique }, institutionId, isActive: true },
+      select: { userId: true },
+    });
+
+    const memberIds = new Set(members.map((m) => m.userId));
+    const invalid = unique.filter((id) => !memberIds.has(id));
+
+    if (invalid.length) {
+      throw new ForbiddenException(
+        `User(s) not an active member of this institution: ${invalid.join(', ')}`,
+      );
+    }
+  }
+
+  private async assertStylesBelongToTenant(styleIds: string[]) {
+    const unique = [...new Set(styleIds)];
+    if (!unique.length) return;
+
+    // `styles.findMany` está auto-scoped por la extensión de tenant: un
+    // styleId de otra institución simplemente no aparece en `found`.
+    const found = await this.prisma.styles.findMany({
+      where: { uid: { in: unique } },
+      select: { uid: true },
+    });
+
+    if (found.length !== unique.length) {
+      throw new BadRequestException(
+        'Some styles do not exist or do not belong to this institution',
+      );
+    }
+  }
+
+  /* =========================
    * CREATE
    * ========================= */
   async createProductUseCase(data: CreateProductUseCase) {
-    const { product, styles, images, authors } = data;
+    const { product, styles, images, authors, institutionId } = data;
+
+    // FASE 0️⃣ — Validar que autores y estilos pertenecen a la institución
+    // activa antes de escribir las tablas puente UserProduct/ProductStyle.
+    if (authors?.length) {
+      await this.assertActiveMembers(
+        authors.map((author) => author.userId),
+        institutionId,
+      );
+    }
+
+    if (styles?.length) {
+      await this.assertStylesBelongToTenant(styles);
+    }
 
     /**
      * FASE 1️⃣ — Crear imágenes (fuera de transacción)
@@ -65,6 +128,7 @@ export class ProductService {
       ...product,
       price:
         product.price !== undefined ? new Decimal(product.price) : undefined,
+      institutionId,
     };
 
     /**
@@ -318,6 +382,12 @@ export class ProductService {
     });
 
     if (!product) throw new NotFoundException('Product not found');
+
+    // Misma validación que en create: `styles` alimenta la tabla puente
+    // ProductStyle, que no tiene institutionId propio.
+    if (styles?.length) {
+      await this.assertStylesBelongToTenant(styles);
+    }
 
     /**
      * FASE 1️⃣ — Guardar archivos nuevos en disco (fuera de transacción)

@@ -36,11 +36,11 @@ export class ScheduleService {
   }
 
   async create(data: CreateScheduleUseCase) {
-    const { groupId, dayOfWeek, startTime, endTime } = data;
+    const { groupId, dayOfWeek, startTime, endTime, institutionId } = data;
 
     return this.prisma.$transaction(async (tx) => {
       const schedule = await tx.schedule.create({
-        data: { groupId, dayOfWeek, startTime, endTime },
+        data: { groupId, dayOfWeek, startTime, endTime, institutionId },
         select: { uid: true },
       });
 
@@ -54,6 +54,7 @@ export class ScheduleService {
             date,
             startTime,
             endTime,
+            institutionId,
           })),
         });
       }
@@ -69,7 +70,7 @@ export class ScheduleService {
     });
   }
 
-  async update({ scheduleId, data }: UpdateScheduleUseCase) {
+  async update({ scheduleId, data, institutionId }: UpdateScheduleUseCase) {
     return this.prisma.$transaction(async (tx) => {
       const current = await tx.schedule.findUniqueOrThrow({
         where: { uid: scheduleId },
@@ -114,6 +115,7 @@ export class ScheduleService {
             date,
             startTime,
             endTime,
+            institutionId,
           })),
           skipDuplicates: true,
         });

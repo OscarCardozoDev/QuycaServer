@@ -11,7 +11,11 @@ import {
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ClassesService } from './Classes.service';
 import { AuthGuard } from 'src/middleware/jwt.guard';
-import { Roles } from 'src/decorators/roles.decorator';
+import { TenantGuard } from 'src/tenant/tenant.guard';
+import { ContextRoleGuard } from 'src/guards/context-role.guard';
+import { RequireContextRole } from 'src/decorators/context-role.decorator';
+import { Institution } from 'src/decorators/institution.decorator';
+import type { Institution as InstitutionModel, SubscriptionPlan } from 'src/generated/prisma/client';
 import { CurrentUser } from 'src/decorators/currentUser';
 import {
   ClassParamsDto,
@@ -23,30 +27,44 @@ import {
 } from './Classes.dto';
 
 @ApiTags('classes')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, TenantGuard)
 @Controller('classes')
 export class ClassesController {
   constructor(private readonly classesService: ClassesService) {}
 
   // Fixed-prefix routes first
   @Post('create')
-  @Roles('professor', 'admin')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator', 'institutional')
   @ApiOperation({ summary: 'Crear clase manual' })
-  async create(@Body() body: CreateClassDto) {
+  async create(
+    @Body() body: CreateClassDto,
+    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+  ) {
     return this.classesService.create({
       groupId: body.groupId,
       date: new Date(body.date),
       startTime: body.startTime,
       endTime: body.endTime,
       topic: body.topic,
+      institutionId: institution.uid,
     });
   }
 
   @Post('attend')
-  @Roles('student')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('student')
   @ApiOperation({ summary: 'Registrar asistencia del estudiante autenticado' })
-  async attend(@CurrentUser('uid') userId: string, @Body() body: AttendDto) {
-    return this.classesService.attend({ classId: body.classId, userId });
+  async attend(
+    @CurrentUser('uid') userId: string,
+    @Body() body: AttendDto,
+    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+  ) {
+    return this.classesService.attend({
+      classId: body.classId,
+      userId,
+      institutionId: institution.uid,
+    });
   }
 
   @Get('group/:groupId')
@@ -66,14 +84,16 @@ export class ClassesController {
 
   // Parameterized routes after
   @Get(':uid/attendance')
-  @Roles('professor', 'admin')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator', 'institutional')
   @ApiOperation({ summary: 'Listar estudiantes que asistieron a la clase' })
   async getAttendance(@Param() params: ClassParamsDto) {
     return this.classesService.getAttendance(params.uid);
   }
 
   @Patch(':uid/topic')
-  @Roles('professor', 'admin')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator', 'institutional')
   @ApiOperation({ summary: 'Actualizar temática y/o reseña de la clase' })
   async updateTopic(
     @Param() params: ClassParamsDto,

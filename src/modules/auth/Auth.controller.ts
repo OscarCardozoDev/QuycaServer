@@ -126,7 +126,7 @@ export class AuthController {
     summary: 'Obtener credenciales sin perfil de usuario (admin)',
   })
   @UseGuards(AuthGuard)
-  @Roles('admin')
+  @Roles('super_admin')
   @HttpCode(HttpStatus.OK)
   async getWithoutProfile() {
     return this.authService.getCredentialsWithoutProfile();

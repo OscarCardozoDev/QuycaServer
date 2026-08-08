@@ -19,6 +19,7 @@ export interface CreateStyleUseCase {
   description: string;
   groupId: string;
   categoryId: string;
+  institutionId: string;
 }
 
 // Contrato interno del servicio para actualizar

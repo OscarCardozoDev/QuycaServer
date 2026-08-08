@@ -70,6 +70,7 @@ describe('ScheduleService - session generation', () => {
       dayOfWeek: 1,
       startTime: '10:00',
       endTime: '11:00',
+      institutionId: 'inst-1',
     });
 
     expect(dates.length).toBeGreaterThan(0);
@@ -94,6 +95,7 @@ describe('ScheduleService - session generation', () => {
       dayOfWeek: 5,
       startTime: '10:00',
       endTime: '11:00',
+      institutionId: 'inst-1',
     });
 
     expect(dates.length).toBeGreaterThan(1);
@@ -119,6 +121,7 @@ describe('ScheduleService - session generation', () => {
       dayOfWeek: 5,
       startTime: '10:00',
       endTime: '11:00',
+      institutionId: 'inst-1',
     });
 
     dates.forEach((date) => {
@@ -143,6 +146,7 @@ describe('ScheduleService - session generation', () => {
       dayOfWeek: 5,
       startTime: '10:00',
       endTime: '11:00',
+      institutionId: 'inst-1',
     });
 
     const firstDate = dates[0];
@@ -168,6 +172,7 @@ describe('ScheduleService - session generation', () => {
       dayOfWeek: 5,
       startTime: '10:00',
       endTime: '11:00',
+      institutionId: 'inst-1',
     });
 
     expect(dates).toHaveLength(0);
