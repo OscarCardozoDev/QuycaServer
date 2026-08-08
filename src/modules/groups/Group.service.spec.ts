@@ -148,6 +148,74 @@ describe('GroupService — tenant & membership enforcement', () => {
     });
   });
 
+  describe('changeProfesor (membership guard)', () => {
+    const baseGroup = { uid: 'g1', profesorId: 'old-prof' };
+
+    it('throws ForbiddenException when newProfesorId has no UserInstitution row at all', async () => {
+      prisma.groups.findUnique.mockResolvedValue(baseGroup);
+      prisma.users.findUnique.mockResolvedValue({ uid: 'newProf', name: 'New' });
+      prisma.userInstitution.findMany.mockResolvedValue([]); // no row whatsoever
+
+      await expect(
+        service.changeProfesor({ groupId: 'g1', newProfesorId: 'newProf', institutionId }),
+      ).rejects.toThrow(ForbiddenException);
+      expect(prisma.groups.update).not.toHaveBeenCalled();
+    });
+
+    it('throws ForbiddenException when newProfesorId has a UserInstitution row but isActive is false', async () => {
+      prisma.groups.findUnique.mockResolvedValue(baseGroup);
+      prisma.users.findUnique.mockResolvedValue({ uid: 'newProf', name: 'New' });
+
+      // Distinct setup from the previous test: an actual row exists for this
+      // user, just with isActive: false (a baja). The production query
+      // filters `isActive: true` server-side, so a mock that just resolves
+      // `[]` again would make this test secretly identical to "no row at
+      // all". Instead, model a tiny fake table and let the query's `where`
+      // do the filtering, so the assertion genuinely exercises the
+      // isActive: true clause rather than restating the previous case.
+      const fakeRows = [{ userId: 'newProf', institutionId, isActive: false }];
+      prisma.userInstitution.findMany.mockImplementation(({ where }: any) =>
+        Promise.resolve(
+          fakeRows.filter(
+            (r) =>
+              where.userId.in.includes(r.userId) &&
+              r.institutionId === where.institutionId &&
+              r.isActive === where.isActive,
+          ),
+        ),
+      );
+
+      await expect(
+        service.changeProfesor({ groupId: 'g1', newProfesorId: 'newProf', institutionId }),
+      ).rejects.toThrow(ForbiddenException);
+      expect(prisma.groups.update).not.toHaveBeenCalled();
+    });
+
+    it('assigns the new profesor when they are an active member of the institution', async () => {
+      prisma.groups.findUnique.mockResolvedValue(baseGroup);
+      prisma.users.findUnique.mockResolvedValue({ uid: 'newProf', name: 'New' });
+      prisma.userInstitution.findMany.mockResolvedValue([{ userId: 'newProf' }]);
+      prisma.groups.update.mockResolvedValue({});
+      prisma.usersGroups.delete.mockResolvedValue({});
+      prisma.usersGroups.create.mockResolvedValue({});
+
+      const result = await service.changeProfesor({
+        groupId: 'g1',
+        newProfesorId: 'newProf',
+        institutionId,
+      });
+
+      expect(prisma.groups.update).toHaveBeenCalledWith({
+        where: { uid: 'g1' },
+        data: { profesorId: 'newProf' },
+      });
+      expect(prisma.usersGroups.create).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { userId: 'newProf', groupId: 'g1' } }),
+      );
+      expect(result.profesor).toEqual({ uid: 'newProf', name: 'New' });
+    });
+  });
+
   describe('createGroupUseCase (membership guard, profesorId + users[])', () => {
     it('throws ForbiddenException when an initial student uid is not an active member and never opens the transaction', async () => {
       prisma.userInstitution.findMany.mockResolvedValue([]);
