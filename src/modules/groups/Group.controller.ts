@@ -76,9 +76,14 @@ export class GroupController {
   @UseGuards(ContextRoleGuard)
   @RequireContextRole('rector', 'coordinator')
   @ApiOperation({ summary: 'Actualizar grupo' })
-  async update(@Param() params: GroupParamsDto, @Body() body: UpdateGroupDto) {
+  async update(
+    @Param() params: GroupParamsDto,
+    @Body() body: UpdateGroupDto,
+    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+  ) {
     return this.groupService.updateGroupUseCase({
       groupId: params.uid,
+      institutionId: institution.uid,
       data: {
         name: body.name,
         profesorId: body.profesorId,

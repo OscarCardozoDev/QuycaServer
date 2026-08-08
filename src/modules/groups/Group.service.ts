@@ -137,7 +137,7 @@ export class GroupService {
    * UPDATE
    * ========================= */
   async updateGroupUseCase(data: UpdateGroupUseCase) {
-    const { groupId, data: updateData } = data;
+    const { groupId, institutionId, data: updateData } = data;
 
     const group = await this.prisma.groups.findUnique({
       where: { uid: groupId },
@@ -145,6 +145,10 @@ export class GroupService {
 
     if (!group) {
       throw new NotFoundException('Group not found');
+    }
+
+    if (updateData.profesorId) {
+      await this.assertActiveMembers([updateData.profesorId], institutionId);
     }
 
     return this.prisma.$transaction(async (tx) => {

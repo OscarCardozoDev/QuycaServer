@@ -31,6 +31,7 @@ export interface CreateGroupUseCase {
 
 export interface UpdateGroupUseCase {
   groupId: string;
+  institutionId: string;
   data: {
     name?: string;
     profesorId?: string;

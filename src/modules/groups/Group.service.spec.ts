@@ -21,7 +21,7 @@ describe('GroupService — tenant & membership enforcement', () => {
 
   beforeEach(async () => {
     prisma = {
-      groups: { findUnique: jest.fn(), findMany: jest.fn(), update: jest.fn() },
+      groups: { findUnique: jest.fn(), findMany: jest.fn(), update: jest.fn(), create: jest.fn() },
       usersGroups: {
         findMany: jest.fn(),
         deleteMany: jest.fn(),
@@ -243,6 +243,71 @@ describe('GroupService — tenant & membership enforcement', () => {
         }),
       ).rejects.toThrow(ForbiddenException);
       expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('creates the group and enrolls profesorId + users[] when all are active members', async () => {
+      prisma.userInstitution.findMany.mockResolvedValue([
+        { userId: 'prof-1' },
+        { userId: 'student-1' },
+      ]);
+      prisma.groups.create.mockResolvedValue({ uid: 'g1' });
+      prisma.usersGroups.create.mockResolvedValue({});
+      prisma.usersGroups.createMany.mockResolvedValue({ count: 1 });
+
+      const result = await service.createGroupUseCase({
+        name: 'Grupo A',
+        categoryId: 'cat-1',
+        institutionId,
+        profesorId: 'prof-1',
+        users: ['student-1'],
+      });
+
+      expect(prisma.groups.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { name: 'Grupo A', profesorId: 'prof-1', institutionId, categoryId: 'cat-1' },
+        }),
+      );
+      expect(prisma.usersGroups.create).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { userId: 'prof-1', groupId: 'g1' } }),
+      );
+      expect(prisma.usersGroups.createMany).toHaveBeenCalledWith(
+        expect.objectContaining({ data: [{ userId: 'student-1', groupId: 'g1' }] }),
+      );
+      expect(result).toEqual({ uid: 'g1' });
+    });
+  });
+
+  describe('updateGroupUseCase (membership guard, optional profesorId)', () => {
+    it('throws ForbiddenException when the update payload assigns a non-member profesorId', async () => {
+      prisma.groups.findUnique.mockResolvedValue({ uid: 'g1' });
+      prisma.userInstitution.findMany.mockResolvedValue([]); // not a member
+
+      await expect(
+        service.updateGroupUseCase({
+          groupId: 'g1',
+          institutionId,
+          data: { profesorId: 'outsider' },
+        }),
+      ).rejects.toThrow(ForbiddenException);
+      expect(prisma.groups.update).not.toHaveBeenCalled();
+    });
+
+    it('updates without any membership query when profesorId is absent from the payload', async () => {
+      prisma.groups.findUnique.mockResolvedValue({ uid: 'g1' });
+      prisma.groups.update.mockResolvedValue({});
+
+      const result = await service.updateGroupUseCase({
+        groupId: 'g1',
+        institutionId,
+        data: { name: 'Nuevo nombre' },
+      });
+
+      expect(prisma.userInstitution.findMany).not.toHaveBeenCalled();
+      expect(prisma.groups.update).toHaveBeenCalledWith({
+        where: { uid: 'g1' },
+        data: { name: 'Nuevo nombre' },
+      });
+      expect(result).toEqual({ uid: 'g1' });
     });
   });
 });
