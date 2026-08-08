@@ -67,7 +67,6 @@ export interface UpdateUserUseCase {
   description?: string;
   gender?: string;
   telNumber?: string;
-  userTypeId?: string;
 }
 
 export interface UserUidResult {

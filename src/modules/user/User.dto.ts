@@ -120,11 +120,6 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   telNumber?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  userTypeId?: string;
 }
 
 export class UpdateUserPhotoDto {

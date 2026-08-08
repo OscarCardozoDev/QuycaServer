@@ -22,8 +22,9 @@ import {
 } from './User.dto';
 import type { JwtPayload } from 'src/interface/jwtPayload';
 import { AuthGuard } from 'src/middleware/jwt.guard';
-import { Roles } from 'src/decorators/roles.decorator';
 import { TenantGuard } from 'src/tenant/tenant.guard';
+import { ContextRoleGuard } from 'src/guards/context-role.guard';
+import { RequireContextRole } from 'src/decorators/context-role.decorator';
 import { Institution } from 'src/decorators/institution.decorator';
 
 @ApiTags('user')
@@ -58,13 +59,16 @@ export class UserController {
   @Post('professor')
   @ApiOperation({
     summary:
-      'Crear perfil de profesor (solo admin) — el profesor debe haber hecho register primero',
+      'Crear perfil de profesor (solo rector/coordinador) — el profesor debe haber hecho register primero',
   })
-  @UseGuards(AuthGuard)
-  @Roles('institution')
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @HttpCode(HttpStatus.CREATED)
   async createProfessor(@Body() body: CreateProfessorDto) {
-    // uid viene del body (UID de las Credentials del profesor), no del admin que hace la petición
+    // uid viene del body (UID de las Credentials del profesor), no del admin que hace la petición.
+    // No hay membresía de destino que validar: este flujo SIEMPRE otorga el rol
+    // 'independent' en quyca-platform, no en la institución activa del llamador — ver
+    // Task 11 report, Finding A / createProfessor, para la limitación conocida.
     return this.userService.createProfessorUseCase({
       uid: body.uid,
       user: {
@@ -121,12 +125,16 @@ export class UserController {
   }
 
   @Put(':uid')
-  @ApiOperation({ summary: 'Actualizar usuario por UID (admin)' })
-  @UseGuards(AuthGuard)
-  @Roles('institution')
+  @ApiOperation({ summary: 'Actualizar usuario por UID (rector/coordinador de su institución)' })
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @HttpCode(HttpStatus.OK)
-  async updateUser(@Param('uid') uid: string, @Body() body: UpdateUserDto) {
-    return this.userService.updateUser(uid, body);
+  async updateUser(
+    @Param('uid') uid: string,
+    @Body() body: UpdateUserDto,
+    @Institution() institution: { uid: string },
+  ) {
+    return this.userService.updateUser(uid, body, institution.uid);
   }
 
   @Patch('photo')
@@ -141,15 +149,16 @@ export class UserController {
   }
 
   @Patch(':uid/photo')
-  @ApiOperation({ summary: 'Actualizar foto de usuario por UID (admin)' })
-  @UseGuards(AuthGuard)
-  @Roles('institution')
+  @ApiOperation({ summary: 'Actualizar foto de usuario por UID (rector/coordinador de su institución)' })
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @HttpCode(HttpStatus.OK)
   async updateUserPhoto(
     @Param('uid') uid: string,
     @Body() body: UpdateUserPhotoDto,
+    @Institution() institution: { uid: string },
   ) {
-    return this.userService.updateUserPhoto(uid, body);
+    return this.userService.updateUserPhoto(uid, body, institution.uid);
   }
 
   @Patch('deactivate')
@@ -161,20 +170,26 @@ export class UserController {
   }
 
   @Patch(':uid/deactivate')
-  @ApiOperation({ summary: 'Desactivar usuario por UID (admin)' })
-  @UseGuards(AuthGuard)
-  @Roles('institution')
+  @ApiOperation({ summary: 'Desactivar usuario por UID (rector/coordinador de su institución)' })
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @HttpCode(HttpStatus.OK)
-  async deactivateUser(@Param('uid') uid: string) {
-    return this.userService.deactivateUser(uid);
+  async deactivateUser(
+    @Param('uid') uid: string,
+    @Institution() institution: { uid: string },
+  ) {
+    return this.userService.deactivateUser(uid, institution.uid);
   }
 
   @Patch(':uid/reactivate')
-  @ApiOperation({ summary: 'Reactivar usuario (admin)' })
-  @UseGuards(AuthGuard)
-  @Roles('institution')
+  @ApiOperation({ summary: 'Reactivar usuario (rector/coordinador de su institución)' })
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @HttpCode(HttpStatus.OK)
-  async reactivateUser(@Param('uid') uid: string) {
-    return this.userService.reactivateUser(uid);
+  async reactivateUser(
+    @Param('uid') uid: string,
+    @Institution() institution: { uid: string },
+  ) {
+    return this.userService.reactivateUser(uid, institution.uid);
   }
 }

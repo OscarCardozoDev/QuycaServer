@@ -260,10 +260,32 @@ export class UserService {
     }
   }
 
+  // Guards the five endpoints where a caller (a rector/coordinator acting
+  // with institution-level authority) supplies an arbitrary target uid.
+  // Throws NotFoundException, not ForbiddenException: a caller must not be
+  // able to distinguish "doesn't exist" from "exists in another
+  // institution" by probing uids. institutionId always comes from the
+  // verified active membership set by TenantGuard (@Institution()), never
+  // from the request body/params.
+  private async assertMemberOfInstitution(
+    userId: string,
+    institutionId: string,
+  ): Promise<void> {
+    const membership = await this.prismaService.userInstitution.findFirst({
+      where: { userId, institutionId, isActive: true },
+    });
+    if (!membership) throw new NotFoundException('User not found');
+  }
+
   async updateUser(
     uid: string,
     userData: UpdateUserDto,
+    institutionId?: string,
   ): Promise<UserUidResult> {
+    if (institutionId) {
+      await this.assertMemberOfInstitution(uid, institutionId);
+    }
+
     const existing = await this.prismaService.users.findUnique({
       where: { uid },
       select: { uid: true },
@@ -271,19 +293,20 @@ export class UserService {
     if (!existing)
       throw new NotFoundException(`User with uid ${uid} not found`);
 
-    const data = Object.fromEntries(
+    const data: any = Object.fromEntries(
       Object.entries(userData).filter(([, v]) => v !== undefined),
     );
-
-    const updateData: any = { ...data };
-    if (userData.userTypeId) {
-      delete updateData.userTypeId;
-      updateData.userType = { connect: { uid: userData.userTypeId } };
-    }
+    // userTypeId is intentionally not in UpdateUserDto anymore — changing a
+    // user's platform-level type is a super_admin operation, not something
+    // an institution administrator does (see Task 11 report, Finding A).
+    // Deleted defensively too: `data` is untyped past this point, so a
+    // caller bypassing the DTO (or a future field-set expansion) can't
+    // smuggle it through to the raw update.
+    delete data.userTypeId;
 
     const updated = await this.prismaService.users.update({
       where: { uid },
-      data: updateData,
+      data,
       select: { uid: true },
     });
     return { uid: updated.uid };
@@ -292,7 +315,12 @@ export class UserService {
   async updateUserPhoto(
     uid: string,
     photo: { base64: string; name: string; folder: string },
+    institutionId?: string,
   ): Promise<UserUidResult> {
+    if (institutionId) {
+      await this.assertMemberOfInstitution(uid, institutionId);
+    }
+
     const existing = await this.prismaService.users.findUnique({
       where: { uid },
       select: { uid: true, photoId: true },
@@ -319,7 +347,14 @@ export class UserService {
     return { uid: existing.uid, photo: { uid: created.uid } };
   }
 
-  async deactivateUser(uid: string): Promise<UserUidResult> {
+  async deactivateUser(
+    uid: string,
+    institutionId?: string,
+  ): Promise<UserUidResult> {
+    if (institutionId) {
+      await this.assertMemberOfInstitution(uid, institutionId);
+    }
+
     const user = await this.prismaService.users.findUnique({
       where: { uid },
       select: { uid: true },
@@ -334,7 +369,14 @@ export class UserService {
     return { uid: updated.uid };
   }
 
-  async reactivateUser(uid: string): Promise<UserUidResult> {
+  async reactivateUser(
+    uid: string,
+    institutionId?: string,
+  ): Promise<UserUidResult> {
+    if (institutionId) {
+      await this.assertMemberOfInstitution(uid, institutionId);
+    }
+
     const user = await this.prismaService.users.findUnique({
       where: { uid },
       select: { uid: true },
