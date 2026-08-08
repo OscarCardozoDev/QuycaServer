@@ -70,13 +70,35 @@ export class ProductService {
   }
 
   /* =========================
+   * FK GUARD
+   * `groupId` is a direct FK on `Products` supplied by the client. The
+   * tenant extension only scopes the top-level call it intercepts, not
+   * nested relations resolved by FK — an unchecked foreign groupId would
+   * let a `Products` row (correctly stamped with the caller's own
+   * institutionId) point at another tenant's group. `groups.findUnique`
+   * is itself scoped, so a foreign id simply comes back null.
+   * ========================= */
+  private async assertGroupInTenant(groupId: string): Promise<void> {
+    const group = await this.prisma.groups.findUnique({
+      where: { uid: groupId },
+      select: { uid: true },
+    });
+    if (!group) {
+      throw new NotFoundException('Group not found');
+    }
+  }
+
+  /* =========================
    * CREATE
    * ========================= */
   async createProductUseCase(data: CreateProductUseCase) {
     const { product, styles, images, authors, institutionId } = data;
 
-    // FASE 0️⃣ — Validar que autores y estilos pertenecen a la institución
-    // activa antes de escribir las tablas puente UserProduct/ProductStyle.
+    // FASE 0️⃣ — Validar que el grupo, los autores y los estilos pertenecen
+    // a la institución activa antes de escribir Products y las tablas
+    // puente UserProduct/ProductStyle.
+    await this.assertGroupInTenant(product.groupId);
+
     if (authors?.length) {
       await this.assertActiveMembers(
         authors.map((author) => author.userId),
