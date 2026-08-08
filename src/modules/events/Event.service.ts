@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PhotosService } from 'src/modules/photos/Photos.service';
+import { runWithoutTenant } from 'src/tenant/tenant-context';
 import {
   CreateEventUseCase,
   UpdateEventUseCase,
@@ -201,113 +202,129 @@ export class EventService {
     return Promise.all(events.map((e) => this.lazyComplete(e)));
   }
 
+  // Público: alimenta la galería sin sesión, ver Event.controller.ts.
   async getUpcoming(options: GetEventsOptions = {}) {
     const { page = 1, limit = 10, eventType } = options;
 
-    return this.prisma.events.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { startDate: 'asc' },
-      where: {
-        isActive: true,
-        status: EventStatus.APPROVED,
-        startDate: { gt: new Date() },
-        ...(eventType !== undefined && { eventType }),
-      },
-      select: {
-        uid: true,
-        name: true,
-        description: true,
-        eventType: true,
-        startDate: true,
-        endDate: true,
-        isVirtual: true,
-        groups: {
-          select: {
-            group: { select: { uid: true, name: true, categoryId: true } },
+    return runWithoutTenant(() =>
+      this.prisma.events.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { startDate: 'asc' },
+        where: {
+          isActive: true,
+          status: EventStatus.APPROVED,
+          startDate: { gt: new Date() },
+          ...(eventType !== undefined && { eventType }),
+        },
+        select: {
+          uid: true,
+          name: true,
+          description: true,
+          eventType: true,
+          startDate: true,
+          endDate: true,
+          isVirtual: true,
+          groups: {
+            select: {
+              group: { select: { uid: true, name: true, categoryId: true } },
+            },
+          },
+          photos: {
+            where: { photoType: EventPhotoType.HERO },
+            select: {
+              photoType: true,
+              photo: { select: { uid: true, url: true } },
+            },
+            take: 1,
           },
         },
-        photos: {
-          where: { photoType: EventPhotoType.HERO },
-          select: {
-            photoType: true,
-            photo: { select: { uid: true, url: true } },
-          },
-          take: 1,
-        },
-      },
-    });
+      }),
+    );
   }
 
+  // Público: alimenta la galería sin sesión, ver Event.controller.ts.
   async getPast(options: GetEventsOptions = {}) {
     const { page = 1, limit = 10, eventType } = options;
 
-    return this.prisma.events.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { startDate: 'desc' },
-      where: {
-        isActive: true,
-        status: EventStatus.COMPLETED,
-        ...(eventType !== undefined && { eventType }),
-      },
-      select: {
-        uid: true,
-        name: true,
-        description: true,
-        eventType: true,
-        startDate: true,
-        endDate: true,
-        groups: {
-          select: {
-            group: { select: { uid: true, name: true, categoryId: true } },
+    return runWithoutTenant(() =>
+      this.prisma.events.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { startDate: 'desc' },
+        where: {
+          isActive: true,
+          status: EventStatus.COMPLETED,
+          ...(eventType !== undefined && { eventType }),
+        },
+        select: {
+          uid: true,
+          name: true,
+          description: true,
+          eventType: true,
+          startDate: true,
+          endDate: true,
+          groups: {
+            select: {
+              group: { select: { uid: true, name: true, categoryId: true } },
+            },
+          },
+          photos: {
+            where: { photoType: EventPhotoType.HERO },
+            select: {
+              photoType: true,
+              photo: { select: { uid: true, url: true } },
+            },
+            take: 1,
           },
         },
-        photos: {
-          where: { photoType: EventPhotoType.HERO },
-          select: {
-            photoType: true,
-            photo: { select: { uid: true, url: true } },
-          },
-          take: 1,
-        },
-      },
-    });
+      }),
+    );
   }
 
   /**
    * Para la página de inicio: id, nombre, fecha y foto HERO
    * de los próximos eventos APPROVED.
+   * Público: alimenta la galería sin sesión, ver Event.controller.ts.
    */
   async getHome(options: GetEventsOptions = {}) {
     const { page = 1, limit = 6 } = options;
 
-    return this.prisma.events.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { startDate: 'asc' },
-      where: {
-        isActive: true,
-        status: EventStatus.APPROVED,
-        startDate: { gt: new Date() },
-      },
-      select: {
-        uid: true,
-        name: true,
-        eventType: true,
-        startDate: true,
-        photos: {
-          where: { photoType: EventPhotoType.HERO },
-          select: {
-            photoType: true,
-            photo: { select: { uid: true, url: true } },
-          },
-          take: 1,
+    return runWithoutTenant(() =>
+      this.prisma.events.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { startDate: 'asc' },
+        where: {
+          isActive: true,
+          status: EventStatus.APPROVED,
+          startDate: { gt: new Date() },
         },
-      },
-    });
+        select: {
+          uid: true,
+          name: true,
+          eventType: true,
+          startDate: true,
+          photos: {
+            where: { photoType: EventPhotoType.HERO },
+            select: {
+              photoType: true,
+              photo: { select: { uid: true, url: true } },
+            },
+            take: 1,
+          },
+        },
+      }),
+    );
   }
 
+  // NOT wrapped in runWithoutTenant — see Task 13 report.
+  // The controller's `get/:uid` route is public (no guard), but this query's
+  // `invitations` include exposes EventInvitation status per group (pending/
+  // accepted/rejected) — internal coordination state, not public-gallery
+  // content. Wrapping this as-is would newly expose that data to
+  // unauthenticated visitors. Flagged for a product decision rather than
+  // silently made public; the route stays 403 until that's resolved.
   async getById(uid: string) {
     const event = await this.prisma.events.findUnique({
       where: { uid },
@@ -360,35 +377,43 @@ export class EventService {
     return this.lazyComplete(event);
   }
 
+  // Público: alimenta la galería sin sesión, ver Event.controller.ts.
+  // `groups: { some: { groupId } }` es una condición anidada sobre GroupEvent/
+  // Groups (modelos scoped) que la extensión de tenant NO reescribe — solo
+  // intercepta la operación de nivel superior (`events.findMany`). Para este
+  // endpoint eso es exactamente lo buscado: un visitante sin sesión debe poder
+  // ver los eventos de cualquier grupo de cualquier institución.
   async getByGroup(groupId: string, options: GetEventsOptions = {}) {
     const { page = 1, limit = 10 } = options;
 
-    return this.prisma.events.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { startDate: 'asc' },
-      where: {
-        isActive: true,
-        status: { in: [EventStatus.APPROVED, EventStatus.COMPLETED] },
-        groups: { some: { groupId } },
-      },
-      select: {
-        uid: true,
-        name: true,
-        eventType: true,
-        status: true,
-        startDate: true,
-        endDate: true,
-        photos: {
-          where: { photoType: EventPhotoType.HERO },
-          select: {
-            photoType: true,
-            photo: { select: { uid: true, url: true } },
-          },
-          take: 1,
+    return runWithoutTenant(() =>
+      this.prisma.events.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { startDate: 'asc' },
+        where: {
+          isActive: true,
+          status: { in: [EventStatus.APPROVED, EventStatus.COMPLETED] },
+          groups: { some: { groupId } },
         },
-      },
-    });
+        select: {
+          uid: true,
+          name: true,
+          eventType: true,
+          status: true,
+          startDate: true,
+          endDate: true,
+          photos: {
+            where: { photoType: EventPhotoType.HERO },
+            select: {
+              photoType: true,
+              photo: { select: { uid: true, url: true } },
+            },
+            take: 1,
+          },
+        },
+      }),
+    );
   }
 
   /**

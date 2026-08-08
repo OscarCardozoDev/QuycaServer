@@ -6,6 +6,7 @@ import {
   CreateStyleUseCase,
   UpdateStyleUseCase,
 } from './Styles.interface';
+import { runWithoutTenant } from 'src/tenant/tenant-context';
 
 @Injectable()
 export class StylesService {
@@ -35,51 +36,60 @@ export class StylesService {
     }
   }
 
+  // Público: alimenta la galería sin sesión, ver Styles.controller.ts.
   async getAll(): Promise<Style[]> {
-    return this.prismaService.styles.findMany({
-      select: {
-        uid: true,
-        name: true,
-        description: true,
-        categoryId: true,
-        groupId: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    return runWithoutTenant(() =>
+      this.prismaService.styles.findMany({
+        select: {
+          uid: true,
+          name: true,
+          description: true,
+          categoryId: true,
+          groupId: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+    );
   }
 
+  // Público: alimenta la galería sin sesión, ver Styles.controller.ts.
   async getAllByGroup(categoryId: string): Promise<Style[]> {
-    return this.prismaService.styles.findMany({
-      where: { categoryId },
-      select: {
-        uid: true,
-        name: true,
-        description: true,
-        categoryId: true,
-        groupId: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    return runWithoutTenant(() =>
+      this.prismaService.styles.findMany({
+        where: { categoryId },
+        select: {
+          uid: true,
+          name: true,
+          description: true,
+          categoryId: true,
+          groupId: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+    );
   }
 
+  // Público: alimenta la galería sin sesión, ver Styles.controller.ts.
   async get(uid: string): Promise<Style> {
-    const style = await this.prismaService.styles.findUnique({
-      where: { uid },
-      select: {
-        uid: true,
-        name: true,
-        description: true,
-        groupId: true,
-        categoryId: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const style = await runWithoutTenant(() =>
+      this.prismaService.styles.findUnique({
+        where: { uid },
+        select: {
+          uid: true,
+          name: true,
+          description: true,
+          groupId: true,
+          categoryId: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+    );
 
     if (!style) throw new NotFoundException(`Style with uid ${uid} not found`);
     return style;

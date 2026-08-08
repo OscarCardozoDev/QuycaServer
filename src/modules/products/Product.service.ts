@@ -17,6 +17,7 @@ import {
 import { PhotosService } from 'src/modules/photos/Photos.service';
 import { photoManagement } from 'src/utils/photosManagement';
 import { v4 as uuidv4 } from 'uuid';
+import { runWithoutTenant } from 'src/tenant/tenant-context';
 
 @Injectable()
 export class ProductService {
@@ -211,102 +212,111 @@ export class ProductService {
   /* =========================
    * READ
    * ========================= */
+  // Público: alimenta la galería sin sesión, ver Product.controller.ts.
   async getAll(options: GetProductsOptions = {}) {
     const { page = 1, limit = 10, styleId } = options;
 
-    return this.prisma.products.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
-      where: { styles: { some: { styleId } } },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        authors: {
-          select: {
-            isAuthor: true,
-            user: {
-              select: {
-                name: true,
-                lastName: true,
+    return runWithoutTenant(() =>
+      this.prisma.products.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        where: { styles: { some: { styleId } } },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          authors: {
+            select: {
+              isAuthor: true,
+              user: {
+                select: {
+                  name: true,
+                  lastName: true,
+                },
+              },
+            },
+          },
+          photos: {
+            select: {
+              isMain: true,
+              photo: {
+                select: {
+                  uid: true,
+                  name: true,
+                  url: true,
+                },
               },
             },
           },
         },
-        photos: {
-          select: {
-            isMain: true,
-            photo: {
-              select: {
-                uid: true,
-                name: true,
-                url: true,
-              },
-            },
-          },
-        },
-      },
-    });
+      }),
+    );
   }
 
+  // Público: alimenta la galería sin sesión, ver Product.controller.ts.
   async getGalleryHome(options: GetProductsOptions = {}) {
     const { page = 1, limit = 10, styleId } = options;
 
-    return this.prisma.products.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-      where: {
-        isActive: true,
-        status: 'APPROVED',
-        styles: { some: { styleId } },
-      },
-      select: {
-        uid: true,
-        name: true,
-        photos: {
-          where: { isMain: true },
-          select: {
-            photo: {
-              select: {
-                uid: true,
-                name: true,
-                url: true,
+    return runWithoutTenant(() =>
+      this.prisma.products.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        where: {
+          isActive: true,
+          status: 'APPROVED',
+          styles: { some: { styleId } },
+        },
+        select: {
+          uid: true,
+          name: true,
+          photos: {
+            where: { isMain: true },
+            select: {
+              photo: {
+                select: {
+                  uid: true,
+                  name: true,
+                  url: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      }),
+    );
   }
 
+  // Público: alimenta la galería sin sesión, ver Product.controller.ts.
   async getById(uid: string) {
-    const product = await this.prisma.products.findUnique({
-      where: { uid },
-      include: {
-        authors: {
-          select: {
-            isAuthor: true,
-            userId: true,
-          },
-        },
-        photos: {
-          select: {
-            photo: {
-              select: {
-                uid: true,
-                name: true,
-                url: true,
-              },
+    const product = await runWithoutTenant(() =>
+      this.prisma.products.findUnique({
+        where: { uid },
+        include: {
+          authors: {
+            select: {
+              isAuthor: true,
+              userId: true,
             },
-            isMain: true,
+          },
+          photos: {
+            select: {
+              photo: {
+                select: {
+                  uid: true,
+                  name: true,
+                  url: true,
+                },
+              },
+              isMain: true,
+            },
+          },
+          styles: {
+            select: {
+              styleId: true,
+            },
           },
         },
-        styles: {
-          select: {
-            styleId: true,
-          },
-        },
-      },
-    });
+      }),
+    );
 
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -315,70 +325,76 @@ export class ProductService {
     return product;
   }
 
+  // Público: alimenta la galería sin sesión, ver Product.controller.ts.
   async getAllByGroup(groupId: string, options: GetProductsOptions = {}) {
     const { page = 1, limit = 10 } = options;
 
-    return this.prisma.products.findMany({
-      where: { groupId },
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        photos: {
-          select: {
-            photo: {
-              select: {
-                uid: true,
-                name: true,
-                url: true,
+    return runWithoutTenant(() =>
+      this.prisma.products.findMany({
+        where: { groupId },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          photos: {
+            select: {
+              photo: {
+                select: {
+                  uid: true,
+                  name: true,
+                  url: true,
+                },
               },
+              isMain: true,
             },
-            isMain: true,
+          },
+          authors: {
+            select: {
+              isAuthor: true,
+              userId: true,
+            },
           },
         },
-        authors: {
-          select: {
-            isAuthor: true,
-            userId: true,
-          },
-        },
-      },
-    });
+      }),
+    );
   }
 
+  // Público: alimenta la galería sin sesión, ver Product.controller.ts.
   async getAllByAuthor(authorId: string, options: GetProductsOptions = {}) {
     const { page = 1, limit = 10 } = options;
 
-    return this.prisma.products.findMany({
-      where: {
-        authors: {
-          some: { userId: authorId },
+    return runWithoutTenant(() =>
+      this.prisma.products.findMany({
+        where: {
+          authors: {
+            some: { userId: authorId },
+          },
         },
-      },
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        photos: {
-          where: { isMain: true },
-          select: {
-            photo: {
-              select: {
-                uid: true,
-                name: true,
-                url: true,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          photos: {
+            where: { isMain: true },
+            select: {
+              photo: {
+                select: {
+                  uid: true,
+                  name: true,
+                  url: true,
+                },
               },
             },
           },
-        },
-        authors: {
-          select: {
-            isAuthor: true,
-            userId: true,
+          authors: {
+            select: {
+              isAuthor: true,
+              userId: true,
+            },
           },
         },
-      },
-    });
+      }),
+    );
   }
 
   /* =========================
