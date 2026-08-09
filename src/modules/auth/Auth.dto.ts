@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsString, Length, Matches, MinLength } from 'class-validator';
 
 export class LoginDto {
-  @ApiProperty({ example: 'usuario@usantoto.edu.co' })
+  @ApiProperty({ example: 'artista@gmail.com' })
   @IsEmail()
   mail: string;
 
@@ -13,11 +13,11 @@ export class LoginDto {
 }
 
 export class RegisterDto {
-  @ApiProperty({ example: 'usuario@usantoto.edu.co' })
+  // Sin restriccion de dominio: Quyca es multi-institucion. Limitar el alta a
+  // @usantoto.edu.co dejaba fuera a toda institucion que no sea la USTA y a
+  // los artistas independientes, que son la mitad del modelo de registro.
+  @ApiProperty({ example: 'artista@gmail.com' })
   @IsEmail()
-  @Matches(/@usantoto\.edu\.co$/, {
-    message: 'Solo se permiten correos institucionales (@usantoto.edu.co)',
-  })
   mail: string;
 
   @ApiProperty({ example: 'password123' })
@@ -35,13 +35,13 @@ export class VerifyCodeDto {
 }
 
 export class ForgotPasswordDto {
-  @ApiProperty({ example: 'usuario@usantoto.edu.co' })
+  @ApiProperty({ example: 'artista@gmail.com' })
   @IsEmail()
   mail: string;
 }
 
 export class ResetPasswordDto {
-  @ApiProperty({ example: 'usuario@usantoto.edu.co' })
+  @ApiProperty({ example: 'artista@gmail.com' })
   @IsEmail()
   mail: string;
 
