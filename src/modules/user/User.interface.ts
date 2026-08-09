@@ -30,6 +30,10 @@ export interface UserWithRelations extends User {
   photo?: { uid: string; url?: string } | null;
   role?: { uid: string; name?: string; slug?: string } | null;
   groups?: { group: { uid: string; name?: string } }[] | null;
+  // Solo lo devuelve getActiveUsers, acotado a la institución consultada: es
+  // el rol del usuario EN esa institución, y es lo único que distingue a un
+  // profesor invitado de un artista autodidacta.
+  userInstitutions?: { contextRole: string; joinedAt: Date }[] | null;
 }
 
 export interface CreateStudentUseCase {

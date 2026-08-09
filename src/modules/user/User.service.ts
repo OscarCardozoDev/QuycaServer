@@ -49,13 +49,36 @@ export class UserService {
     private readonly configService: ConfigService,
   ) {}
 
+  /**
+   * Usuarios activos de una institución, con el rol que tienen EN ESA
+   * institución.
+   *
+   * `Users` no tiene tenant a propósito: una misma persona puede ser profesor
+   * en una institución y estudiante en otra. El rol vive entonces en
+   * `UserInstitution.contextRole`, no en `Users`. Sin este dato en la
+   * respuesta, un profesor que acepta una invitación es indistinguible de un
+   * artista autodidacta — la membresía se crea con `contextRole:
+   * 'institutional'`, pero nadie del lado del cliente puede verlo.
+   *
+   * El `where` anidado no es decorativo: acota la membresía a la institución
+   * que se está consultando. Sin él se filtrarían las membresías del usuario
+   * en OTRAS instituciones, que es justamente lo que el aislamiento evita.
+   * `UserInstitution` no pasa por la extensión de Prisma (es un modelo de
+   * bootstrap), así que acá el filtro es explícito y obligatorio.
+   */
   async getActiveUsers(institutionId: string): Promise<UserWithRelations[]> {
     return this.prismaService.users.findMany({
       where: {
         isActive: true,
         userInstitutions: { some: { institutionId, isActive: true } },
       },
-      select: USER_SELECT,
+      select: {
+        ...USER_SELECT,
+        userInstitutions: {
+          where: { institutionId, isActive: true },
+          select: { contextRole: true, joinedAt: true },
+        },
+      },
     });
   }
 

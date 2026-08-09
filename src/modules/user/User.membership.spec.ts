@@ -136,3 +136,49 @@ describe('CreateStudentDto — roleId is no longer accepted', () => {
     expect(errors).toHaveLength(0);
   });
 });
+
+/**
+ * Prueba estructural: asserta la FORMA de la query a Prisma, no solo que el
+ * resultado se vea bien. Es lo único que puede fijar el `where` anidado, que
+ * no cambia ningún valor de retorno en un mock — y es justo el que evita
+ * filtrar las membresías del usuario en OTRAS instituciones.
+ */
+describe('UserService.getActiveUsers — el rol viaja acotado a la institución', () => {
+  let service: UserService;
+  let prismaMock: any;
+
+  beforeEach(() => {
+    prismaMock = { users: { findMany: jest.fn().mockResolvedValue([]) } };
+    service = new UserService(prismaMock as any, {} as any, { get: jest.fn() } as any);
+  });
+
+  it('pide el contextRole de la institución consultada', async () => {
+    await service.getActiveUsers('inst-a');
+
+    const args = prismaMock.users.findMany.mock.calls[0][0];
+    expect(args.select.userInstitutions.select).toEqual({
+      contextRole: true,
+      joinedAt: true,
+    });
+  });
+
+  it('acota la membresía incluida a esa institución y solo a las activas', async () => {
+    await service.getActiveUsers('inst-a');
+
+    const args = prismaMock.users.findMany.mock.calls[0][0];
+    expect(args.select.userInstitutions.where).toEqual({
+      institutionId: 'inst-a',
+      isActive: true,
+    });
+  });
+
+  it('sigue filtrando los usuarios por membresía activa en esa institución', async () => {
+    await service.getActiveUsers('inst-a');
+
+    const args = prismaMock.users.findMany.mock.calls[0][0];
+    expect(args.where).toEqual({
+      isActive: true,
+      userInstitutions: { some: { institutionId: 'inst-a', isActive: true } },
+    });
+  });
+});
