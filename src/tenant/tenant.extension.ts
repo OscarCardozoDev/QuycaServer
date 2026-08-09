@@ -57,11 +57,30 @@ const WHERE_OPERATIONS = new Set([
 const DATA_OPERATIONS = new Set(['create', 'createMany', 'createManyAndReturn']);
 
 /**
+ * Subconjunto de WHERE_OPERATIONS cuyo `where` es un `<Model>WhereUniqueInput`
+ * en vez de un `<Model>WhereInput`.
+ *
+ * Prisma valida que un WhereUniqueInput tenga al menos un campo único como
+ * propiedad DIRECTA del objeto. `{ AND: [{ uid }, { institutionId }] }` no
+ * cumple esa condición aunque el `uid` esté adentro del array, y Prisma lanza
+ * `PrismaClientValidationError: Argument 'where' ... needs at least one of
+ * 'uid' arguments`. Por eso acá el filtro se mezcla plano
+ * (`{ ...where, institutionId }`), que es la forma que extendedWhereUnique sí
+ * acepta. El resto de las operaciones toma WhereInput, que no tiene esa
+ * restricción, y se sigue envolviendo en AND.
+ */
+const UNIQUE_WHERE_OPERATIONS = new Set([
+  'findUnique', 'findUniqueOrThrow', 'update', 'delete', 'upsert',
+]);
+
+/**
  * Devuelve una copia de `args` con el filtro de tenant aplicado.
  *
  * Prisma 5+ admite campos no únicos junto al campo único en el `where` de
  * findUnique, update y delete (extendedWhereUnique), así que se inyecta
  * uniformemente en lugar de verificar la propiedad después de la consulta.
+ * La forma de la inyección depende del tipo de `where` — ver
+ * UNIQUE_WHERE_OPERATIONS.
  *
  * Falla cerrado: si `operation` no está en WHERE_OPERATIONS ni en
  * DATA_OPERATIONS, lanza en lugar de devolver `args` sin tocar. Sin este
@@ -89,7 +108,11 @@ export function buildScopedArgs(
   const next = { ...(args ?? {}) };
 
   if (isWhereOp) {
-    next.where = { AND: [next.where ?? {}, { institutionId }] };
+    // institutionId va último en la forma plana: sobrescribe el que haya
+    // provisto el caller, igual que en las operaciones de data.
+    next.where = UNIQUE_WHERE_OPERATIONS.has(operation)
+      ? { ...(next.where ?? {}), institutionId }
+      : { AND: [next.where ?? {}, { institutionId }] };
   }
 
   if (isDataOp) {
@@ -99,6 +122,10 @@ export function buildScopedArgs(
   }
 
   // upsert crea si no existe: la fila nueva también lleva el tenant.
+  // Efecto de borde deliberado: si el `where` apunta a una fila de OTRA
+  // institución, el filtro hace que no matchee y upsert toma la rama create —
+  // se crea una fila nueva en el tenant activo en vez de modificar la ajena.
+  // No hay escritura cross-tenant, que es la garantía que importa acá.
   if (operation === 'upsert') {
     next.create = { ...next.create, institutionId };
   }

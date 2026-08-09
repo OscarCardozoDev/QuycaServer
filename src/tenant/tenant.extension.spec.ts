@@ -74,10 +74,35 @@ describe('buildScopedArgs', () => {
     expect(args.where).toEqual({ AND: [{}, { institutionId: inst }] });
   });
 
-  it('inyecta el where en findUnique', () => {
-    const args = buildScopedArgs('findUnique', { where: { uid: 'g1' } }, inst);
+  // Las operaciones que toman WhereUniqueInput reciben el filtro PLANO, no
+  // envuelto en AND: Prisma exige que el campo único sea propiedad directa del
+  // objeto. Ver UNIQUE_WHERE_OPERATIONS en tenant.extension.ts.
+  it.each(['findUnique', 'findUniqueOrThrow', 'update', 'delete', 'upsert'])(
+    'inyecta el where PLANO en %s',
+    (operation) => {
+      const args = buildScopedArgs(operation, { where: { uid: 'g1' } }, inst);
+      expect(args.where).toEqual({ uid: 'g1', institutionId: inst });
+    },
+  );
+
+  it('el where plano SOBRESCRIBE un institutionId de otro tenant', () => {
+    const args = buildScopedArgs(
+      'findUnique',
+      { where: { uid: 'g1', institutionId: 'inst-INTRUSA' } },
+      inst,
+    );
+    expect(args.where).toEqual({ uid: 'g1', institutionId: inst });
+  });
+
+  it('conserva una clave única compuesta al inyectar plano', () => {
+    const args = buildScopedArgs(
+      'findUnique',
+      { where: { classId_userId: { classId: 'c1', userId: 'u1' } } },
+      inst,
+    );
     expect(args.where).toEqual({
-      AND: [{ uid: 'g1' }, { institutionId: inst }],
+      classId_userId: { classId: 'c1', userId: 'u1' },
+      institutionId: inst,
     });
   });
 
@@ -121,14 +146,9 @@ describe('buildScopedArgs', () => {
       { where: { uid: 'g1' }, create: { name: 'A' }, update: { name: 'B' } },
       inst,
     );
-    expect(args.where).toEqual({ AND: [{ uid: 'g1' }, { institutionId: inst }] });
+    expect(args.where).toEqual({ uid: 'g1', institutionId: inst });
     expect(args.create).toEqual({ name: 'A', institutionId: inst });
     expect(args.update).toEqual({ name: 'B' });
-  });
-
-  it('inyecta el where en delete', () => {
-    const args = buildScopedArgs('delete', { where: { uid: 'g1' } }, inst);
-    expect(args.where).toEqual({ AND: [{ uid: 'g1' }, { institutionId: inst }] });
   });
 
   it('inyecta el where en updateMany', () => {
