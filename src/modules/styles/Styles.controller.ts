@@ -32,6 +32,17 @@ export class StylesController {
     return this.stylesService.getAll();
   }
 
+  // Contraparte scopeada de /styles/all: misma lista, filtrada por la
+  // institución del usuario. La galería pública usa /styles/all; el dashboard
+  // usa esta, para no ofrecerle a un artista los estilos de otra institución.
+  @Get('mine')
+  @UseGuards(AuthGuard, TenantGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Obtener los estilos de la institución activa' })
+  async getMyStyles() {
+    return this.stylesService.getMine();
+  }
+
   @Get('all/:categoryId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Obtener estilos por categoría' })

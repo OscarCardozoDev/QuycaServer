@@ -54,6 +54,33 @@ export class StylesService {
     );
   }
 
+  /**
+   * Estilos de la institución activa.
+   *
+   * Deliberadamente SIN runWithoutTenant: es lo único que lo distingue de
+   * getAll(). La extensión de Prisma inyecta el institutionId del store, así
+   * que devuelve solo los estilos del tenant en curso.
+   *
+   * Existe porque getAll() y getAllByGroup() son públicos y cross-tenant —
+   * alimentan la galería, que es una vitrina y muestra a todas las
+   * instituciones. Usarlos desde el dashboard le ofrecería al artista los
+   * estilos definidos por otra institución.
+   */
+  async getMine(): Promise<Style[]> {
+    return this.prismaService.styles.findMany({
+      select: {
+        uid: true,
+        name: true,
+        description: true,
+        categoryId: true,
+        groupId: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
   // Público: alimenta la galería sin sesión, ver Styles.controller.ts.
   async getAllByGroup(categoryId: string): Promise<Style[]> {
     return runWithoutTenant(() =>
