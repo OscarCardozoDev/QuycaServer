@@ -31,6 +31,9 @@ describe('GroupService — tenant & membership enforcement', () => {
       },
       users: { findUnique: jest.fn() },
       userInstitution: { findMany: jest.fn() },
+      // No es la plataforma en estos casos: el límite de Task 2 no debe
+      // activarse ni afectar estas suites de membership.
+      institution: { findUnique: jest.fn().mockResolvedValue(null) },
       $transaction: jest.fn((fn) => fn(prisma)),
     };
 

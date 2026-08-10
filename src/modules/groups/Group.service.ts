@@ -4,6 +4,8 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -17,6 +19,21 @@ import {
   AddStudentToGroupsUseCase,
   ChangeProfesorUseCase,
 } from './Group.interface';
+
+/**
+ * Slug de la institución donde viven los artistas independientes.
+ * Sus grupos son buckets de publicación, no aulas.
+ */
+export const PLATFORM_SLUG = 'quyca-platform';
+
+/**
+ * Grupos de plataforma gratuitos por usuario. Los grupos de una institución
+ * NO cuentan: los paga el plan de esa institución.
+ *
+ * Cuando exista pasarela de pago, esta constante se reemplaza por el cupo
+ * comprado por el usuario. Ver obsidian/Tareas/Ideas Futuras.md § Pasarela de pago.
+ */
+export const FREE_PLATFORM_GROUPS = 1;
 
 @Injectable()
 export class GroupService {
@@ -110,6 +127,10 @@ export class GroupService {
       select: {
         uid: true,
         name: true,
+        // La usa el frontend para la imagen del grupo. Antes mapeaba nombres
+        // hardcodeados ('Musica Instrumental', 'Dibujo y pintura') que
+        // resolvían undefined para cualquier grupo nuevo.
+        groupCategory: { select: { slug: true } },
       },
     });
   }
@@ -316,6 +337,28 @@ export class GroupService {
 
     // Validar que el usuario sea miembro activo de esta institución
     await this.assertActiveMembers([userId], institutionId);
+
+    // Límite de grupos gratuitos, solo dentro de quyca-platform.
+    // Institution es modelo bootstrap: no pasa por la extensión, el filtro va explícito.
+    const platform = await this.prisma.institution.findUnique({
+      where: { slug: PLATFORM_SLUG },
+      select: { uid: true },
+    });
+
+    if (platform && institutionId === platform.uid) {
+      // UsersGroups es tabla puente y no lleva institutionId: se acota por la
+      // relación al grupo, que sí lo tiene.
+      const current = await this.prisma.usersGroups.count({
+        where: { userId, group: { institutionId: platform.uid } },
+      });
+
+      if (current + groupIds.length > FREE_PLATFORM_GROUPS) {
+        throw new HttpException(
+          `Ya tenés ${FREE_PLATFORM_GROUPS} grupo de Quyca. Sumar más grupos requiere un plan pago.`,
+          HttpStatus.PAYMENT_REQUIRED,
+        );
+      }
+    }
 
     // Intentar agregar a todos los grupos
     const results = await Promise.allSettled(
