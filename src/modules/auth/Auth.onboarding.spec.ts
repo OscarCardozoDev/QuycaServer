@@ -58,7 +58,41 @@ describe('AuthService.getCredentialByEmail — estado de onboarding', () => {
 
     expect(prisma.institutionInvitation.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ toEmail: 'a@b.com', status: 'PENDING' }),
+        where: expect.objectContaining({
+          toEmail: 'a@b.com',
+          status: 'PENDING',
+          expiresAt: { gt: expect.any(Date) },
+        }),
+      }),
+    );
+  });
+
+  // Pruebas estructurales: assertan la FORMA del `where`, no un valor de
+  // retorno — el mock de Jest devuelve lo configurado sin mirar el filtro
+  // que recibe, así que solo esto puede fijarlo. Sin esto, alguien podría
+  // borrar `isActive: true` o cambiar el filtro de UsersGroups a `{ userId }`
+  // suelto y la suite entera seguiría en verde. Mismo patrón que
+  // User.membership.spec.ts y Group.platform-limit.spec.ts.
+
+  it('busca las membresías del usuario acotadas a las activas', async () => {
+    await service.getCredentialByEmail('a@b.com');
+
+    expect(prisma.userInstitution.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: 'u1', isActive: true },
+      }),
+    );
+  });
+
+  it('el grupo de plataforma se busca atravesando la relación al grupo, no por userId suelto', async () => {
+    // UsersGroups es tabla puente sin institutionId propio: filtrar solo por
+    // userId devolvería grupos de CUALQUIER institución, no solo la de
+    // plataforma. Esto fija que el filtro atraviesa group.institutionId.
+    await service.getCredentialByEmail('a@b.com');
+
+    expect(prisma.usersGroups.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: 'u1', group: { institutionId: 'platform-uid' } },
       }),
     );
   });
