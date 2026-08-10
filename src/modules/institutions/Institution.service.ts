@@ -175,4 +175,25 @@ export class InstitutionService {
 
     return { status: 'ACCEPTED' };
   }
+
+  /**
+   * Planes disponibles para el alta y el cambio de plan.
+   *
+   * SubscriptionPlan NO está en SCOPED_MODELS, así que la extensión de Prisma
+   * ni lo mira: este método es público y NO necesita runWithoutTenant().
+   * Agregárselo "por las dudas" sugeriría una protección que no existe.
+   *
+   * stripePriceId queda fuera del select a propósito: es un identificador de
+   * facturación, no información de producto.
+   */
+  async listPlans() {
+    return this.prismaService.subscriptionPlan.findMany({
+      where: { isActive: true },
+      select: {
+        uid: true, name: true, slug: true,
+        features: true, maxUsers: true, maxGroups: true, priceUsd: true,
+      },
+      orderBy: { priceUsd: 'asc' },
+    });
+  }
 }
