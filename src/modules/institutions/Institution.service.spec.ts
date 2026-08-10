@@ -42,16 +42,19 @@ describe('InstitutionService', () => {
       prisma.institution.findUnique.mockResolvedValue(mockInstitution);
       await expect(service.createInstitution({
         name: 'Test', slug: 'test-uni', type: 'EDUCATIONAL',
-        planSlug: 'academia', representativeName: 'A', representativeLastName: 'B',
+        representativeName: 'A', representativeLastName: 'B',
         email: 'a@b.com', password: 'Pass@1234!',
       })).rejects.toThrow(ConflictException);
     });
 
-    it('throws NotFoundException when plan slug not found', async () => {
+    // El plan ya no lo elige el caller: nace en el plan por defecto
+    // ("empirico"). Si ese plan no existe en la base (seed no corrido), sigue
+    // siendo un 404.
+    it('throws NotFoundException when default plan is not seeded', async () => {
       prisma.subscriptionPlan.findUnique.mockResolvedValue(null);
       await expect(service.createInstitution({
         name: 'Test', slug: 'new-slug', type: 'EDUCATIONAL',
-        planSlug: 'invalid', representativeName: 'A', representativeLastName: 'B',
+        representativeName: 'A', representativeLastName: 'B',
         email: 'a@b.com', password: 'Pass@1234!',
       })).rejects.toThrow(NotFoundException);
     });
@@ -66,7 +69,7 @@ describe('InstitutionService', () => {
 
       const result = await service.createInstitution({
         name: 'Test Uni', slug: 'test-uni', type: 'EDUCATIONAL',
-        planSlug: 'academia', representativeName: 'John', representativeLastName: 'Doe',
+        representativeName: 'John', representativeLastName: 'Doe',
         email: 'rector@test.edu', password: 'Pass@1234!',
       });
 

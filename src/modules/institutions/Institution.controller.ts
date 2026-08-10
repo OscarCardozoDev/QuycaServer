@@ -1,5 +1,5 @@
 import {
-  Controller, Post, Get, Patch, Body, Param, UseGuards, Req,
+  Controller, Post, Get, Patch, Body, Param, UseGuards, Req, ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { InstitutionService } from './Institution.service';
@@ -12,7 +12,7 @@ import type { AuthenticatedRequest } from 'src/interface/jwtPayload';
 import type { Institution as InstitutionModel, SubscriptionPlan } from 'src/generated/prisma/client';
 import {
   CreateInstitutionDto, UpdateInstitutionDto,
-  CreateInvitationDto, RespondInvitationDto,
+  CreateInvitationDto, RespondInvitationDto, ChangePlanDto,
 } from './Institution.dto';
 
 @ApiTags('institutions')
@@ -43,6 +43,24 @@ export class InstitutionController {
     @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
   ) {
     return this.institutionService.update(institution.uid, dto);
+  }
+
+  @Patch('institutions/:id/plan')
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector')
+  @ApiOperation({ summary: 'Elegir o cambiar el plan de la institución' })
+  async changePlan(
+    @Param('id') id: string,
+    @Body() dto: ChangePlanDto,
+    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+  ) {
+    // El `:id` NO autoriza: la institución la resuelve el TenantGuard desde el
+    // header X-Institution-Slug. Se valida que coincidan para que el parámetro
+    // no sugiera un control que no existe.
+    if (id !== institution.uid) {
+      throw new ForbiddenException('El id no corresponde a la institución activa');
+    }
+    return this.institutionService.changePlan(institution.uid, dto.planSlug ?? null);
   }
 
   @Post('institutions/:id/invitations')

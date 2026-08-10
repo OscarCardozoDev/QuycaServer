@@ -524,6 +524,11 @@ model Institution {
   trialEndsAt        DateTime?
   subscriptionEndsAt DateTime?
 
+  /// Cuándo el rector decidió su plan. Null = todavía no decidió, y el
+  /// onboarding le muestra la pantalla de planes. Elegir "seguir con el
+  /// gratuito" también lo sella: omitir ES una decisión.
+  planChosenAt       DateTime?
+
   subscriptionPlan  SubscriptionPlan       @relation(fields: [subscriptionPlanId], references: [uid])
   userInstitutions  UserInstitution[]
   groups            Groups[]

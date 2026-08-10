@@ -9,6 +9,9 @@ import {
   CreateInstitutionUseCase, CreateInvitationUseCase, RespondInvitationUseCase,
 } from './Institution.interface';
 
+/** Plan por defecto de toda institución nueva. El rector lo cambia después. */
+const DEFAULT_PLAN_SLUG = 'empirico';
+
 @Injectable()
 export class InstitutionService {
   constructor(
@@ -17,10 +20,17 @@ export class InstitutionService {
   ) {}
 
   async createInstitution(data: CreateInstitutionUseCase): Promise<{ uid: string }> {
+    // El plan ya no viene del caller: la institución nace en el gratuito y el
+    // rector elige después, una vez verificado el correo. Ver el spec de
+    // onboarding multi-institución.
     const plan = await this.prismaService.subscriptionPlan.findUnique({
-      where: { slug: data.planSlug },
+      where: { slug: DEFAULT_PLAN_SLUG },
     });
-    if (!plan) throw new NotFoundException(`Plan "${data.planSlug}" not found`);
+    if (!plan) {
+      throw new NotFoundException(
+        `Plan "${DEFAULT_PLAN_SLUG}" not found — run prisma:seed:static`,
+      );
+    }
 
     const existing = await this.prismaService.institution.findUnique({
       where: { slug: data.slug },
@@ -40,6 +50,7 @@ export class InstitutionService {
           status: 'TRIAL',
           subscriptionPlanId: plan.uid,
           trialEndsAt,
+          planChosenAt: null,
         },
         select: { uid: true },
       });
@@ -195,5 +206,41 @@ export class InstitutionService {
       },
       orderBy: { priceUsd: 'asc' },
     });
+  }
+
+  /**
+   * Cambia el plan de la institución, o solo sella la decisión si planSlug es
+   * null ("seguir con el gratuito").
+   *
+   * Institution es modelo bootstrap: no pasa por la extensión, el where va
+   * explícito. El institutionId lo resuelve el TenantGuard desde el header.
+   *
+   * Hoy asigna el plan directamente, sin cobrar. Cuando exista pasarela, este
+   * método pasa a abrir un checkout y el plan cambia recién con el webhook.
+   * Ver obsidian/Tareas/Ideas Futuras.md § Pasarela de pago.
+   */
+  async changePlan(
+    institutionId: string,
+    planSlug: string | null,
+  ): Promise<{ uid: string }> {
+    if (!planSlug) {
+      await this.prismaService.institution.update({
+        where: { uid: institutionId },
+        data: { planChosenAt: new Date() },
+      });
+      return { uid: institutionId };
+    }
+
+    const plan = await this.prismaService.subscriptionPlan.findUnique({
+      where: { slug: planSlug },
+    });
+    if (!plan) throw new NotFoundException(`Plan "${planSlug}" not found`);
+
+    await this.prismaService.institution.update({
+      where: { uid: institutionId },
+      data: { subscriptionPlanId: plan.uid, planChosenAt: new Date() },
+    });
+
+    return { uid: institutionId };
   }
 }

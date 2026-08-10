@@ -33,6 +33,7 @@ export type InstitutionMinAggregateOutputType = {
   subscriptionPlanId: string | null
   trialEndsAt: Date | null
   subscriptionEndsAt: Date | null
+  planChosenAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -46,6 +47,7 @@ export type InstitutionMaxAggregateOutputType = {
   subscriptionPlanId: string | null
   trialEndsAt: Date | null
   subscriptionEndsAt: Date | null
+  planChosenAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -59,6 +61,7 @@ export type InstitutionCountAggregateOutputType = {
   subscriptionPlanId: number
   trialEndsAt: number
   subscriptionEndsAt: number
+  planChosenAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -74,6 +77,7 @@ export type InstitutionMinAggregateInputType = {
   subscriptionPlanId?: true
   trialEndsAt?: true
   subscriptionEndsAt?: true
+  planChosenAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -87,6 +91,7 @@ export type InstitutionMaxAggregateInputType = {
   subscriptionPlanId?: true
   trialEndsAt?: true
   subscriptionEndsAt?: true
+  planChosenAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -100,6 +105,7 @@ export type InstitutionCountAggregateInputType = {
   subscriptionPlanId?: true
   trialEndsAt?: true
   subscriptionEndsAt?: true
+  planChosenAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -186,6 +192,7 @@ export type InstitutionGroupByOutputType = {
   subscriptionPlanId: string
   trialEndsAt: Date | null
   subscriptionEndsAt: Date | null
+  planChosenAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: InstitutionCountAggregateOutputType | null
@@ -220,6 +227,7 @@ export type InstitutionWhereInput = {
   subscriptionPlanId?: Prisma.UuidFilter<"Institution"> | string
   trialEndsAt?: Prisma.DateTimeNullableFilter<"Institution"> | Date | string | null
   subscriptionEndsAt?: Prisma.DateTimeNullableFilter<"Institution"> | Date | string | null
+  planChosenAt?: Prisma.DateTimeNullableFilter<"Institution"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Institution"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Institution"> | Date | string
   subscriptionPlan?: Prisma.XOR<Prisma.SubscriptionPlanScalarRelationFilter, Prisma.SubscriptionPlanWhereInput>
@@ -244,6 +252,7 @@ export type InstitutionOrderByWithRelationInput = {
   subscriptionPlanId?: Prisma.SortOrder
   trialEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   subscriptionEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  planChosenAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   subscriptionPlan?: Prisma.SubscriptionPlanOrderByWithRelationInput
@@ -271,6 +280,7 @@ export type InstitutionWhereUniqueInput = Prisma.AtLeast<{
   subscriptionPlanId?: Prisma.UuidFilter<"Institution"> | string
   trialEndsAt?: Prisma.DateTimeNullableFilter<"Institution"> | Date | string | null
   subscriptionEndsAt?: Prisma.DateTimeNullableFilter<"Institution"> | Date | string | null
+  planChosenAt?: Prisma.DateTimeNullableFilter<"Institution"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Institution"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Institution"> | Date | string
   subscriptionPlan?: Prisma.XOR<Prisma.SubscriptionPlanScalarRelationFilter, Prisma.SubscriptionPlanWhereInput>
@@ -295,6 +305,7 @@ export type InstitutionOrderByWithAggregationInput = {
   subscriptionPlanId?: Prisma.SortOrder
   trialEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   subscriptionEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  planChosenAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.InstitutionCountOrderByAggregateInput
@@ -314,6 +325,7 @@ export type InstitutionScalarWhereWithAggregatesInput = {
   subscriptionPlanId?: Prisma.UuidWithAggregatesFilter<"Institution"> | string
   trialEndsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Institution"> | Date | string | null
   subscriptionEndsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Institution"> | Date | string | null
+  planChosenAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Institution"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Institution"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Institution"> | Date | string
 }
@@ -326,6 +338,7 @@ export type InstitutionCreateInput = {
   status?: $Enums.InstitutionStatus
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscriptionPlan: Prisma.SubscriptionPlanCreateNestedOneWithoutInstitutionsInput
@@ -350,6 +363,7 @@ export type InstitutionUncheckedCreateInput = {
   subscriptionPlanId: string
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedCreateNestedManyWithoutInstitutionInput
@@ -372,6 +386,7 @@ export type InstitutionUpdateInput = {
   status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscriptionPlan?: Prisma.SubscriptionPlanUpdateOneRequiredWithoutInstitutionsNestedInput
@@ -396,6 +411,7 @@ export type InstitutionUncheckedUpdateInput = {
   subscriptionPlanId?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -419,6 +435,7 @@ export type InstitutionCreateManyInput = {
   subscriptionPlanId: string
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -431,6 +448,7 @@ export type InstitutionUpdateManyMutationInput = {
   status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -444,6 +462,7 @@ export type InstitutionUncheckedUpdateManyInput = {
   subscriptionPlanId?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -472,6 +491,7 @@ export type InstitutionCountOrderByAggregateInput = {
   subscriptionPlanId?: Prisma.SortOrder
   trialEndsAt?: Prisma.SortOrder
   subscriptionEndsAt?: Prisma.SortOrder
+  planChosenAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -485,6 +505,7 @@ export type InstitutionMaxOrderByAggregateInput = {
   subscriptionPlanId?: Prisma.SortOrder
   trialEndsAt?: Prisma.SortOrder
   subscriptionEndsAt?: Prisma.SortOrder
+  planChosenAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -498,6 +519,7 @@ export type InstitutionMinOrderByAggregateInput = {
   subscriptionPlanId?: Prisma.SortOrder
   trialEndsAt?: Prisma.SortOrder
   subscriptionEndsAt?: Prisma.SortOrder
+  planChosenAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -700,6 +722,7 @@ export type InstitutionCreateWithoutGroupsInput = {
   status?: $Enums.InstitutionStatus
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscriptionPlan: Prisma.SubscriptionPlanCreateNestedOneWithoutInstitutionsInput
@@ -723,6 +746,7 @@ export type InstitutionUncheckedCreateWithoutGroupsInput = {
   subscriptionPlanId: string
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedCreateNestedManyWithoutInstitutionInput
@@ -760,6 +784,7 @@ export type InstitutionUpdateWithoutGroupsInput = {
   status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscriptionPlan?: Prisma.SubscriptionPlanUpdateOneRequiredWithoutInstitutionsNestedInput
@@ -783,6 +808,7 @@ export type InstitutionUncheckedUpdateWithoutGroupsInput = {
   subscriptionPlanId?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -804,6 +830,7 @@ export type InstitutionCreateWithoutProductsInput = {
   status?: $Enums.InstitutionStatus
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscriptionPlan: Prisma.SubscriptionPlanCreateNestedOneWithoutInstitutionsInput
@@ -827,6 +854,7 @@ export type InstitutionUncheckedCreateWithoutProductsInput = {
   subscriptionPlanId: string
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedCreateNestedManyWithoutInstitutionInput
@@ -864,6 +892,7 @@ export type InstitutionUpdateWithoutProductsInput = {
   status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscriptionPlan?: Prisma.SubscriptionPlanUpdateOneRequiredWithoutInstitutionsNestedInput
@@ -887,6 +916,7 @@ export type InstitutionUncheckedUpdateWithoutProductsInput = {
   subscriptionPlanId?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -908,6 +938,7 @@ export type InstitutionCreateWithoutStylesInput = {
   status?: $Enums.InstitutionStatus
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscriptionPlan: Prisma.SubscriptionPlanCreateNestedOneWithoutInstitutionsInput
@@ -931,6 +962,7 @@ export type InstitutionUncheckedCreateWithoutStylesInput = {
   subscriptionPlanId: string
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedCreateNestedManyWithoutInstitutionInput
@@ -968,6 +1000,7 @@ export type InstitutionUpdateWithoutStylesInput = {
   status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscriptionPlan?: Prisma.SubscriptionPlanUpdateOneRequiredWithoutInstitutionsNestedInput
@@ -991,6 +1024,7 @@ export type InstitutionUncheckedUpdateWithoutStylesInput = {
   subscriptionPlanId?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1012,6 +1046,7 @@ export type InstitutionCreateWithoutEventsInput = {
   status?: $Enums.InstitutionStatus
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscriptionPlan: Prisma.SubscriptionPlanCreateNestedOneWithoutInstitutionsInput
@@ -1035,6 +1070,7 @@ export type InstitutionUncheckedCreateWithoutEventsInput = {
   subscriptionPlanId: string
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1072,6 +1108,7 @@ export type InstitutionUpdateWithoutEventsInput = {
   status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscriptionPlan?: Prisma.SubscriptionPlanUpdateOneRequiredWithoutInstitutionsNestedInput
@@ -1095,6 +1132,7 @@ export type InstitutionUncheckedUpdateWithoutEventsInput = {
   subscriptionPlanId?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1116,6 +1154,7 @@ export type InstitutionCreateWithoutSchedulesInput = {
   status?: $Enums.InstitutionStatus
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscriptionPlan: Prisma.SubscriptionPlanCreateNestedOneWithoutInstitutionsInput
@@ -1139,6 +1178,7 @@ export type InstitutionUncheckedCreateWithoutSchedulesInput = {
   subscriptionPlanId: string
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1176,6 +1216,7 @@ export type InstitutionUpdateWithoutSchedulesInput = {
   status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscriptionPlan?: Prisma.SubscriptionPlanUpdateOneRequiredWithoutInstitutionsNestedInput
@@ -1199,6 +1240,7 @@ export type InstitutionUncheckedUpdateWithoutSchedulesInput = {
   subscriptionPlanId?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1220,6 +1262,7 @@ export type InstitutionCreateWithoutClassesInput = {
   status?: $Enums.InstitutionStatus
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscriptionPlan: Prisma.SubscriptionPlanCreateNestedOneWithoutInstitutionsInput
@@ -1243,6 +1286,7 @@ export type InstitutionUncheckedCreateWithoutClassesInput = {
   subscriptionPlanId: string
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1280,6 +1324,7 @@ export type InstitutionUpdateWithoutClassesInput = {
   status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscriptionPlan?: Prisma.SubscriptionPlanUpdateOneRequiredWithoutInstitutionsNestedInput
@@ -1303,6 +1348,7 @@ export type InstitutionUncheckedUpdateWithoutClassesInput = {
   subscriptionPlanId?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1324,6 +1370,7 @@ export type InstitutionCreateWithoutAttendancesInput = {
   status?: $Enums.InstitutionStatus
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscriptionPlan: Prisma.SubscriptionPlanCreateNestedOneWithoutInstitutionsInput
@@ -1347,6 +1394,7 @@ export type InstitutionUncheckedCreateWithoutAttendancesInput = {
   subscriptionPlanId: string
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1384,6 +1432,7 @@ export type InstitutionUpdateWithoutAttendancesInput = {
   status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscriptionPlan?: Prisma.SubscriptionPlanUpdateOneRequiredWithoutInstitutionsNestedInput
@@ -1407,6 +1456,7 @@ export type InstitutionUncheckedUpdateWithoutAttendancesInput = {
   subscriptionPlanId?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1428,6 +1478,7 @@ export type InstitutionCreateWithoutSubscriptionPlanInput = {
   status?: $Enums.InstitutionStatus
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   userInstitutions?: Prisma.UserInstitutionCreateNestedManyWithoutInstitutionInput
@@ -1450,6 +1501,7 @@ export type InstitutionUncheckedCreateWithoutSubscriptionPlanInput = {
   status?: $Enums.InstitutionStatus
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1502,6 +1554,7 @@ export type InstitutionScalarWhereInput = {
   subscriptionPlanId?: Prisma.UuidFilter<"Institution"> | string
   trialEndsAt?: Prisma.DateTimeNullableFilter<"Institution"> | Date | string | null
   subscriptionEndsAt?: Prisma.DateTimeNullableFilter<"Institution"> | Date | string | null
+  planChosenAt?: Prisma.DateTimeNullableFilter<"Institution"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Institution"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Institution"> | Date | string
 }
@@ -1514,6 +1567,7 @@ export type InstitutionCreateWithoutUserInstitutionsInput = {
   status?: $Enums.InstitutionStatus
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscriptionPlan: Prisma.SubscriptionPlanCreateNestedOneWithoutInstitutionsInput
@@ -1537,6 +1591,7 @@ export type InstitutionUncheckedCreateWithoutUserInstitutionsInput = {
   subscriptionPlanId: string
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1574,6 +1629,7 @@ export type InstitutionUpdateWithoutUserInstitutionsInput = {
   status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscriptionPlan?: Prisma.SubscriptionPlanUpdateOneRequiredWithoutInstitutionsNestedInput
@@ -1597,6 +1653,7 @@ export type InstitutionUncheckedUpdateWithoutUserInstitutionsInput = {
   subscriptionPlanId?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   groups?: Prisma.GroupsUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1618,6 +1675,7 @@ export type InstitutionCreateWithoutInvitationsInput = {
   status?: $Enums.InstitutionStatus
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscriptionPlan: Prisma.SubscriptionPlanCreateNestedOneWithoutInstitutionsInput
@@ -1641,6 +1699,7 @@ export type InstitutionUncheckedCreateWithoutInvitationsInput = {
   subscriptionPlanId: string
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1678,6 +1737,7 @@ export type InstitutionUpdateWithoutInvitationsInput = {
   status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscriptionPlan?: Prisma.SubscriptionPlanUpdateOneRequiredWithoutInstitutionsNestedInput
@@ -1701,6 +1761,7 @@ export type InstitutionUncheckedUpdateWithoutInvitationsInput = {
   subscriptionPlanId?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1722,6 +1783,7 @@ export type InstitutionCreateWithoutContentRequestsInput = {
   status?: $Enums.InstitutionStatus
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   subscriptionPlan: Prisma.SubscriptionPlanCreateNestedOneWithoutInstitutionsInput
@@ -1745,6 +1807,7 @@ export type InstitutionUncheckedCreateWithoutContentRequestsInput = {
   subscriptionPlanId: string
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1782,6 +1845,7 @@ export type InstitutionUpdateWithoutContentRequestsInput = {
   status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscriptionPlan?: Prisma.SubscriptionPlanUpdateOneRequiredWithoutInstitutionsNestedInput
@@ -1805,6 +1869,7 @@ export type InstitutionUncheckedUpdateWithoutContentRequestsInput = {
   subscriptionPlanId?: Prisma.StringFieldUpdateOperationsInput | string
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1826,6 +1891,7 @@ export type InstitutionCreateManySubscriptionPlanInput = {
   status?: $Enums.InstitutionStatus
   trialEndsAt?: Date | string | null
   subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1838,6 +1904,7 @@ export type InstitutionUpdateWithoutSubscriptionPlanInput = {
   status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userInstitutions?: Prisma.UserInstitutionUpdateManyWithoutInstitutionNestedInput
@@ -1860,6 +1927,7 @@ export type InstitutionUncheckedUpdateWithoutSubscriptionPlanInput = {
   status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   userInstitutions?: Prisma.UserInstitutionUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1882,6 +1950,7 @@ export type InstitutionUncheckedUpdateManyWithoutSubscriptionPlanInput = {
   status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -2007,6 +2076,7 @@ export type InstitutionSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   subscriptionPlanId?: boolean
   trialEndsAt?: boolean
   subscriptionEndsAt?: boolean
+  planChosenAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   subscriptionPlan?: boolean | Prisma.SubscriptionPlanDefaultArgs<ExtArgs>
@@ -2032,6 +2102,7 @@ export type InstitutionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   subscriptionPlanId?: boolean
   trialEndsAt?: boolean
   subscriptionEndsAt?: boolean
+  planChosenAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   subscriptionPlan?: boolean | Prisma.SubscriptionPlanDefaultArgs<ExtArgs>
@@ -2046,6 +2117,7 @@ export type InstitutionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   subscriptionPlanId?: boolean
   trialEndsAt?: boolean
   subscriptionEndsAt?: boolean
+  planChosenAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   subscriptionPlan?: boolean | Prisma.SubscriptionPlanDefaultArgs<ExtArgs>
@@ -2060,11 +2132,12 @@ export type InstitutionSelectScalar = {
   subscriptionPlanId?: boolean
   trialEndsAt?: boolean
   subscriptionEndsAt?: boolean
+  planChosenAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type InstitutionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "name" | "slug" | "type" | "status" | "subscriptionPlanId" | "trialEndsAt" | "subscriptionEndsAt" | "createdAt" | "updatedAt", ExtArgs["result"]["institution"]>
+export type InstitutionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "name" | "slug" | "type" | "status" | "subscriptionPlanId" | "trialEndsAt" | "subscriptionEndsAt" | "planChosenAt" | "createdAt" | "updatedAt", ExtArgs["result"]["institution"]>
 export type InstitutionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   subscriptionPlan?: boolean | Prisma.SubscriptionPlanDefaultArgs<ExtArgs>
   userInstitutions?: boolean | Prisma.Institution$userInstitutionsArgs<ExtArgs>
@@ -2110,6 +2183,12 @@ export type $InstitutionPayload<ExtArgs extends runtime.Types.Extensions.Interna
     subscriptionPlanId: string
     trialEndsAt: Date | null
     subscriptionEndsAt: Date | null
+    /**
+     * Cuándo el rector decidió su plan. Null = todavía no decidió, y el
+     * onboarding le muestra la pantalla de planes. Elegir "seguir con el
+     * gratuito" también lo sella: omitir ES una decisión.
+     */
+    planChosenAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["institution"]>
@@ -2554,6 +2633,7 @@ export interface InstitutionFieldRefs {
   readonly subscriptionPlanId: Prisma.FieldRef<"Institution", 'String'>
   readonly trialEndsAt: Prisma.FieldRef<"Institution", 'DateTime'>
   readonly subscriptionEndsAt: Prisma.FieldRef<"Institution", 'DateTime'>
+  readonly planChosenAt: Prisma.FieldRef<"Institution", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Institution", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Institution", 'DateTime'>
 }

@@ -2,7 +2,6 @@ export interface CreateInstitutionUseCase {
   name: string;
   slug: string;
   type: 'EDUCATIONAL' | 'INDEPENDENT';
-  planSlug: string;
   representativeName: string;
   representativeLastName: string;
   email: string;

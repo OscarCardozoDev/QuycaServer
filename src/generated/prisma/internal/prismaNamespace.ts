@@ -2775,6 +2775,7 @@ export const InstitutionScalarFieldEnum = {
   subscriptionPlanId: 'subscriptionPlanId',
   trialEndsAt: 'trialEndsAt',
   subscriptionEndsAt: 'subscriptionEndsAt',
+  planChosenAt: 'planChosenAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

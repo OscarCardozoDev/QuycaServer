@@ -6,7 +6,6 @@ export class CreateInstitutionDto {
   @ApiProperty() @IsString() slug: string;
   @ApiProperty({ enum: ['EDUCATIONAL', 'INDEPENDENT'] })
   @IsIn(['EDUCATIONAL', 'INDEPENDENT']) type: 'EDUCATIONAL' | 'INDEPENDENT';
-  @ApiProperty() @IsString() planSlug: string;
   @ApiProperty() @IsString() representativeName: string;
   @ApiProperty() @IsString() representativeLastName: string;
   @ApiProperty() @IsEmail() email: string;
@@ -26,4 +25,13 @@ export class CreateInvitationDto {
 
 export class RespondInvitationDto {
   @ApiProperty() @IsBoolean() accept: boolean;
+}
+
+export class ChangePlanDto {
+  /**
+   * `null` = "seguir con el gratuito": no cambia de plan, solo registra que
+   * el rector ya decidió, para que el onboarding no vuelva a preguntar.
+   */
+  @ApiProperty({ required: false, nullable: true, example: 'academia' })
+  @IsOptional() @IsString() planSlug?: string | null;
 }
