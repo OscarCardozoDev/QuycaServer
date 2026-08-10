@@ -139,6 +139,41 @@ async function main() {
     console.log('  ⏭  Institution "quyca-platform" already exists');
   }
 
+  // 6. Grupos de plataforma: uno por GroupCategory, dentro de quyca-platform.
+  // Son buckets de publicación para artistas independientes: sin profesor,
+  // sin horarios y sin clases. Ver el spec de onboarding multi-institución.
+  const platform = await prisma.institution.findUnique({
+    where: { slug: 'quyca-platform' },
+    select: { uid: true },
+  });
+  if (!platform) {
+    throw new Error('Institution "quyca-platform" not found — no se puede sembrar sus grupos');
+  }
+
+  const allCategories = await prisma.groupCategory.findMany({
+    select: { uid: true, name: true },
+  });
+
+  for (const cat of allCategories) {
+    const existing = await prisma.groups.findFirst({
+      where: { institutionId: platform.uid, name: cat.name },
+      select: { uid: true },
+    });
+    if (!existing) {
+      await prisma.groups.create({
+        data: {
+          name: cat.name,
+          institutionId: platform.uid,
+          categoryId: cat.uid,
+          profesorId: null,
+        },
+      });
+      console.log(`  ✅ Grupo de plataforma "${cat.name}" created`);
+    } else {
+      console.log(`  ⏭  Grupo de plataforma "${cat.name}" already exists`);
+    }
+  }
+
   console.log('\n🎉 Seed complete.');
 }
 

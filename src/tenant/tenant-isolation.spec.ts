@@ -359,4 +359,25 @@ describe('mecánica de scoping (Groups como representativo — la lógica es gen
     const institutions = new Set(groups.map((g) => g.institutionId));
     expect(institutions.size).toBe(2);
   });
+
+  it('los grupos de plataforma no aparecen para otra institución', async () => {
+    const platform = await raw.institution.findUnique({
+      where: { slug: 'quyca-platform' },
+      select: { uid: true },
+    });
+    expect(platform).not.toBeNull();
+
+    const platformGroups = await raw.groups.count({
+      where: { institutionId: platform!.uid },
+    });
+    expect(platformGroups).toBeGreaterThan(0);
+
+    // Con instA activa, la extensión no debe devolver ninguno de ellos.
+    const visible = await runInStore(
+      { institutionId: instA, bypass: false },
+      () => prisma.groups.findMany({ select: { uid: true, institutionId: true } }),
+    );
+
+    expect(visible.every((g) => g.institutionId === instA)).toBe(true);
+  });
 });
