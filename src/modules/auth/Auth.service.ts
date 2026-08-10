@@ -13,7 +13,7 @@ import {
   GetCredentialResult,
   CredentialWithoutProfile,
 } from './Auth.interface';
-import { resolveOnboardingSteps } from './onboarding-steps';
+import { resolveOnboardingSteps, OnboardingStep } from './onboarding-steps';
 import { PLATFORM_SLUG } from 'src/modules/groups/Group.service';
 import { hashText } from 'src/utils/crypto.util';
 import { randomInt } from 'crypto';
@@ -30,7 +30,7 @@ export class AuthService {
   ): Promise<GetCredentialResult | null> {
     const credential = await this.prismaService.credentials.findUnique({
       where: { mail },
-      select: { uid: true, mail: true, password: true, isEmailVerified: true },
+      select: { uid: true, mail: true, password: true },
     });
 
     if (!credential) return null;
@@ -40,10 +40,42 @@ export class AuthService {
       select: { userTypeId: true },
     });
 
+    return {
+      uid: credential.uid,
+      password: credential.password,
+      userTypeId: userProfile?.userTypeId ?? null,
+      nextSteps: await this.getOnboardingSteps(credential.uid, credential.mail),
+    };
+  }
+
+  /**
+   * Único lugar donde se arma el `OnboardingState`. Lo usan el login y el
+   * registro: cuando cada uno lo resolvía por su cuenta, el alta de artista
+   * terminaba con la lista de pasos escrita a mano en el frontend y un
+   * profesor invitado que se registraba nunca llegaba a `accept-invitation`.
+   *
+   * Consulta `isEmailVerified` y `hasProfile` por su cuenta a propósito: son
+   * dos lookups por clave primaria, y es el precio de que no exista una
+   * segunda copia de estas reglas.
+   */
+  async getOnboardingSteps(
+    uid: string,
+    mail: string,
+  ): Promise<OnboardingStep[]> {
+    const credential = await this.prismaService.credentials.findUnique({
+      where: { uid },
+      select: { isEmailVerified: true },
+    });
+
+    const userProfile = await this.prismaService.users.findUnique({
+      where: { uid },
+      select: { uid: true },
+    });
+
     // UserInstitution e Institution son modelos bootstrap: no pasan por la
     // extensión de Prisma, así que cada filtro va escrito a mano.
     const memberships = await this.prismaService.userInstitution.findMany({
-      where: { userId: credential.uid, isActive: true },
+      where: { userId: uid, isActive: true },
       select: { contextRole: true, institution: { select: { planChosenAt: true } } },
     });
 
@@ -52,7 +84,7 @@ export class AuthService {
     const pendingInvitation =
       await this.prismaService.institutionInvitation.findFirst({
         where: {
-          toEmail: credential.mail,
+          toEmail: mail,
           status: 'PENDING',
           expiresAt: { gt: new Date() },
         },
@@ -68,26 +100,19 @@ export class AuthService {
     // relación al grupo.
     const platformGroup = platform
       ? await this.prismaService.usersGroups.findFirst({
-          where: { userId: credential.uid, group: { institutionId: platform.uid } },
+          where: { userId: uid, group: { institutionId: platform.uid } },
           select: { uid: true },
         })
       : null;
 
-    const nextSteps = resolveOnboardingSteps({
-      isEmailVerified: credential.isEmailVerified,
+    return resolveOnboardingSteps({
+      isEmailVerified: Boolean(credential?.isEmailVerified),
       hasProfile: Boolean(userProfile),
       hasPendingInvitation: Boolean(pendingInvitation),
       isRector: Boolean(rectorMembership),
       institutionNeedsPlan: rectorMembership?.institution.planChosenAt == null,
       hasPlatformGroup: Boolean(platformGroup),
     });
-
-    return {
-      uid: credential.uid,
-      password: credential.password,
-      userTypeId: userProfile?.userTypeId ?? null,
-      nextSteps,
-    };
   }
 
   async setCredentialData(auth: RegisterDto): Promise<{ uid: string }> {

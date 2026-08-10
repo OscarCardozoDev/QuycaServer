@@ -10,13 +10,20 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './Auth.service';
 import { hashText, verifyText } from 'src/utils/crypto.util';
-import { LoginDto, RegisterDto, VerifyCodeDto, ForgotPasswordDto, ResetPasswordDto } from './Auth.dto';
+import {
+  LoginDto,
+  RegisterDto,
+  VerifyCodeDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  AuthSessionResponseDto,
+} from './Auth.dto';
 import { AuthGuard } from 'src/middleware/jwt.guard';
 import type { AuthenticatedRequest } from 'src/interface/jwtPayload';
 import { Roles } from 'src/decorators/roles.decorator';
@@ -42,10 +49,11 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({ summary: 'Iniciar sesión' })
+  @ApiResponse({ status: 201, type: AuthSessionResponseDto })
   async login(
     @Body() auth: LoginDto,
     @Res({ passthrough: true }) res: Response,
-  ) {
+  ): Promise<AuthSessionResponseDto> {
     const credential = await this.authService.getCredentialByEmail(auth.mail);
     const isProduction =
       this.configService.get<string>('config.nodeEnv') === 'production';
@@ -74,10 +82,12 @@ export class AuthController {
 
   @Post('register')
   @ApiOperation({ summary: 'Registrar usuario' })
+  @ApiResponse({ status: 201, type: AuthSessionResponseDto })
   async register(
     @Body() auth: RegisterDto,
     @Res({ passthrough: true }) res: Response,
-  ) {
+  ): Promise<AuthSessionResponseDto> {
+    const mail = auth.mail;
     auth.password = await hashText(auth.password);
 
     const { uid } = await this.authService.setCredentialData(auth);
@@ -88,7 +98,14 @@ export class AuthController {
 
     res.cookie('access_token', token, this.cookieOptions(isProduction));
 
-    return { message: 'User registered successfully', isEmailVerified: false };
+    // Los pasos los resuelve el backend igual que en el login. Antes el
+    // registro solo devolvía `isEmailVerified: false` y el frontend inventaba
+    // la lista, con lo cual un profesor invitado que se registraba se saltaba
+    // `accept-invitation`.
+    return {
+      message: 'User registered successfully',
+      nextSteps: await this.authService.getOnboardingSteps(uid, mail),
+    };
   }
 
   @Post('logout')

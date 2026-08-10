@@ -9,12 +9,15 @@
  * en "crear perfil" teniendo perfil. Ver
  * obsidian/Decisiones/Pasos-de-Onboarding-desde-el-Backend.md
  */
-export type OnboardingStep =
-  | 'verify-email'
-  | 'create-profile'
-  | 'choose-platform-group'
-  | 'choose-plan'
-  | 'accept-invitation';
+export const ONBOARDING_STEPS = [
+  'verify-email',
+  'create-profile',
+  'choose-platform-group',
+  'choose-plan',
+  'accept-invitation',
+] as const;
+
+export type OnboardingStep = (typeof ONBOARDING_STEPS)[number];
 
 export interface OnboardingState {
   isEmailVerified: boolean;

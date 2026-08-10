@@ -97,3 +97,55 @@ describe('AuthService.getCredentialByEmail — estado de onboarding', () => {
     );
   });
 });
+
+describe('AuthService.getOnboardingSteps — recién registrado', () => {
+  // Estado de una cuenta que acaba de salir de POST /auth/register: credencial
+  // sin verificar, sin fila en Users, sin membresías y sin grupo de plataforma.
+  let service: AuthService;
+  let prisma: any;
+
+  beforeEach(async () => {
+    prisma = {
+      credentials: {
+        findUnique: jest.fn().mockResolvedValue({ isEmailVerified: false }),
+      },
+      users: { findUnique: jest.fn().mockResolvedValue(null) },
+      usersGroups: { findFirst: jest.fn().mockResolvedValue(null) },
+      userInstitution: { findMany: jest.fn().mockResolvedValue([]) },
+      institutionInvitation: { findFirst: jest.fn().mockResolvedValue(null) },
+      institution: { findUnique: jest.fn().mockResolvedValue({ uid: 'platform-uid' }) },
+    };
+
+    const module = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: ConfigService, useValue: { get: jest.fn() } },
+      ],
+    }).compile();
+
+    service = module.get(AuthService);
+  });
+
+  it('con invitación pendiente para su correo termina en accept-invitation', async () => {
+    // El profesor invitado sin cuenta se da de alta por el formulario de
+    // artista. POST /user/create le va a dar igual una membresía self-taught en
+    // quyca-platform, así que la membresía no lo distingue: solo la invitación.
+    prisma.institutionInvitation.findFirst.mockResolvedValue({ uid: 'inv1' });
+
+    const steps = await service.getOnboardingSteps('u1', 'profe@usta.edu.co');
+
+    expect(steps).toEqual(['verify-email', 'create-profile', 'accept-invitation']);
+    expect(steps).not.toContain('choose-platform-group');
+  });
+
+  it('sin invitación pendiente termina en choose-platform-group', async () => {
+    const steps = await service.getOnboardingSteps('u1', 'artista@gmail.com');
+
+    expect(steps).toEqual([
+      'verify-email',
+      'create-profile',
+      'choose-platform-group',
+    ]);
+  });
+});

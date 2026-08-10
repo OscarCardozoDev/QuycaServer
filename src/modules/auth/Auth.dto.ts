@@ -1,5 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsString, Length, Matches, MinLength } from 'class-validator';
+import { ONBOARDING_STEPS, OnboardingStep } from './onboarding-steps';
+
+/**
+ * Respuesta de /auth/login y /auth/register. Las dos devuelven lo mismo porque
+ * las dos abren sesión: el frontend monta el wizard con `nextSteps` sin
+ * importar por cuál de los dos entró.
+ *
+ * `isEmailVerified` ya no viaja: quedaba implícito en que `verify-email`
+ * aparezca o no en `nextSteps`, y tener las dos cosas invitaba a que se
+ * contradijeran.
+ */
+export class AuthSessionResponseDto {
+  @ApiProperty({ example: 'Login successful' })
+  message: string;
+
+  @ApiProperty({
+    description:
+      'Pasos pendientes del alta, en orden. Vacío = va directo al dashboard.',
+    enum: ONBOARDING_STEPS,
+    isArray: true,
+    example: ['verify-email', 'create-profile', 'choose-platform-group'],
+  })
+  nextSteps: OnboardingStep[];
+}
 
 export class LoginDto {
   @ApiProperty({ example: 'artista@gmail.com' })
