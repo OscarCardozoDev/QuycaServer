@@ -13,6 +13,8 @@ import {
   GetCredentialResult,
   CredentialWithoutProfile,
 } from './Auth.interface';
+import { resolveOnboardingSteps } from './onboarding-steps';
+import { PLATFORM_SLUG } from 'src/modules/groups/Group.service';
 import { hashText } from 'src/utils/crypto.util';
 import { randomInt } from 'crypto';
 
@@ -28,11 +30,7 @@ export class AuthService {
   ): Promise<GetCredentialResult | null> {
     const credential = await this.prismaService.credentials.findUnique({
       where: { mail },
-      select: {
-        uid: true,
-        password: true,
-        isEmailVerified: true,
-      },
+      select: { uid: true, mail: true, password: true, isEmailVerified: true },
     });
 
     if (!credential) return null;
@@ -41,15 +39,54 @@ export class AuthService {
       where: { uid: credential.uid },
       select: { userTypeId: true },
     });
-    const hasGroup = await this.prismaService.usersGroups.findFirst({
-      where: { userId: credential.uid },
+
+    // UserInstitution e Institution son modelos bootstrap: no pasan por la
+    // extensión de Prisma, así que cada filtro va escrito a mano.
+    const memberships = await this.prismaService.userInstitution.findMany({
+      where: { userId: credential.uid, isActive: true },
+      select: { contextRole: true, institution: { select: { planChosenAt: true } } },
+    });
+
+    const rectorMembership = memberships.find((m) => m.contextRole === 'rector');
+
+    const pendingInvitation =
+      await this.prismaService.institutionInvitation.findFirst({
+        where: {
+          toEmail: credential.mail,
+          status: 'PENDING',
+          expiresAt: { gt: new Date() },
+        },
+        select: { uid: true },
+      });
+
+    const platform = await this.prismaService.institution.findUnique({
+      where: { slug: PLATFORM_SLUG },
+      select: { uid: true },
+    });
+
+    // UsersGroups es tabla puente y no lleva institutionId: se acota por la
+    // relación al grupo.
+    const platformGroup = platform
+      ? await this.prismaService.usersGroups.findFirst({
+          where: { userId: credential.uid, group: { institutionId: platform.uid } },
+          select: { uid: true },
+        })
+      : null;
+
+    const nextSteps = resolveOnboardingSteps({
+      isEmailVerified: credential.isEmailVerified,
+      hasProfile: Boolean(userProfile),
+      hasPendingInvitation: Boolean(pendingInvitation),
+      isRector: Boolean(rectorMembership),
+      institutionNeedsPlan: rectorMembership?.institution.planChosenAt == null,
+      hasPlatformGroup: Boolean(platformGroup),
     });
 
     return {
-      ...credential,
-      hasProfile: Boolean(userProfile),
-      hasGroup: Boolean(hasGroup),
+      uid: credential.uid,
+      password: credential.password,
       userTypeId: userProfile?.userTypeId ?? null,
+      nextSteps,
     };
   }
 

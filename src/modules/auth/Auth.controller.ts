@@ -68,9 +68,7 @@ export class AuthController {
 
     return {
       message: 'Login successful',
-      hasProfile: credential.hasProfile,
-      hasGroup: credential.hasGroup,
-      isEmailVerified: credential.isEmailVerified,
+      nextSteps: credential.nextSteps,
     };
   }
 
