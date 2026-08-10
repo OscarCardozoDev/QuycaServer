@@ -60,6 +60,15 @@ export class GroupController {
     return this.groupService.getAll(query);
   }
 
+  @Get('mine')
+  @ApiOperation({ summary: 'Grupos del usuario autenticado' })
+  async getMine(
+    @CurrentUser('uid') uid: string,
+    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+  ) {
+    return this.groupService.getMyGroups(uid, institution.uid);
+  }
+
   @Get('get/:uid')
   @ApiOperation({ summary: 'Obtener grupo por UID' })
   async getById(@Param() params: GroupParamsDto) {

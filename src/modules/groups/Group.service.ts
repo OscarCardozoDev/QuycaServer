@@ -276,6 +276,33 @@ export class GroupService {
     });
   }
 
+  /* =========================
+   * GET MY GROUPS
+   * ========================= */
+
+  /**
+   * Grupos del usuario dentro de la institución activa.
+   *
+   * UsersGroups es tabla puente: no tiene institutionId y no pasa por la
+   * extensión. El `group` anidado SÍ es modelo scoped, pero la extensión
+   * intercepta la operación de nivel superior (usersGroups.findMany) — no
+   * filtra un `select`/`include` anidado hacia Groups. Verificado en vivo
+   * (Task 6B): sin el filtro explícito de abajo, un usuario miembro de dos
+   * instituciones recibía en una sola respuesta los grupos de ambas, sin
+   * importar qué institución pedía el header X-Institution-Slug. Por eso acá
+   * el institutionId va explícito, tomado del tenant activo resuelto por
+   * TenantGuard (ver obsidian/errors/multitenant/2026-08-07-la-extension-no-filtra-relaciones-anidadas).
+   */
+  async getMyGroups(userId: string, institutionId: string) {
+    const rows = await this.prisma.usersGroups.findMany({
+      where: { userId, group: { institutionId } },
+      select: { group: { select: { uid: true, name: true } } },
+    });
+
+    // Se aplana: al caller le importan los grupos, no las filas puente.
+    return rows.map((r) => r.group);
+  }
+
   /* --------------------------------------- Student Uses Cases For Groups --------------------------------------- */
 
   /* =========================
