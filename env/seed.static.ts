@@ -1,4 +1,5 @@
 import { PrismaClient } from '../src/generated/prisma/client';
+import { FEATURE_LABELS } from '../src/modules/institutions/plan-features';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import * as path from 'path';
@@ -49,6 +50,19 @@ async function main() {
   }
 
   // 3. SubscriptionPlans
+  //
+  // Los tres planes tienen que diferenciarse de verdad. La guía es el límite
+  // de usuarios/grupos que ya estaba en la base:
+  //   - empirico     → artista suelto. Gratis, solo vitrina: ni crea ni gestiona.
+  //   - independiente→ docente por su cuenta. 50 usuarios / 5 grupos, da clases
+  //                    y arma eventos, PERO sin las funciones de gestión
+  //                    institucional (certificados, estadísticas, solicitudes).
+  //   - academia     → institución. Sin límites y con todo lo de gestión.
+  //
+  // ⚠️ Los strings de `features` son slugs de autorización, no texto de UI:
+  // FeatureGuard los compara contra @RequireFeature(). Las etiquetas legibles
+  // viven en src/modules/institutions/plan-features.ts y el chequeo de abajo
+  // falla si acá se siembra un slug que ese catálogo no conoce.
   const plans = [
     {
       name: 'Empírico',
@@ -56,7 +70,19 @@ async function main() {
       features: ['profile', 'public_gallery', 'portfolio', 'events_view'],
       maxUsers: null,
       maxGroups: null,
-      priceUsd: null,
+      priceUsd: 0,
+    },
+    {
+      name: 'Independiente',
+      slug: 'independiente',
+      features: [
+        'profile', 'public_gallery', 'portfolio',
+        'groups_join', 'groups_create', 'products_submit',
+        'events_view', 'events_create', 'classes_attend', 'schedule_view',
+      ],
+      maxUsers: 50,
+      maxGroups: 5,
+      priceUsd: 19,
     },
     {
       name: 'Academia',
@@ -69,34 +95,40 @@ async function main() {
       ],
       maxUsers: null,
       maxGroups: null,
-      priceUsd: null,
-    },
-    {
-      name: 'Independiente',
-      slug: 'independiente',
-      features: [
-        'profile', 'public_gallery', 'portfolio',
-        'groups_join', 'groups_create', 'products_submit',
-        'events_view', 'events_create', 'classes_attend',
-        'schedule_view', 'certificates_receive', 'analytics', 'content_requests',
-      ],
-      maxUsers: 50,
-      maxGroups: 5,
-      priceUsd: null,
+      priceUsd: 49,
     },
   ];
 
+  const unknownFeatures = plans
+    .flatMap((plan) => plan.features)
+    .filter((slug) => !(slug in FEATURE_LABELS));
+  if (unknownFeatures.length) {
+    throw new Error(
+      `Features sin etiqueta en plan-features.ts: ${[...new Set(unknownFeatures)].join(', ')}`,
+    );
+  }
+
+  // upsert, no "crear si no existe": el seed corre muchas veces sobre la misma
+  // base y antes cambiar las features de un plan ya sembrado no tenía ningún
+  // efecto. Se actualizan solo los campos de contenido — isActive y
+  // stripePriceId quedan fuera del `update` para no pisar lo que se haya
+  // configurado a mano (dar de baja un plan, atar un precio de Stripe).
   let empiricoUid = '';
   for (const plan of plans) {
-    const existing = await prisma.subscriptionPlan.findUnique({ where: { slug: plan.slug } });
-    if (!existing) {
-      const created = await prisma.subscriptionPlan.create({ data: plan, select: { uid: true } });
-      if (plan.slug === 'empirico') empiricoUid = created.uid;
-      console.log(`  ✅ Plan "${plan.slug}" created`);
-    } else {
-      if (plan.slug === 'empirico') empiricoUid = existing.uid;
-      console.log(`  ⏭  Plan "${plan.slug}" already exists`);
-    }
+    const saved = await prisma.subscriptionPlan.upsert({
+      where: { slug: plan.slug },
+      update: {
+        name: plan.name,
+        features: plan.features,
+        maxUsers: plan.maxUsers,
+        maxGroups: plan.maxGroups,
+        priceUsd: plan.priceUsd,
+      },
+      create: plan,
+      select: { uid: true },
+    });
+    if (plan.slug === 'empirico') empiricoUid = saved.uid;
+    console.log(`  ✅ Plan "${plan.slug}" upserted`);
   }
 
   // 4. GroupCategories
