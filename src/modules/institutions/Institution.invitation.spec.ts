@@ -9,8 +9,16 @@ const DAY_IN_MS = 24 * 60 * 60 * 1000;
 describe('InstitutionService — invitaciones', () => {
   let service: InstitutionService;
   let prisma: any;
+  let errorSpy: jest.SpyInstance;
 
   beforeEach(async () => {
+    // El ConfigService mockeado devuelve undefined para todo, así que
+    // sendInvitationEmail corta antes de instanciar Resend: acá no sale ningún
+    // correo, ni siquiera mockeado. El envío se prueba en
+    // Institution.invitation-email.spec.ts. El spy solo silencia el
+    // console.error de "falta config.emailFrom".
+    errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
     prisma = {
       credentials: { findUnique: jest.fn() },
       institutionInvitation: {
@@ -29,6 +37,8 @@ describe('InstitutionService — invitaciones', () => {
 
     service = module.get(InstitutionService);
   });
+
+  afterEach(() => errorSpy.mockRestore());
 
   describe('createInvitation', () => {
     it('expira a los 3 días', async () => {

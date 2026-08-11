@@ -2,6 +2,7 @@ import {
   Injectable, Inject, NotFoundException, ConflictException, BadRequestException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Resend } from 'resend';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { hashText } from 'src/utils/crypto.util';
 import { randomBytes } from 'crypto';
@@ -129,7 +130,26 @@ export class InstitutionService {
     return { uid: id };
   }
 
-  async createInvitation(data: CreateInvitationUseCase): Promise<{ uid: string; token: string }> {
+  /**
+   * Crea la invitación y le manda el link por correo al invitado.
+   *
+   * El correo NO es opcional ni decorativo: la invitación existe justamente
+   * para alguien que todavía no tiene cuenta y por lo tanto no puede entrar a
+   * ver "mis invitaciones". Sin el correo, la única forma de que le llegue el
+   * link es que el rector lo copie y lo mande por su cuenta.
+   *
+   * FALLA BLANDA A PROPÓSITO: si Resend falla, la invitación YA está creada y
+   * el token ya es válido. Devolver 500 no la borraría — dejaría al rector
+   * creyendo que no pasó nada y reintentando, y cada reintento genera OTRA
+   * fila PENDING con otro token para el mismo correo. La invitación seguiría
+   * funcionando por el link que igual se devuelve, así que el error 500 no
+   * protegería nada y sí ensuciaría la tabla. Por eso se loguea, se sigue, y
+   * la respuesta lleva `emailSent` para que la pantalla del rector pueda
+   * decir "no se pudo enviar el correo, copiá el link" en lugar de mentir.
+   */
+  async createInvitation(
+    data: CreateInvitationUseCase,
+  ): Promise<{ uid: string; token: string; emailSent: boolean }> {
     const token = randomBytes(32).toString('hex');
     // La expiración se calcula acá y solo acá: no depende de nada que mande el
     // cliente. Ver INVITATION_EXPIRY_DAYS.
@@ -146,7 +166,92 @@ export class InstitutionService {
       select: { uid: true, token: true },
     });
 
-    return invitation;
+    const emailSent = await this.sendInvitationEmail({
+      institutionId: data.institutionId,
+      toEmail: data.toEmail,
+      targetRole: data.targetRole,
+      token,
+      expiresAt,
+    });
+
+    return { ...invitation, emailSent };
+  }
+
+  /**
+   * Manda el correo de invitación. Devuelve si salió o no; nunca lanza — ver
+   * el comentario de createInvitation.
+   */
+  private async sendInvitationEmail(params: {
+    institutionId: string;
+    toEmail: string;
+    targetRole: string;
+    token: string;
+    expiresAt: Date;
+  }): Promise<boolean> {
+    try {
+      const emailFrom = this.configService.get<string>('config.emailFrom');
+      const resendKey = this.configService.get<string>('config.resendKey');
+      // Base pública del frontend. NO se hardcodea localhost: el link va a la
+      // casilla de una persona que puede abrirlo desde cualquier lado. Ver
+      // config.frontendUrl (FRONTEND_URL, con fallback a CORS_URL_FRONT).
+      const frontendUrl = this.configService.get<string>('config.frontendUrl');
+
+      if (!emailFrom || !frontendUrl) {
+        console.error(
+          'No se envió la invitación por correo: falta config.emailFrom o config.frontendUrl',
+        );
+        return false;
+      }
+
+      // Institution y Roles son modelos bootstrap / globales: el where va
+      // explícito. El nombre del rol sale de la tabla Roles para no tener una
+      // segunda tabla de etiquetas en español que se desincronice; si el rol
+      // no está sembrado, se muestra el slug antes que fallar el envío.
+      const [institution, role] = await Promise.all([
+        this.prismaService.institution.findUnique({
+          where: { uid: params.institutionId },
+          select: { name: true },
+        }),
+        this.prismaService.roles.findUnique({
+          where: { slug: params.targetRole },
+          select: { name: true },
+        }),
+      ]);
+
+      const institutionName = institution?.name ?? 'una institución en Quyca';
+      const roleName = role?.name ?? params.targetRole;
+      const link = `${frontendUrl.replace(/\/+$/, '')}/invitation/${params.token}`;
+      const vence = params.expiresAt.toLocaleDateString('es-CO', {
+        day: '2-digit', month: 'long', year: 'numeric',
+      });
+
+      const resend = new Resend(resendKey);
+      const { error } = await resend.emails.send({
+        from: emailFrom,
+        to: params.toEmail,
+        subject: `${institutionName} te invitó a Quyca`,
+        text: [
+          `${institutionName} te invitó a unirte a Quyca como ${roleName}.`,
+          '',
+          `Para aceptar la invitación, entrá acá: ${link}`,
+          '',
+          `La invitación vence el ${vence} (${INVITATION_EXPIRY_DAYS} días desde hoy).`,
+          'Si todavía no tenés cuenta, el mismo link te deja crearla.',
+          '',
+          'Si no esperabas esta invitación, ignorá este correo.',
+        ].join('\n'),
+      });
+
+      if (error) {
+        console.error('Error enviando la invitación por correo:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error enviando la invitación por correo:', error);
+      return false;
+    }
   }
 
   async getInvitations(institutionId: string) {
