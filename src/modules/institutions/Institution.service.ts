@@ -8,9 +8,18 @@ import { randomBytes } from 'crypto';
 import {
   CreateInstitutionUseCase, CreateInvitationUseCase, RespondInvitationUseCase,
 } from './Institution.interface';
+import { toPlanFeatures } from './plan-features';
 
 /** Plan por defecto de toda institución nueva. El rector lo cambia después. */
 const DEFAULT_PLAN_SLUG = 'empirico';
+
+/**
+ * Vida de una invitación, en días. Es un tope absoluto, no un valor por
+ * defecto: el cliente ya no puede pedir otra duración (ver CreateInvitationDto).
+ */
+export const INVITATION_EXPIRY_DAYS = 3;
+
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 @Injectable()
 export class InstitutionService {
@@ -102,7 +111,9 @@ export class InstitutionService {
 
   async createInvitation(data: CreateInvitationUseCase): Promise<{ uid: string; token: string }> {
     const token = randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + (data.expiresInDays ?? 7) * 24 * 60 * 60 * 1000);
+    // La expiración se calcula acá y solo acá: no depende de nada que mande el
+    // cliente. Ver INVITATION_EXPIRY_DAYS.
+    const expiresAt = new Date(Date.now() + INVITATION_EXPIRY_DAYS * DAY_IN_MS);
 
     const invitation = await this.prismaService.institutionInvitation.create({
       data: {
@@ -121,6 +132,47 @@ export class InstitutionService {
   async getInvitations(institutionId: string) {
     return this.prismaService.institutionInvitation.findMany({
       where: { institutionId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Invitaciones vigentes dirigidas al usuario autenticado.
+   *
+   * El correo se lee de Credentials EN LA BASE, no del JWT: el token solo
+   * lleva `uid` y `userTypeId`. Mismo patrón que respondToInvitation().
+   *
+   * InstitutionInvitation es modelo bootstrap — no pasa por la extensión de
+   * Prisma, así que las tres condiciones del where van escritas a mano y son
+   * las que definen "vigente": dirigida a mi correo, PENDING, y sin vencer.
+   *
+   * NO lleva TenantGuard, y es deliberado: una invitación es, por definición,
+   * de una institución donde el usuario TODAVÍA NO es miembro. El TenantGuard
+   * valida membresía activa contra el X-Institution-Slug, así que montarlo acá
+   * devolvería 403 exactamente en el único caso que este endpoint existe para
+   * resolver. El aislamiento lo da el filtro por correo, no el tenant.
+   */
+  async getMyInvitations(userId: string) {
+    const credential = await this.prismaService.credentials.findUnique({
+      where: { uid: userId },
+      select: { mail: true },
+    });
+    if (!credential) throw new NotFoundException('Credentials not found');
+
+    return this.prismaService.institutionInvitation.findMany({
+      where: {
+        toEmail: credential.mail,
+        status: 'PENDING',
+        expiresAt: { gt: new Date() },
+      },
+      select: {
+        uid: true,
+        token: true,
+        targetRole: true,
+        expiresAt: true,
+        createdAt: true,
+        institution: { select: { uid: true, name: true, slug: true } },
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -196,9 +248,14 @@ export class InstitutionService {
    *
    * stripePriceId queda fuera del select a propósito: es un identificador de
    * facturación, no información de producto.
+   *
+   * `features` sigue saliendo como array de slugs crudos — es el contrato que
+   * usa FeatureGuard y hay frontend que lo compara. Las etiquetas en español
+   * van aparte, en `featureLabels`, para que el cliente tenga qué pintar sin
+   * que nadie se vea tentado a renombrar un slug para que "se lea mejor".
    */
   async listPlans() {
-    return this.prismaService.subscriptionPlan.findMany({
+    const plans = await this.prismaService.subscriptionPlan.findMany({
       where: { isActive: true },
       select: {
         uid: true, name: true, slug: true,
@@ -206,6 +263,11 @@ export class InstitutionService {
       },
       orderBy: { priceUsd: 'asc' },
     });
+
+    return plans.map((plan) => ({
+      ...plan,
+      featureLabels: toPlanFeatures(plan.features),
+    }));
   }
 
   /**

@@ -76,7 +76,6 @@ export class InstitutionController {
       institutionId: institution.uid,
       toEmail: dto.toEmail,
       targetRole: dto.targetRole,
-      expiresInDays: dto.expiresInDays,
     });
   }
 
@@ -89,6 +88,28 @@ export class InstitutionController {
     @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
   ) {
     return this.institutionService.getInvitations(institution.uid);
+  }
+
+  /**
+   * Las invitaciones que le llegaron al usuario autenticado.
+   *
+   * ⚠️ SIN TenantGuard, y no es un olvido. La invitación viene de una
+   * institución donde el usuario todavía NO es miembro; el TenantGuard resuelve
+   * el X-Institution-Slug y exige membresía activa, así que agregarlo devolvería
+   * 403 justo en el caso que este endpoint existe para resolver. Además el
+   * usuario puede tener invitaciones de varias instituciones a la vez: no hay
+   * un tenant único que poner en el header. El aislamiento acá lo da el filtro
+   * por correo del usuario (ver InstitutionService.getMyInvitations), no el
+   * tenant. No le agregues TenantGuard.
+   *
+   * ⚠️ Va declarada ANTES que 'invitations/:token': Nest resuelve las rutas en
+   * orden de declaración y 'mine' matchearía como token si se invierte.
+   */
+  @Get('invitations/mine')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Listar las invitaciones vigentes del usuario autenticado' })
+  async getMyInvitations(@Req() req: AuthenticatedRequest) {
+    return this.institutionService.getMyInvitations(req.user.uid);
   }
 
   @Get('invitations/:token')

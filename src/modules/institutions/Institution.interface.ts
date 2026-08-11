@@ -12,7 +12,6 @@ export interface CreateInvitationUseCase {
   institutionId: string;
   toEmail: string;
   targetRole: 'institutional' | 'student';
-  expiresInDays?: number;
 }
 
 export interface RespondInvitationUseCase {
