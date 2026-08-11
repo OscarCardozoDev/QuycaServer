@@ -235,6 +235,7 @@ export type InstitutionWhereInput = {
   groups?: Prisma.GroupsListRelationFilter
   invitations?: Prisma.InstitutionInvitationListRelationFilter
   contentRequests?: Prisma.ContentRequestListRelationFilter
+  offeredCategories?: Prisma.InstitutionCategoryListRelationFilter
   events?: Prisma.EventsListRelationFilter
   products?: Prisma.ProductsListRelationFilter
   styles?: Prisma.StylesListRelationFilter
@@ -260,6 +261,7 @@ export type InstitutionOrderByWithRelationInput = {
   groups?: Prisma.GroupsOrderByRelationAggregateInput
   invitations?: Prisma.InstitutionInvitationOrderByRelationAggregateInput
   contentRequests?: Prisma.ContentRequestOrderByRelationAggregateInput
+  offeredCategories?: Prisma.InstitutionCategoryOrderByRelationAggregateInput
   events?: Prisma.EventsOrderByRelationAggregateInput
   products?: Prisma.ProductsOrderByRelationAggregateInput
   styles?: Prisma.StylesOrderByRelationAggregateInput
@@ -288,6 +290,7 @@ export type InstitutionWhereUniqueInput = Prisma.AtLeast<{
   groups?: Prisma.GroupsListRelationFilter
   invitations?: Prisma.InstitutionInvitationListRelationFilter
   contentRequests?: Prisma.ContentRequestListRelationFilter
+  offeredCategories?: Prisma.InstitutionCategoryListRelationFilter
   events?: Prisma.EventsListRelationFilter
   products?: Prisma.ProductsListRelationFilter
   styles?: Prisma.StylesListRelationFilter
@@ -346,6 +349,7 @@ export type InstitutionCreateInput = {
   groups?: Prisma.GroupsCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesCreateNestedManyWithoutInstitutionInput
@@ -370,6 +374,7 @@ export type InstitutionUncheckedCreateInput = {
   groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationUncheckedCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestUncheckedCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsUncheckedCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesUncheckedCreateNestedManyWithoutInstitutionInput
@@ -394,6 +399,7 @@ export type InstitutionUpdateInput = {
   groups?: Prisma.GroupsUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUpdateManyWithoutInstitutionNestedInput
@@ -418,6 +424,7 @@ export type InstitutionUncheckedUpdateInput = {
   groups?: Prisma.GroupsUncheckedUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUncheckedUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUncheckedUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUncheckedUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUncheckedUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -686,6 +693,20 @@ export type InstitutionUpdateOneRequiredWithoutUserInstitutionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.InstitutionUpdateToOneWithWhereWithoutUserInstitutionsInput, Prisma.InstitutionUpdateWithoutUserInstitutionsInput>, Prisma.InstitutionUncheckedUpdateWithoutUserInstitutionsInput>
 }
 
+export type InstitutionCreateNestedOneWithoutOfferedCategoriesInput = {
+  create?: Prisma.XOR<Prisma.InstitutionCreateWithoutOfferedCategoriesInput, Prisma.InstitutionUncheckedCreateWithoutOfferedCategoriesInput>
+  connectOrCreate?: Prisma.InstitutionCreateOrConnectWithoutOfferedCategoriesInput
+  connect?: Prisma.InstitutionWhereUniqueInput
+}
+
+export type InstitutionUpdateOneRequiredWithoutOfferedCategoriesNestedInput = {
+  create?: Prisma.XOR<Prisma.InstitutionCreateWithoutOfferedCategoriesInput, Prisma.InstitutionUncheckedCreateWithoutOfferedCategoriesInput>
+  connectOrCreate?: Prisma.InstitutionCreateOrConnectWithoutOfferedCategoriesInput
+  upsert?: Prisma.InstitutionUpsertWithoutOfferedCategoriesInput
+  connect?: Prisma.InstitutionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InstitutionUpdateToOneWithWhereWithoutOfferedCategoriesInput, Prisma.InstitutionUpdateWithoutOfferedCategoriesInput>, Prisma.InstitutionUncheckedUpdateWithoutOfferedCategoriesInput>
+}
+
 export type InstitutionCreateNestedOneWithoutInvitationsInput = {
   create?: Prisma.XOR<Prisma.InstitutionCreateWithoutInvitationsInput, Prisma.InstitutionUncheckedCreateWithoutInvitationsInput>
   connectOrCreate?: Prisma.InstitutionCreateOrConnectWithoutInvitationsInput
@@ -729,6 +750,7 @@ export type InstitutionCreateWithoutGroupsInput = {
   userInstitutions?: Prisma.UserInstitutionCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesCreateNestedManyWithoutInstitutionInput
@@ -752,6 +774,7 @@ export type InstitutionUncheckedCreateWithoutGroupsInput = {
   userInstitutions?: Prisma.UserInstitutionUncheckedCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationUncheckedCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestUncheckedCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsUncheckedCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesUncheckedCreateNestedManyWithoutInstitutionInput
@@ -791,6 +814,7 @@ export type InstitutionUpdateWithoutGroupsInput = {
   userInstitutions?: Prisma.UserInstitutionUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUpdateManyWithoutInstitutionNestedInput
@@ -814,6 +838,7 @@ export type InstitutionUncheckedUpdateWithoutGroupsInput = {
   userInstitutions?: Prisma.UserInstitutionUncheckedUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUncheckedUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUncheckedUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUncheckedUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUncheckedUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -838,6 +863,7 @@ export type InstitutionCreateWithoutProductsInput = {
   groups?: Prisma.GroupsCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesCreateNestedManyWithoutInstitutionInput
   classes?: Prisma.ClassesCreateNestedManyWithoutInstitutionInput
@@ -861,6 +887,7 @@ export type InstitutionUncheckedCreateWithoutProductsInput = {
   groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationUncheckedCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestUncheckedCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesUncheckedCreateNestedManyWithoutInstitutionInput
   classes?: Prisma.ClassesUncheckedCreateNestedManyWithoutInstitutionInput
@@ -900,6 +927,7 @@ export type InstitutionUpdateWithoutProductsInput = {
   groups?: Prisma.GroupsUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUpdateManyWithoutInstitutionNestedInput
   classes?: Prisma.ClassesUpdateManyWithoutInstitutionNestedInput
@@ -923,6 +951,7 @@ export type InstitutionUncheckedUpdateWithoutProductsInput = {
   groups?: Prisma.GroupsUncheckedUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUncheckedUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUncheckedUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUncheckedUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUncheckedUpdateManyWithoutInstitutionNestedInput
   classes?: Prisma.ClassesUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -946,6 +975,7 @@ export type InstitutionCreateWithoutStylesInput = {
   groups?: Prisma.GroupsCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsCreateNestedManyWithoutInstitutionInput
   classes?: Prisma.ClassesCreateNestedManyWithoutInstitutionInput
@@ -969,6 +999,7 @@ export type InstitutionUncheckedCreateWithoutStylesInput = {
   groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationUncheckedCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestUncheckedCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsUncheckedCreateNestedManyWithoutInstitutionInput
   classes?: Prisma.ClassesUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1008,6 +1039,7 @@ export type InstitutionUpdateWithoutStylesInput = {
   groups?: Prisma.GroupsUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUpdateManyWithoutInstitutionNestedInput
   classes?: Prisma.ClassesUpdateManyWithoutInstitutionNestedInput
@@ -1031,6 +1063,7 @@ export type InstitutionUncheckedUpdateWithoutStylesInput = {
   groups?: Prisma.GroupsUncheckedUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUncheckedUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUncheckedUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUncheckedUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUncheckedUpdateManyWithoutInstitutionNestedInput
   classes?: Prisma.ClassesUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1054,6 +1087,7 @@ export type InstitutionCreateWithoutEventsInput = {
   groups?: Prisma.GroupsCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesCreateNestedManyWithoutInstitutionInput
   classes?: Prisma.ClassesCreateNestedManyWithoutInstitutionInput
@@ -1077,6 +1111,7 @@ export type InstitutionUncheckedCreateWithoutEventsInput = {
   groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationUncheckedCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestUncheckedCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsUncheckedCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesUncheckedCreateNestedManyWithoutInstitutionInput
   classes?: Prisma.ClassesUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1116,6 +1151,7 @@ export type InstitutionUpdateWithoutEventsInput = {
   groups?: Prisma.GroupsUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUpdateManyWithoutInstitutionNestedInput
   classes?: Prisma.ClassesUpdateManyWithoutInstitutionNestedInput
@@ -1139,6 +1175,7 @@ export type InstitutionUncheckedUpdateWithoutEventsInput = {
   groups?: Prisma.GroupsUncheckedUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUncheckedUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUncheckedUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUncheckedUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUncheckedUpdateManyWithoutInstitutionNestedInput
   classes?: Prisma.ClassesUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1162,6 +1199,7 @@ export type InstitutionCreateWithoutSchedulesInput = {
   groups?: Prisma.GroupsCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesCreateNestedManyWithoutInstitutionInput
@@ -1185,6 +1223,7 @@ export type InstitutionUncheckedCreateWithoutSchedulesInput = {
   groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationUncheckedCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestUncheckedCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsUncheckedCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1224,6 +1263,7 @@ export type InstitutionUpdateWithoutSchedulesInput = {
   groups?: Prisma.GroupsUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUpdateManyWithoutInstitutionNestedInput
@@ -1247,6 +1287,7 @@ export type InstitutionUncheckedUpdateWithoutSchedulesInput = {
   groups?: Prisma.GroupsUncheckedUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUncheckedUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUncheckedUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUncheckedUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUncheckedUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1270,6 +1311,7 @@ export type InstitutionCreateWithoutClassesInput = {
   groups?: Prisma.GroupsCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesCreateNestedManyWithoutInstitutionInput
@@ -1293,6 +1335,7 @@ export type InstitutionUncheckedCreateWithoutClassesInput = {
   groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationUncheckedCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestUncheckedCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsUncheckedCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1332,6 +1375,7 @@ export type InstitutionUpdateWithoutClassesInput = {
   groups?: Prisma.GroupsUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUpdateManyWithoutInstitutionNestedInput
@@ -1355,6 +1399,7 @@ export type InstitutionUncheckedUpdateWithoutClassesInput = {
   groups?: Prisma.GroupsUncheckedUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUncheckedUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUncheckedUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUncheckedUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUncheckedUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1378,6 +1423,7 @@ export type InstitutionCreateWithoutAttendancesInput = {
   groups?: Prisma.GroupsCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesCreateNestedManyWithoutInstitutionInput
@@ -1401,6 +1447,7 @@ export type InstitutionUncheckedCreateWithoutAttendancesInput = {
   groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationUncheckedCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestUncheckedCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsUncheckedCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1440,6 +1487,7 @@ export type InstitutionUpdateWithoutAttendancesInput = {
   groups?: Prisma.GroupsUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUpdateManyWithoutInstitutionNestedInput
@@ -1463,6 +1511,7 @@ export type InstitutionUncheckedUpdateWithoutAttendancesInput = {
   groups?: Prisma.GroupsUncheckedUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUncheckedUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUncheckedUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUncheckedUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUncheckedUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1485,6 +1534,7 @@ export type InstitutionCreateWithoutSubscriptionPlanInput = {
   groups?: Prisma.GroupsCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesCreateNestedManyWithoutInstitutionInput
@@ -1508,6 +1558,7 @@ export type InstitutionUncheckedCreateWithoutSubscriptionPlanInput = {
   groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationUncheckedCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestUncheckedCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsUncheckedCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1574,6 +1625,7 @@ export type InstitutionCreateWithoutUserInstitutionsInput = {
   groups?: Prisma.GroupsCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesCreateNestedManyWithoutInstitutionInput
@@ -1597,6 +1649,7 @@ export type InstitutionUncheckedCreateWithoutUserInstitutionsInput = {
   groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationUncheckedCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestUncheckedCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsUncheckedCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1636,6 +1689,7 @@ export type InstitutionUpdateWithoutUserInstitutionsInput = {
   groups?: Prisma.GroupsUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUpdateManyWithoutInstitutionNestedInput
@@ -1656,6 +1710,119 @@ export type InstitutionUncheckedUpdateWithoutUserInstitutionsInput = {
   planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  groups?: Prisma.GroupsUncheckedUpdateManyWithoutInstitutionNestedInput
+  invitations?: Prisma.InstitutionInvitationUncheckedUpdateManyWithoutInstitutionNestedInput
+  contentRequests?: Prisma.ContentRequestUncheckedUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedUpdateManyWithoutInstitutionNestedInput
+  events?: Prisma.EventsUncheckedUpdateManyWithoutInstitutionNestedInput
+  products?: Prisma.ProductsUncheckedUpdateManyWithoutInstitutionNestedInput
+  styles?: Prisma.StylesUncheckedUpdateManyWithoutInstitutionNestedInput
+  classes?: Prisma.ClassesUncheckedUpdateManyWithoutInstitutionNestedInput
+  schedules?: Prisma.ScheduleUncheckedUpdateManyWithoutInstitutionNestedInput
+  attendances?: Prisma.AttendanceUncheckedUpdateManyWithoutInstitutionNestedInput
+}
+
+export type InstitutionCreateWithoutOfferedCategoriesInput = {
+  uid?: string
+  name: string
+  slug: string
+  type?: $Enums.InstitutionType
+  status?: $Enums.InstitutionStatus
+  trialEndsAt?: Date | string | null
+  subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  subscriptionPlan: Prisma.SubscriptionPlanCreateNestedOneWithoutInstitutionsInput
+  userInstitutions?: Prisma.UserInstitutionCreateNestedManyWithoutInstitutionInput
+  groups?: Prisma.GroupsCreateNestedManyWithoutInstitutionInput
+  invitations?: Prisma.InstitutionInvitationCreateNestedManyWithoutInstitutionInput
+  contentRequests?: Prisma.ContentRequestCreateNestedManyWithoutInstitutionInput
+  events?: Prisma.EventsCreateNestedManyWithoutInstitutionInput
+  products?: Prisma.ProductsCreateNestedManyWithoutInstitutionInput
+  styles?: Prisma.StylesCreateNestedManyWithoutInstitutionInput
+  classes?: Prisma.ClassesCreateNestedManyWithoutInstitutionInput
+  schedules?: Prisma.ScheduleCreateNestedManyWithoutInstitutionInput
+  attendances?: Prisma.AttendanceCreateNestedManyWithoutInstitutionInput
+}
+
+export type InstitutionUncheckedCreateWithoutOfferedCategoriesInput = {
+  uid?: string
+  name: string
+  slug: string
+  type?: $Enums.InstitutionType
+  status?: $Enums.InstitutionStatus
+  subscriptionPlanId: string
+  trialEndsAt?: Date | string | null
+  subscriptionEndsAt?: Date | string | null
+  planChosenAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  userInstitutions?: Prisma.UserInstitutionUncheckedCreateNestedManyWithoutInstitutionInput
+  groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutInstitutionInput
+  invitations?: Prisma.InstitutionInvitationUncheckedCreateNestedManyWithoutInstitutionInput
+  contentRequests?: Prisma.ContentRequestUncheckedCreateNestedManyWithoutInstitutionInput
+  events?: Prisma.EventsUncheckedCreateNestedManyWithoutInstitutionInput
+  products?: Prisma.ProductsUncheckedCreateNestedManyWithoutInstitutionInput
+  styles?: Prisma.StylesUncheckedCreateNestedManyWithoutInstitutionInput
+  classes?: Prisma.ClassesUncheckedCreateNestedManyWithoutInstitutionInput
+  schedules?: Prisma.ScheduleUncheckedCreateNestedManyWithoutInstitutionInput
+  attendances?: Prisma.AttendanceUncheckedCreateNestedManyWithoutInstitutionInput
+}
+
+export type InstitutionCreateOrConnectWithoutOfferedCategoriesInput = {
+  where: Prisma.InstitutionWhereUniqueInput
+  create: Prisma.XOR<Prisma.InstitutionCreateWithoutOfferedCategoriesInput, Prisma.InstitutionUncheckedCreateWithoutOfferedCategoriesInput>
+}
+
+export type InstitutionUpsertWithoutOfferedCategoriesInput = {
+  update: Prisma.XOR<Prisma.InstitutionUpdateWithoutOfferedCategoriesInput, Prisma.InstitutionUncheckedUpdateWithoutOfferedCategoriesInput>
+  create: Prisma.XOR<Prisma.InstitutionCreateWithoutOfferedCategoriesInput, Prisma.InstitutionUncheckedCreateWithoutOfferedCategoriesInput>
+  where?: Prisma.InstitutionWhereInput
+}
+
+export type InstitutionUpdateToOneWithWhereWithoutOfferedCategoriesInput = {
+  where?: Prisma.InstitutionWhereInput
+  data: Prisma.XOR<Prisma.InstitutionUpdateWithoutOfferedCategoriesInput, Prisma.InstitutionUncheckedUpdateWithoutOfferedCategoriesInput>
+}
+
+export type InstitutionUpdateWithoutOfferedCategoriesInput = {
+  uid?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+  status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscriptionPlan?: Prisma.SubscriptionPlanUpdateOneRequiredWithoutInstitutionsNestedInput
+  userInstitutions?: Prisma.UserInstitutionUpdateManyWithoutInstitutionNestedInput
+  groups?: Prisma.GroupsUpdateManyWithoutInstitutionNestedInput
+  invitations?: Prisma.InstitutionInvitationUpdateManyWithoutInstitutionNestedInput
+  contentRequests?: Prisma.ContentRequestUpdateManyWithoutInstitutionNestedInput
+  events?: Prisma.EventsUpdateManyWithoutInstitutionNestedInput
+  products?: Prisma.ProductsUpdateManyWithoutInstitutionNestedInput
+  styles?: Prisma.StylesUpdateManyWithoutInstitutionNestedInput
+  classes?: Prisma.ClassesUpdateManyWithoutInstitutionNestedInput
+  schedules?: Prisma.ScheduleUpdateManyWithoutInstitutionNestedInput
+  attendances?: Prisma.AttendanceUpdateManyWithoutInstitutionNestedInput
+}
+
+export type InstitutionUncheckedUpdateWithoutOfferedCategoriesInput = {
+  uid?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumInstitutionTypeFieldUpdateOperationsInput | $Enums.InstitutionType
+  status?: Prisma.EnumInstitutionStatusFieldUpdateOperationsInput | $Enums.InstitutionStatus
+  subscriptionPlanId?: Prisma.StringFieldUpdateOperationsInput | string
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  subscriptionEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  planChosenAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  userInstitutions?: Prisma.UserInstitutionUncheckedUpdateManyWithoutInstitutionNestedInput
   groups?: Prisma.GroupsUncheckedUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUncheckedUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1682,6 +1849,7 @@ export type InstitutionCreateWithoutInvitationsInput = {
   userInstitutions?: Prisma.UserInstitutionCreateNestedManyWithoutInstitutionInput
   groups?: Prisma.GroupsCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesCreateNestedManyWithoutInstitutionInput
@@ -1705,6 +1873,7 @@ export type InstitutionUncheckedCreateWithoutInvitationsInput = {
   userInstitutions?: Prisma.UserInstitutionUncheckedCreateNestedManyWithoutInstitutionInput
   groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutInstitutionInput
   contentRequests?: Prisma.ContentRequestUncheckedCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsUncheckedCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1744,6 +1913,7 @@ export type InstitutionUpdateWithoutInvitationsInput = {
   userInstitutions?: Prisma.UserInstitutionUpdateManyWithoutInstitutionNestedInput
   groups?: Prisma.GroupsUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUpdateManyWithoutInstitutionNestedInput
@@ -1767,6 +1937,7 @@ export type InstitutionUncheckedUpdateWithoutInvitationsInput = {
   userInstitutions?: Prisma.UserInstitutionUncheckedUpdateManyWithoutInstitutionNestedInput
   groups?: Prisma.GroupsUncheckedUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUncheckedUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUncheckedUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUncheckedUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1790,6 +1961,7 @@ export type InstitutionCreateWithoutContentRequestsInput = {
   userInstitutions?: Prisma.UserInstitutionCreateNestedManyWithoutInstitutionInput
   groups?: Prisma.GroupsCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesCreateNestedManyWithoutInstitutionInput
@@ -1813,6 +1985,7 @@ export type InstitutionUncheckedCreateWithoutContentRequestsInput = {
   userInstitutions?: Prisma.UserInstitutionUncheckedCreateNestedManyWithoutInstitutionInput
   groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutInstitutionInput
   invitations?: Prisma.InstitutionInvitationUncheckedCreateNestedManyWithoutInstitutionInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedCreateNestedManyWithoutInstitutionInput
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutInstitutionInput
   products?: Prisma.ProductsUncheckedCreateNestedManyWithoutInstitutionInput
   styles?: Prisma.StylesUncheckedCreateNestedManyWithoutInstitutionInput
@@ -1852,6 +2025,7 @@ export type InstitutionUpdateWithoutContentRequestsInput = {
   userInstitutions?: Prisma.UserInstitutionUpdateManyWithoutInstitutionNestedInput
   groups?: Prisma.GroupsUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUpdateManyWithoutInstitutionNestedInput
@@ -1875,6 +2049,7 @@ export type InstitutionUncheckedUpdateWithoutContentRequestsInput = {
   userInstitutions?: Prisma.UserInstitutionUncheckedUpdateManyWithoutInstitutionNestedInput
   groups?: Prisma.GroupsUncheckedUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUncheckedUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUncheckedUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUncheckedUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1911,6 +2086,7 @@ export type InstitutionUpdateWithoutSubscriptionPlanInput = {
   groups?: Prisma.GroupsUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUpdateManyWithoutInstitutionNestedInput
@@ -1934,6 +2110,7 @@ export type InstitutionUncheckedUpdateWithoutSubscriptionPlanInput = {
   groups?: Prisma.GroupsUncheckedUpdateManyWithoutInstitutionNestedInput
   invitations?: Prisma.InstitutionInvitationUncheckedUpdateManyWithoutInstitutionNestedInput
   contentRequests?: Prisma.ContentRequestUncheckedUpdateManyWithoutInstitutionNestedInput
+  offeredCategories?: Prisma.InstitutionCategoryUncheckedUpdateManyWithoutInstitutionNestedInput
   events?: Prisma.EventsUncheckedUpdateManyWithoutInstitutionNestedInput
   products?: Prisma.ProductsUncheckedUpdateManyWithoutInstitutionNestedInput
   styles?: Prisma.StylesUncheckedUpdateManyWithoutInstitutionNestedInput
@@ -1965,6 +2142,7 @@ export type InstitutionCountOutputType = {
   groups: number
   invitations: number
   contentRequests: number
+  offeredCategories: number
   events: number
   products: number
   styles: number
@@ -1978,6 +2156,7 @@ export type InstitutionCountOutputTypeSelect<ExtArgs extends runtime.Types.Exten
   groups?: boolean | InstitutionCountOutputTypeCountGroupsArgs
   invitations?: boolean | InstitutionCountOutputTypeCountInvitationsArgs
   contentRequests?: boolean | InstitutionCountOutputTypeCountContentRequestsArgs
+  offeredCategories?: boolean | InstitutionCountOutputTypeCountOfferedCategoriesArgs
   events?: boolean | InstitutionCountOutputTypeCountEventsArgs
   products?: boolean | InstitutionCountOutputTypeCountProductsArgs
   styles?: boolean | InstitutionCountOutputTypeCountStylesArgs
@@ -2022,6 +2201,13 @@ export type InstitutionCountOutputTypeCountInvitationsArgs<ExtArgs extends runti
  */
 export type InstitutionCountOutputTypeCountContentRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ContentRequestWhereInput
+}
+
+/**
+ * InstitutionCountOutputType without action
+ */
+export type InstitutionCountOutputTypeCountOfferedCategoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InstitutionCategoryWhereInput
 }
 
 /**
@@ -2084,6 +2270,7 @@ export type InstitutionSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   groups?: boolean | Prisma.Institution$groupsArgs<ExtArgs>
   invitations?: boolean | Prisma.Institution$invitationsArgs<ExtArgs>
   contentRequests?: boolean | Prisma.Institution$contentRequestsArgs<ExtArgs>
+  offeredCategories?: boolean | Prisma.Institution$offeredCategoriesArgs<ExtArgs>
   events?: boolean | Prisma.Institution$eventsArgs<ExtArgs>
   products?: boolean | Prisma.Institution$productsArgs<ExtArgs>
   styles?: boolean | Prisma.Institution$stylesArgs<ExtArgs>
@@ -2144,6 +2331,7 @@ export type InstitutionInclude<ExtArgs extends runtime.Types.Extensions.Internal
   groups?: boolean | Prisma.Institution$groupsArgs<ExtArgs>
   invitations?: boolean | Prisma.Institution$invitationsArgs<ExtArgs>
   contentRequests?: boolean | Prisma.Institution$contentRequestsArgs<ExtArgs>
+  offeredCategories?: boolean | Prisma.Institution$offeredCategoriesArgs<ExtArgs>
   events?: boolean | Prisma.Institution$eventsArgs<ExtArgs>
   products?: boolean | Prisma.Institution$productsArgs<ExtArgs>
   styles?: boolean | Prisma.Institution$stylesArgs<ExtArgs>
@@ -2167,6 +2355,7 @@ export type $InstitutionPayload<ExtArgs extends runtime.Types.Extensions.Interna
     groups: Prisma.$GroupsPayload<ExtArgs>[]
     invitations: Prisma.$InstitutionInvitationPayload<ExtArgs>[]
     contentRequests: Prisma.$ContentRequestPayload<ExtArgs>[]
+    offeredCategories: Prisma.$InstitutionCategoryPayload<ExtArgs>[]
     events: Prisma.$EventsPayload<ExtArgs>[]
     products: Prisma.$ProductsPayload<ExtArgs>[]
     styles: Prisma.$StylesPayload<ExtArgs>[]
@@ -2590,6 +2779,7 @@ export interface Prisma__InstitutionClient<T, Null = never, ExtArgs extends runt
   groups<T extends Prisma.Institution$groupsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Institution$groupsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GroupsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   invitations<T extends Prisma.Institution$invitationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Institution$invitationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InstitutionInvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   contentRequests<T extends Prisma.Institution$contentRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Institution$contentRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  offeredCategories<T extends Prisma.Institution$offeredCategoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Institution$offeredCategoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InstitutionCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   events<T extends Prisma.Institution$eventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Institution$eventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   products<T extends Prisma.Institution$productsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Institution$productsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   styles<T extends Prisma.Institution$stylesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Institution$stylesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StylesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3125,6 +3315,30 @@ export type Institution$contentRequestsArgs<ExtArgs extends runtime.Types.Extens
   take?: number
   skip?: number
   distinct?: Prisma.ContentRequestScalarFieldEnum | Prisma.ContentRequestScalarFieldEnum[]
+}
+
+/**
+ * Institution.offeredCategories
+ */
+export type Institution$offeredCategoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InstitutionCategory
+   */
+  select?: Prisma.InstitutionCategorySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InstitutionCategory
+   */
+  omit?: Prisma.InstitutionCategoryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InstitutionCategoryInclude<ExtArgs> | null
+  where?: Prisma.InstitutionCategoryWhereInput
+  orderBy?: Prisma.InstitutionCategoryOrderByWithRelationInput | Prisma.InstitutionCategoryOrderByWithRelationInput[]
+  cursor?: Prisma.InstitutionCategoryWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InstitutionCategoryScalarFieldEnum | Prisma.InstitutionCategoryScalarFieldEnum[]
 }
 
 /**

@@ -34,6 +34,10 @@ describe('GroupService — tenant & membership enforcement', () => {
       // No es la plataforma en estos casos: el límite de Task 2 no debe
       // activarse ni afectar estas suites de membership.
       institution: { findUnique: jest.fn().mockResolvedValue(null) },
+      // La categoría se da por ofertada en estas suites: lo que se prueba acá
+      // es la membresía, no la oferta. El rechazo por categoría no ofertada
+      // vive en Group.offered-category.spec.ts.
+      institutionCategory: { findUnique: jest.fn().mockResolvedValue({ uid: 'ic-1' }) },
       $transaction: jest.fn((fn) => fn(prisma)),
     };
 

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Put, Body, Param, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CategoriesService } from './Categories.service';
 import { AuthGuard } from 'src/middleware/jwt.guard';
@@ -13,6 +13,7 @@ import type { AuthenticatedRequest } from 'src/interface/jwtPayload';
 import {
   CreateCategoryDto, UpdateCategoryDto,
   CreateContentRequestDto, ReviewContentRequestDto,
+  SetOfferedCategoriesDto,
 } from './Categories.dto';
 
 @ApiTags('categories')
@@ -24,6 +25,37 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Listar categorías activas (público)' })
   getActiveCategories() {
     return this.categoriesService.getActiveCategories();
+  }
+
+  /**
+   * Las dos rutas de "oferta" van declaradas ANTES de cualquier
+   * `categories/:algo`: Nest resuelve en orden de declaración y 'offered'
+   * matchearía como parámetro. Hoy no hay un GET con parámetro acá, pero el
+   * PATCH `categories/:id` ya existe y la próxima ruta con `:id` no debería
+   * tener que enterarse de esto por un 404 raro.
+   *
+   * El rol pedido es el mismo para leer y para escribir: la lista de qué
+   * oferta la institución es material de la pantalla de configuración del
+   * rector. La lista pública de las 5 categorías del catálogo es GET
+   * /categories, que no pide nada.
+   */
+  @Get('categories/offered')
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
+  @ApiOperation({ summary: 'Categorías que oferta la institución activa' })
+  getOfferedCategories(@Institution() institution: { uid: string }) {
+    return this.categoriesService.getOfferedCategories(institution.uid);
+  }
+
+  @Put('categories/offered')
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
+  @ApiOperation({ summary: 'Definir qué categorías oferta la institución activa' })
+  setOfferedCategories(
+    @Body() dto: SetOfferedCategoriesDto,
+    @Institution() institution: { uid: string },
+  ) {
+    return this.categoriesService.setOfferedCategories(institution.uid, dto.categoryIds);
   }
 
   @Post('categories')

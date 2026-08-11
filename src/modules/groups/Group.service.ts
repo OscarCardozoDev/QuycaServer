@@ -69,10 +69,33 @@ export class GroupService {
   }
 
   /* =========================
+   * OFFERED-CATEGORY GUARD
+   * La institución solo dicta las categorías que eligió ofertar: si la USTA
+   * Tunja marcó artes y música, un grupo de teatro no se crea. La lista vive
+   * en InstitutionCategory, que NO está scopeado (ver tenant.extension.ts),
+   * así que el institutionId va escrito a mano — sin él, un categoryId
+   * ofertado por CUALQUIER institución pasaría la validación.
+   * ========================= */
+  private async assertCategoryIsOffered(categoryId: string, institutionId: string) {
+    const offered = await this.prisma.institutionCategory.findUnique({
+      where: { institutionId_categoryId: { institutionId, categoryId } },
+      select: { uid: true },
+    });
+
+    if (!offered) {
+      throw new ForbiddenException(
+        'La institución no oferta esta categoría. Agregala en la configuración de categorías antes de crear el grupo.',
+      );
+    }
+  }
+
+  /* =========================
    * CREATE
    * ========================= */
   async createGroupUseCase(data: CreateGroupUseCase) {
     const { name, profesorId, institutionId, categoryId, users } = data;
+
+    await this.assertCategoryIsOffered(categoryId, institutionId);
 
     const idsToValidate = [...(profesorId ? [profesorId] : []), ...(users ?? [])];
     await this.assertActiveMembers(idsToValidate, institutionId);

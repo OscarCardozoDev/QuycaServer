@@ -409,6 +409,7 @@ export const ModelName = {
   Institution: 'Institution',
   UserInstitution: 'UserInstitution',
   GroupCategory: 'GroupCategory',
+  InstitutionCategory: 'InstitutionCategory',
   InstitutionInvitation: 'InstitutionInvitation',
   ContentRequest: 'ContentRequest'
 } as const
@@ -426,7 +427,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "userTypes" | "roles" | "users" | "credentials" | "verificationCodes" | "groups" | "usersGroups" | "products" | "styles" | "productStyle" | "photos" | "productPhoto" | "events" | "eventProduct" | "eventInvitation" | "eventPhoto" | "userProduct" | "groupEvent" | "schedule" | "classes" | "attendance" | "subscriptionPlan" | "institution" | "userInstitution" | "groupCategory" | "institutionInvitation" | "contentRequest"
+    modelProps: "userTypes" | "roles" | "users" | "credentials" | "verificationCodes" | "groups" | "usersGroups" | "products" | "styles" | "productStyle" | "photos" | "productPhoto" | "events" | "eventProduct" | "eventInvitation" | "eventPhoto" | "userProduct" | "groupEvent" | "schedule" | "classes" | "attendance" | "subscriptionPlan" | "institution" | "userInstitution" | "groupCategory" | "institutionCategory" | "institutionInvitation" | "contentRequest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2280,6 +2281,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    InstitutionCategory: {
+      payload: Prisma.$InstitutionCategoryPayload<ExtArgs>
+      fields: Prisma.InstitutionCategoryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InstitutionCategoryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstitutionCategoryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InstitutionCategoryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstitutionCategoryPayload>
+        }
+        findFirst: {
+          args: Prisma.InstitutionCategoryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstitutionCategoryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InstitutionCategoryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstitutionCategoryPayload>
+        }
+        findMany: {
+          args: Prisma.InstitutionCategoryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstitutionCategoryPayload>[]
+        }
+        create: {
+          args: Prisma.InstitutionCategoryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstitutionCategoryPayload>
+        }
+        createMany: {
+          args: Prisma.InstitutionCategoryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InstitutionCategoryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstitutionCategoryPayload>[]
+        }
+        delete: {
+          args: Prisma.InstitutionCategoryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstitutionCategoryPayload>
+        }
+        update: {
+          args: Prisma.InstitutionCategoryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstitutionCategoryPayload>
+        }
+        deleteMany: {
+          args: Prisma.InstitutionCategoryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InstitutionCategoryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InstitutionCategoryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstitutionCategoryPayload>[]
+        }
+        upsert: {
+          args: Prisma.InstitutionCategoryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InstitutionCategoryPayload>
+        }
+        aggregate: {
+          args: Prisma.InstitutionCategoryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInstitutionCategory>
+        }
+        groupBy: {
+          args: Prisma.InstitutionCategoryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InstitutionCategoryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InstitutionCategoryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InstitutionCategoryCountAggregateOutputType> | number
+        }
+      }
+    }
     InstitutionInvitation: {
       payload: Prisma.$InstitutionInvitationPayload<ExtArgs>
       fields: Prisma.InstitutionInvitationFieldRefs
@@ -2809,6 +2884,17 @@ export const GroupCategoryScalarFieldEnum = {
 export type GroupCategoryScalarFieldEnum = (typeof GroupCategoryScalarFieldEnum)[keyof typeof GroupCategoryScalarFieldEnum]
 
 
+export const InstitutionCategoryScalarFieldEnum = {
+  uid: 'uid',
+  institutionId: 'institutionId',
+  categoryId: 'categoryId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InstitutionCategoryScalarFieldEnum = (typeof InstitutionCategoryScalarFieldEnum)[keyof typeof InstitutionCategoryScalarFieldEnum]
+
+
 export const InstitutionInvitationScalarFieldEnum = {
   uid: 'uid',
   institutionId: 'institutionId',
@@ -3234,6 +3320,7 @@ export type GlobalOmitConfig = {
   institution?: Prisma.InstitutionOmit
   userInstitution?: Prisma.UserInstitutionOmit
   groupCategory?: Prisma.GroupCategoryOmit
+  institutionCategory?: Prisma.InstitutionCategoryOmit
   institutionInvitation?: Prisma.InstitutionInvitationOmit
   contentRequest?: Prisma.ContentRequestOmit
 }

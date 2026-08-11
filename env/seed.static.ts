@@ -186,6 +186,19 @@ async function main() {
     select: { uid: true, name: true },
   });
 
+  // quyca-platform oferta las 5: sus grupos son los buckets donde publica
+  // cualquier artista independiente, sin importar la disciplina. Sin estas
+  // filas, GroupService.createGroupUseCase rechazaría cualquier grupo nuevo
+  // acá — las filas son la oferta, "vacío" no significa "todas".
+  const offered = await prisma.institutionCategory.createMany({
+    data: allCategories.map((cat) => ({
+      institutionId: platform.uid,
+      categoryId: cat.uid,
+    })),
+    skipDuplicates: true,
+  });
+  console.log(`  ✅ quyca-platform oferta ${allCategories.length} categorías (${offered.count} nuevas)`);
+
   for (const cat of allCategories) {
     const existing = await prisma.groups.findFirst({
       where: { institutionId: platform.uid, name: cat.name },
