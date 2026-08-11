@@ -168,6 +168,13 @@ export class InstitutionService {
       select: {
         uid: true,
         token: true,
+        // `toEmail` es el correo del propio usuario que consulta, así que no
+        // filtra nada de nadie más; `status` es siempre PENDING por el where,
+        // pero se devuelve para que la tarjeta comparta forma con la de las
+        // invitaciones enviadas y no haya dos contratos parecidos pero
+        // distintos.
+        toEmail: true,
+        status: true,
         targetRole: true,
         expiresAt: true,
         createdAt: true,
