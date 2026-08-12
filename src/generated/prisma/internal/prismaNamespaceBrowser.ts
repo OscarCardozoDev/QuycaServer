@@ -76,7 +76,6 @@ export const ModelName = {
   Institution: 'Institution',
   UserInstitution: 'UserInstitution',
   GroupCategory: 'GroupCategory',
-  InstitutionCategory: 'InstitutionCategory',
   InstitutionInvitation: 'InstitutionInvitation',
   ContentRequest: 'ContentRequest'
 } as const
@@ -440,17 +439,6 @@ export const GroupCategoryScalarFieldEnum = {
 } as const
 
 export type GroupCategoryScalarFieldEnum = (typeof GroupCategoryScalarFieldEnum)[keyof typeof GroupCategoryScalarFieldEnum]
-
-
-export const InstitutionCategoryScalarFieldEnum = {
-  uid: 'uid',
-  institutionId: 'institutionId',
-  categoryId: 'categoryId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type InstitutionCategoryScalarFieldEnum = (typeof InstitutionCategoryScalarFieldEnum)[keyof typeof InstitutionCategoryScalarFieldEnum]
 
 
 export const InstitutionInvitationScalarFieldEnum = {

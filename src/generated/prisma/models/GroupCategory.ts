@@ -201,7 +201,6 @@ export type GroupCategoryWhereInput = {
   groups?: Prisma.GroupsListRelationFilter
   styles?: Prisma.StylesListRelationFilter
   requests?: Prisma.ContentRequestListRelationFilter
-  institutions?: Prisma.InstitutionCategoryListRelationFilter
 }
 
 export type GroupCategoryOrderByWithRelationInput = {
@@ -215,7 +214,6 @@ export type GroupCategoryOrderByWithRelationInput = {
   groups?: Prisma.GroupsOrderByRelationAggregateInput
   styles?: Prisma.StylesOrderByRelationAggregateInput
   requests?: Prisma.ContentRequestOrderByRelationAggregateInput
-  institutions?: Prisma.InstitutionCategoryOrderByRelationAggregateInput
 }
 
 export type GroupCategoryWhereUniqueInput = Prisma.AtLeast<{
@@ -232,7 +230,6 @@ export type GroupCategoryWhereUniqueInput = Prisma.AtLeast<{
   groups?: Prisma.GroupsListRelationFilter
   styles?: Prisma.StylesListRelationFilter
   requests?: Prisma.ContentRequestListRelationFilter
-  institutions?: Prisma.InstitutionCategoryListRelationFilter
 }, "uid" | "name" | "slug">
 
 export type GroupCategoryOrderByWithAggregationInput = {
@@ -272,7 +269,6 @@ export type GroupCategoryCreateInput = {
   groups?: Prisma.GroupsCreateNestedManyWithoutGroupCategoryInput
   styles?: Prisma.StylesCreateNestedManyWithoutGroupCategoryInput
   requests?: Prisma.ContentRequestCreateNestedManyWithoutCategoryInput
-  institutions?: Prisma.InstitutionCategoryCreateNestedManyWithoutCategoryInput
 }
 
 export type GroupCategoryUncheckedCreateInput = {
@@ -286,7 +282,6 @@ export type GroupCategoryUncheckedCreateInput = {
   groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutGroupCategoryInput
   styles?: Prisma.StylesUncheckedCreateNestedManyWithoutGroupCategoryInput
   requests?: Prisma.ContentRequestUncheckedCreateNestedManyWithoutCategoryInput
-  institutions?: Prisma.InstitutionCategoryUncheckedCreateNestedManyWithoutCategoryInput
 }
 
 export type GroupCategoryUpdateInput = {
@@ -300,7 +295,6 @@ export type GroupCategoryUpdateInput = {
   groups?: Prisma.GroupsUpdateManyWithoutGroupCategoryNestedInput
   styles?: Prisma.StylesUpdateManyWithoutGroupCategoryNestedInput
   requests?: Prisma.ContentRequestUpdateManyWithoutCategoryNestedInput
-  institutions?: Prisma.InstitutionCategoryUpdateManyWithoutCategoryNestedInput
 }
 
 export type GroupCategoryUncheckedUpdateInput = {
@@ -314,7 +308,6 @@ export type GroupCategoryUncheckedUpdateInput = {
   groups?: Prisma.GroupsUncheckedUpdateManyWithoutGroupCategoryNestedInput
   styles?: Prisma.StylesUncheckedUpdateManyWithoutGroupCategoryNestedInput
   requests?: Prisma.ContentRequestUncheckedUpdateManyWithoutCategoryNestedInput
-  institutions?: Prisma.InstitutionCategoryUncheckedUpdateManyWithoutCategoryNestedInput
 }
 
 export type GroupCategoryCreateManyInput = {
@@ -415,20 +408,6 @@ export type GroupCategoryUpdateOneRequiredWithoutStylesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.GroupCategoryUpdateToOneWithWhereWithoutStylesInput, Prisma.GroupCategoryUpdateWithoutStylesInput>, Prisma.GroupCategoryUncheckedUpdateWithoutStylesInput>
 }
 
-export type GroupCategoryCreateNestedOneWithoutInstitutionsInput = {
-  create?: Prisma.XOR<Prisma.GroupCategoryCreateWithoutInstitutionsInput, Prisma.GroupCategoryUncheckedCreateWithoutInstitutionsInput>
-  connectOrCreate?: Prisma.GroupCategoryCreateOrConnectWithoutInstitutionsInput
-  connect?: Prisma.GroupCategoryWhereUniqueInput
-}
-
-export type GroupCategoryUpdateOneRequiredWithoutInstitutionsNestedInput = {
-  create?: Prisma.XOR<Prisma.GroupCategoryCreateWithoutInstitutionsInput, Prisma.GroupCategoryUncheckedCreateWithoutInstitutionsInput>
-  connectOrCreate?: Prisma.GroupCategoryCreateOrConnectWithoutInstitutionsInput
-  upsert?: Prisma.GroupCategoryUpsertWithoutInstitutionsInput
-  connect?: Prisma.GroupCategoryWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.GroupCategoryUpdateToOneWithWhereWithoutInstitutionsInput, Prisma.GroupCategoryUpdateWithoutInstitutionsInput>, Prisma.GroupCategoryUncheckedUpdateWithoutInstitutionsInput>
-}
-
 export type GroupCategoryCreateNestedOneWithoutRequestsInput = {
   create?: Prisma.XOR<Prisma.GroupCategoryCreateWithoutRequestsInput, Prisma.GroupCategoryUncheckedCreateWithoutRequestsInput>
   connectOrCreate?: Prisma.GroupCategoryCreateOrConnectWithoutRequestsInput
@@ -455,7 +434,6 @@ export type GroupCategoryCreateWithoutGroupsInput = {
   updatedAt?: Date | string
   styles?: Prisma.StylesCreateNestedManyWithoutGroupCategoryInput
   requests?: Prisma.ContentRequestCreateNestedManyWithoutCategoryInput
-  institutions?: Prisma.InstitutionCategoryCreateNestedManyWithoutCategoryInput
 }
 
 export type GroupCategoryUncheckedCreateWithoutGroupsInput = {
@@ -468,7 +446,6 @@ export type GroupCategoryUncheckedCreateWithoutGroupsInput = {
   updatedAt?: Date | string
   styles?: Prisma.StylesUncheckedCreateNestedManyWithoutGroupCategoryInput
   requests?: Prisma.ContentRequestUncheckedCreateNestedManyWithoutCategoryInput
-  institutions?: Prisma.InstitutionCategoryUncheckedCreateNestedManyWithoutCategoryInput
 }
 
 export type GroupCategoryCreateOrConnectWithoutGroupsInput = {
@@ -497,7 +474,6 @@ export type GroupCategoryUpdateWithoutGroupsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   styles?: Prisma.StylesUpdateManyWithoutGroupCategoryNestedInput
   requests?: Prisma.ContentRequestUpdateManyWithoutCategoryNestedInput
-  institutions?: Prisma.InstitutionCategoryUpdateManyWithoutCategoryNestedInput
 }
 
 export type GroupCategoryUncheckedUpdateWithoutGroupsInput = {
@@ -510,7 +486,6 @@ export type GroupCategoryUncheckedUpdateWithoutGroupsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   styles?: Prisma.StylesUncheckedUpdateManyWithoutGroupCategoryNestedInput
   requests?: Prisma.ContentRequestUncheckedUpdateManyWithoutCategoryNestedInput
-  institutions?: Prisma.InstitutionCategoryUncheckedUpdateManyWithoutCategoryNestedInput
 }
 
 export type GroupCategoryCreateWithoutStylesInput = {
@@ -523,7 +498,6 @@ export type GroupCategoryCreateWithoutStylesInput = {
   updatedAt?: Date | string
   groups?: Prisma.GroupsCreateNestedManyWithoutGroupCategoryInput
   requests?: Prisma.ContentRequestCreateNestedManyWithoutCategoryInput
-  institutions?: Prisma.InstitutionCategoryCreateNestedManyWithoutCategoryInput
 }
 
 export type GroupCategoryUncheckedCreateWithoutStylesInput = {
@@ -536,7 +510,6 @@ export type GroupCategoryUncheckedCreateWithoutStylesInput = {
   updatedAt?: Date | string
   groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutGroupCategoryInput
   requests?: Prisma.ContentRequestUncheckedCreateNestedManyWithoutCategoryInput
-  institutions?: Prisma.InstitutionCategoryUncheckedCreateNestedManyWithoutCategoryInput
 }
 
 export type GroupCategoryCreateOrConnectWithoutStylesInput = {
@@ -565,7 +538,6 @@ export type GroupCategoryUpdateWithoutStylesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   groups?: Prisma.GroupsUpdateManyWithoutGroupCategoryNestedInput
   requests?: Prisma.ContentRequestUpdateManyWithoutCategoryNestedInput
-  institutions?: Prisma.InstitutionCategoryUpdateManyWithoutCategoryNestedInput
 }
 
 export type GroupCategoryUncheckedUpdateWithoutStylesInput = {
@@ -577,75 +549,6 @@ export type GroupCategoryUncheckedUpdateWithoutStylesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   groups?: Prisma.GroupsUncheckedUpdateManyWithoutGroupCategoryNestedInput
-  requests?: Prisma.ContentRequestUncheckedUpdateManyWithoutCategoryNestedInput
-  institutions?: Prisma.InstitutionCategoryUncheckedUpdateManyWithoutCategoryNestedInput
-}
-
-export type GroupCategoryCreateWithoutInstitutionsInput = {
-  uid?: string
-  name: string
-  slug: string
-  iconSlug: string
-  isActive?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  groups?: Prisma.GroupsCreateNestedManyWithoutGroupCategoryInput
-  styles?: Prisma.StylesCreateNestedManyWithoutGroupCategoryInput
-  requests?: Prisma.ContentRequestCreateNestedManyWithoutCategoryInput
-}
-
-export type GroupCategoryUncheckedCreateWithoutInstitutionsInput = {
-  uid?: string
-  name: string
-  slug: string
-  iconSlug: string
-  isActive?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutGroupCategoryInput
-  styles?: Prisma.StylesUncheckedCreateNestedManyWithoutGroupCategoryInput
-  requests?: Prisma.ContentRequestUncheckedCreateNestedManyWithoutCategoryInput
-}
-
-export type GroupCategoryCreateOrConnectWithoutInstitutionsInput = {
-  where: Prisma.GroupCategoryWhereUniqueInput
-  create: Prisma.XOR<Prisma.GroupCategoryCreateWithoutInstitutionsInput, Prisma.GroupCategoryUncheckedCreateWithoutInstitutionsInput>
-}
-
-export type GroupCategoryUpsertWithoutInstitutionsInput = {
-  update: Prisma.XOR<Prisma.GroupCategoryUpdateWithoutInstitutionsInput, Prisma.GroupCategoryUncheckedUpdateWithoutInstitutionsInput>
-  create: Prisma.XOR<Prisma.GroupCategoryCreateWithoutInstitutionsInput, Prisma.GroupCategoryUncheckedCreateWithoutInstitutionsInput>
-  where?: Prisma.GroupCategoryWhereInput
-}
-
-export type GroupCategoryUpdateToOneWithWhereWithoutInstitutionsInput = {
-  where?: Prisma.GroupCategoryWhereInput
-  data: Prisma.XOR<Prisma.GroupCategoryUpdateWithoutInstitutionsInput, Prisma.GroupCategoryUncheckedUpdateWithoutInstitutionsInput>
-}
-
-export type GroupCategoryUpdateWithoutInstitutionsInput = {
-  uid?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
-  iconSlug?: Prisma.StringFieldUpdateOperationsInput | string
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  groups?: Prisma.GroupsUpdateManyWithoutGroupCategoryNestedInput
-  styles?: Prisma.StylesUpdateManyWithoutGroupCategoryNestedInput
-  requests?: Prisma.ContentRequestUpdateManyWithoutCategoryNestedInput
-}
-
-export type GroupCategoryUncheckedUpdateWithoutInstitutionsInput = {
-  uid?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  slug?: Prisma.StringFieldUpdateOperationsInput | string
-  iconSlug?: Prisma.StringFieldUpdateOperationsInput | string
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  groups?: Prisma.GroupsUncheckedUpdateManyWithoutGroupCategoryNestedInput
-  styles?: Prisma.StylesUncheckedUpdateManyWithoutGroupCategoryNestedInput
   requests?: Prisma.ContentRequestUncheckedUpdateManyWithoutCategoryNestedInput
 }
 
@@ -659,7 +562,6 @@ export type GroupCategoryCreateWithoutRequestsInput = {
   updatedAt?: Date | string
   groups?: Prisma.GroupsCreateNestedManyWithoutGroupCategoryInput
   styles?: Prisma.StylesCreateNestedManyWithoutGroupCategoryInput
-  institutions?: Prisma.InstitutionCategoryCreateNestedManyWithoutCategoryInput
 }
 
 export type GroupCategoryUncheckedCreateWithoutRequestsInput = {
@@ -672,7 +574,6 @@ export type GroupCategoryUncheckedCreateWithoutRequestsInput = {
   updatedAt?: Date | string
   groups?: Prisma.GroupsUncheckedCreateNestedManyWithoutGroupCategoryInput
   styles?: Prisma.StylesUncheckedCreateNestedManyWithoutGroupCategoryInput
-  institutions?: Prisma.InstitutionCategoryUncheckedCreateNestedManyWithoutCategoryInput
 }
 
 export type GroupCategoryCreateOrConnectWithoutRequestsInput = {
@@ -701,7 +602,6 @@ export type GroupCategoryUpdateWithoutRequestsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   groups?: Prisma.GroupsUpdateManyWithoutGroupCategoryNestedInput
   styles?: Prisma.StylesUpdateManyWithoutGroupCategoryNestedInput
-  institutions?: Prisma.InstitutionCategoryUpdateManyWithoutCategoryNestedInput
 }
 
 export type GroupCategoryUncheckedUpdateWithoutRequestsInput = {
@@ -714,7 +614,6 @@ export type GroupCategoryUncheckedUpdateWithoutRequestsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   groups?: Prisma.GroupsUncheckedUpdateManyWithoutGroupCategoryNestedInput
   styles?: Prisma.StylesUncheckedUpdateManyWithoutGroupCategoryNestedInput
-  institutions?: Prisma.InstitutionCategoryUncheckedUpdateManyWithoutCategoryNestedInput
 }
 
 
@@ -726,14 +625,12 @@ export type GroupCategoryCountOutputType = {
   groups: number
   styles: number
   requests: number
-  institutions: number
 }
 
 export type GroupCategoryCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   groups?: boolean | GroupCategoryCountOutputTypeCountGroupsArgs
   styles?: boolean | GroupCategoryCountOutputTypeCountStylesArgs
   requests?: boolean | GroupCategoryCountOutputTypeCountRequestsArgs
-  institutions?: boolean | GroupCategoryCountOutputTypeCountInstitutionsArgs
 }
 
 /**
@@ -767,13 +664,6 @@ export type GroupCategoryCountOutputTypeCountRequestsArgs<ExtArgs extends runtim
   where?: Prisma.ContentRequestWhereInput
 }
 
-/**
- * GroupCategoryCountOutputType without action
- */
-export type GroupCategoryCountOutputTypeCountInstitutionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.InstitutionCategoryWhereInput
-}
-
 
 export type GroupCategorySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   uid?: boolean
@@ -786,7 +676,6 @@ export type GroupCategorySelect<ExtArgs extends runtime.Types.Extensions.Interna
   groups?: boolean | Prisma.GroupCategory$groupsArgs<ExtArgs>
   styles?: boolean | Prisma.GroupCategory$stylesArgs<ExtArgs>
   requests?: boolean | Prisma.GroupCategory$requestsArgs<ExtArgs>
-  institutions?: boolean | Prisma.GroupCategory$institutionsArgs<ExtArgs>
   _count?: boolean | Prisma.GroupCategoryCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["groupCategory"]>
 
@@ -825,7 +714,6 @@ export type GroupCategoryInclude<ExtArgs extends runtime.Types.Extensions.Intern
   groups?: boolean | Prisma.GroupCategory$groupsArgs<ExtArgs>
   styles?: boolean | Prisma.GroupCategory$stylesArgs<ExtArgs>
   requests?: boolean | Prisma.GroupCategory$requestsArgs<ExtArgs>
-  institutions?: boolean | Prisma.GroupCategory$institutionsArgs<ExtArgs>
   _count?: boolean | Prisma.GroupCategoryCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type GroupCategoryIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -837,7 +725,6 @@ export type $GroupCategoryPayload<ExtArgs extends runtime.Types.Extensions.Inter
     groups: Prisma.$GroupsPayload<ExtArgs>[]
     styles: Prisma.$StylesPayload<ExtArgs>[]
     requests: Prisma.$ContentRequestPayload<ExtArgs>[]
-    institutions: Prisma.$InstitutionCategoryPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     uid: string
@@ -1244,7 +1131,6 @@ export interface Prisma__GroupCategoryClient<T, Null = never, ExtArgs extends ru
   groups<T extends Prisma.GroupCategory$groupsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GroupCategory$groupsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GroupsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   styles<T extends Prisma.GroupCategory$stylesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GroupCategory$stylesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StylesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   requests<T extends Prisma.GroupCategory$requestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GroupCategory$requestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  institutions<T extends Prisma.GroupCategory$institutionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GroupCategory$institutionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InstitutionCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1738,30 +1624,6 @@ export type GroupCategory$requestsArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.ContentRequestScalarFieldEnum | Prisma.ContentRequestScalarFieldEnum[]
-}
-
-/**
- * GroupCategory.institutions
- */
-export type GroupCategory$institutionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the InstitutionCategory
-   */
-  select?: Prisma.InstitutionCategorySelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the InstitutionCategory
-   */
-  omit?: Prisma.InstitutionCategoryOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.InstitutionCategoryInclude<ExtArgs> | null
-  where?: Prisma.InstitutionCategoryWhereInput
-  orderBy?: Prisma.InstitutionCategoryOrderByWithRelationInput | Prisma.InstitutionCategoryOrderByWithRelationInput[]
-  cursor?: Prisma.InstitutionCategoryWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.InstitutionCategoryScalarFieldEnum | Prisma.InstitutionCategoryScalarFieldEnum[]
 }
 
 /**

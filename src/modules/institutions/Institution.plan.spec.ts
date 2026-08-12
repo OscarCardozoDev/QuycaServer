@@ -19,10 +19,7 @@ describe('InstitutionService — plan', () => {
       credentials: { create: jest.fn().mockResolvedValue({ uid: 'c1' }) },
       users: { create: jest.fn() },
       userInstitution: { create: jest.fn() },
-      // La oferta de categorías por defecto no es asunto de esta suite, pero
-      // createInstitution la siembra: sin catálogo activo no crea ninguna fila.
       groupCategory: { findMany: jest.fn().mockResolvedValue([]) },
-      institutionCategory: { createMany: jest.fn() },
       $transaction: jest.fn((fn) => fn(prisma)),
     };
 

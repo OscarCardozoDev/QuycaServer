@@ -1,17 +1,5 @@
-import { IsString, IsIn, IsOptional, IsUUID, IsBoolean, IsArray } from 'class-validator';
+import { IsString, IsIn, IsOptional, IsUUID, IsBoolean } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-
-/**
- * Set completo de categorías que la institución oferta. Reemplaza, no suma:
- * lo que no venga acá se borra. El array vacío es válido y significa "no
- * oferta ninguna" — ver CategoriesService.setOfferedCategories.
- */
-export class SetOfferedCategoriesDto {
-  @ApiProperty({ type: [String], example: ['uuid-artes', 'uuid-musica'] })
-  @IsArray()
-  @IsUUID('4', { each: true })
-  categoryIds: string[];
-}
 
 export class CreateCategoryDto {
   @ApiProperty() @IsString() name: string;

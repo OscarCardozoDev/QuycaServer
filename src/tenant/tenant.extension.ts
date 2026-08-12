@@ -8,30 +8,6 @@ import { tenantStorage } from './tenant-context';
  * NO agregar Institution, UserInstitution ni InstitutionInvitation: son los
  * modelos que establecen el tenant. Filtrarlos crea dependencia circular —
  * el TenantGuard los consulta para resolver la institución.
- *
- * NO agregar InstitutionCategory tampoco, aunque tenga columna institutionId.
- * Es configuración DE la institución, de la misma familia que UserInstitution,
- * y sus caminos de acceso viven fuera de un tenant resuelto:
- *
- *   1. Se escribe en `POST /institutions`, que es público: el TenantMiddleware
- *      ya abrió el store pero con institutionId null, así que un modelo scoped
- *      tiraría 403 justo al sembrar las categorías por defecto de la
- *      institución recién creada. Habría que envolver el alta entera en
- *      runWithoutTenant().
- *   2. La vitrina pública "qué oferta cada institución" lee las filas de OTRAS
- *      instituciones — otro runWithoutTenant().
- *   3. Los dos caminos que sí son del tenant activo (leer y editar la oferta
- *      propia, validar la categoría al crear un grupo) ya reciben el
- *      institutionId explícito del TenantGuard vía @Institution(), así que la
- *      extensión no agregaría nada que el where no diga ya.
- *
- * Es decir: scopearlo convertiría la excepción en la regla. Además lo que
- * guarda es catálogo, no dato sensible — qué categorías dicta una institución
- * es información tan pública como su nombre.
- *
- * A cambio: TODO filtro sobre InstitutionCategory va escrito a mano. Si
- * escribís una query sobre este modelo sin `where: { institutionId }`, ves las
- * de todas las instituciones y nadie te avisa.
  */
 export const SCOPED_MODELS = new Set<string>([
   'Groups',

@@ -52,17 +52,6 @@ export class InstitutionService {
     const hashedPassword = await hashText(data.password);
     const trialEndsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-    // Toda institución nace ofertando el catálogo completo, y el rector
-    // después desmarca lo que no dicta. La alternativa —nacer con cero y
-    // obligar a elegir— dejaría a un rector que se saltea la pantalla sin
-    // poder crear ningún grupo, sin ninguna pista de por qué. Ver el comentario
-    // del modelo InstitutionCategory: "sin filas" significa "no oferta nada",
-    // no "todas".
-    const activeCategories = await this.prismaService.groupCategory.findMany({
-      where: { isActive: true },
-      select: { uid: true },
-    });
-
     return this.prismaService.$transaction(async (tx) => {
       const institution = await tx.institution.create({
         data: {
@@ -76,15 +65,6 @@ export class InstitutionService {
         },
         select: { uid: true },
       });
-
-      if (activeCategories.length) {
-        await tx.institutionCategory.createMany({
-          data: activeCategories.map((category) => ({
-            institutionId: institution.uid,
-            categoryId: category.uid,
-          })),
-        });
-      }
 
       const credential = await tx.credentials.create({
         data: { mail: data.email, password: hashedPassword },

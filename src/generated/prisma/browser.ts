@@ -143,27 +143,6 @@ export type UserInstitution = Prisma.UserInstitutionModel
  */
 export type GroupCategory = Prisma.GroupCategoryModel
 /**
- * Model InstitutionCategory
- * Qué categorías del catálogo global oferta cada institución.
- * 
- * GroupCategory es un catálogo global de 5 filas y no todas las
- * instituciones dictan las 5: la USTA Tunja oferta artes y música, y no
- * debería poder abrir un grupo de teatro. Esta tabla es esa elección, y el
- * rector la edita desde PUT /categories/offered.
- * 
- * SEMÁNTICA EXPLÍCITA: las filas son EXACTAMENTE lo que la institución
- * oferta. "Sin filas" significa "no oferta nada" y bloquea la creación de
- * grupos — NO significa "todas". Por eso toda institución nace con las 5
- * (ver InstitutionService.createInstitution) y la migración las sembró para
- * las que ya existían. Es la semántica reversible: el rector puede llegar al
- * estado "cero categorías" a propósito y volver, mientras que con
- * "vacío = todas" no habría forma de expresar "ninguna".
- * 
- * NO va en SCOPED_MODELS, y es deliberado — ver el comentario en
- * tenant.extension.ts. Todo filtro sobre este modelo va escrito a mano.
- */
-export type InstitutionCategory = Prisma.InstitutionCategoryModel
-/**
  * Model InstitutionInvitation
  * 
  */

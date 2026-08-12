@@ -19,7 +19,6 @@ describe('InstitutionService', () => {
       users: { create: jest.fn() },
       userInstitution: { create: jest.fn(), findUnique: jest.fn() },
       groupCategory: { findMany: jest.fn().mockResolvedValue([]) },
-      institutionCategory: { createMany: jest.fn() },
       institutionInvitation: {
         create: jest.fn(), findMany: jest.fn(),
         findUnique: jest.fn(), update: jest.fn(),
@@ -82,33 +81,6 @@ describe('InstitutionService', () => {
       expect(prisma.userInstitution.create).toHaveBeenCalledWith(
         expect.objectContaining({ data: expect.objectContaining({ contextRole: 'rector' }) })
       );
-    });
-
-    // Sin estas filas la institución nace ofertando cero categorías y no
-    // puede crear ningún grupo — "sin filas" significa "ninguna", no "todas".
-    // Ver el modelo InstitutionCategory en schema.prisma.
-    it('la institución nace ofertando todas las categorías activas', async () => {
-      prisma.subscriptionPlan.findUnique.mockResolvedValue(mockPlan);
-      prisma.institution.findUnique.mockResolvedValue(null);
-      prisma.institution.create.mockResolvedValue({ uid: 'inst-uid' });
-      prisma.credentials.create.mockResolvedValue({ uid: 'cred-uid' });
-      prisma.groupCategory.findMany.mockResolvedValue([{ uid: 'cat-artes' }, { uid: 'cat-musica' }]);
-
-      await service.createInstitution({
-        name: 'Test Uni', slug: 'test-uni', type: 'EDUCATIONAL',
-        representativeName: 'John', representativeLastName: 'Doe',
-        email: 'rector@test.edu', password: 'Pass@1234!',
-      });
-
-      expect(prisma.groupCategory.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { isActive: true } })
-      );
-      expect(prisma.institutionCategory.createMany).toHaveBeenCalledWith({
-        data: [
-          { institutionId: 'inst-uid', categoryId: 'cat-artes' },
-          { institutionId: 'inst-uid', categoryId: 'cat-musica' },
-        ],
-      });
     });
   });
 
