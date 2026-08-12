@@ -185,6 +185,7 @@ export type PhotosWhereInput = {
   products?: Prisma.ProductPhotoListRelationFilter
   events?: Prisma.EventPhotoListRelationFilter
   user?: Prisma.XOR<Prisma.UsersNullableScalarRelationFilter, Prisma.UsersWhereInput> | null
+  groupCovers?: Prisma.GroupsListRelationFilter
 }
 
 export type PhotosOrderByWithRelationInput = {
@@ -196,6 +197,7 @@ export type PhotosOrderByWithRelationInput = {
   products?: Prisma.ProductPhotoOrderByRelationAggregateInput
   events?: Prisma.EventPhotoOrderByRelationAggregateInput
   user?: Prisma.UsersOrderByWithRelationInput
+  groupCovers?: Prisma.GroupsOrderByRelationAggregateInput
 }
 
 export type PhotosWhereUniqueInput = Prisma.AtLeast<{
@@ -210,6 +212,7 @@ export type PhotosWhereUniqueInput = Prisma.AtLeast<{
   products?: Prisma.ProductPhotoListRelationFilter
   events?: Prisma.EventPhotoListRelationFilter
   user?: Prisma.XOR<Prisma.UsersNullableScalarRelationFilter, Prisma.UsersWhereInput> | null
+  groupCovers?: Prisma.GroupsListRelationFilter
 }, "uid">
 
 export type PhotosOrderByWithAggregationInput = {
@@ -243,6 +246,7 @@ export type PhotosCreateInput = {
   products?: Prisma.ProductPhotoCreateNestedManyWithoutPhotoInput
   events?: Prisma.EventPhotoCreateNestedManyWithoutPhotoInput
   user?: Prisma.UsersCreateNestedOneWithoutPhotoInput
+  groupCovers?: Prisma.GroupsCreateNestedManyWithoutCoverPhotoInput
 }
 
 export type PhotosUncheckedCreateInput = {
@@ -254,6 +258,7 @@ export type PhotosUncheckedCreateInput = {
   products?: Prisma.ProductPhotoUncheckedCreateNestedManyWithoutPhotoInput
   events?: Prisma.EventPhotoUncheckedCreateNestedManyWithoutPhotoInput
   user?: Prisma.UsersUncheckedCreateNestedOneWithoutPhotoInput
+  groupCovers?: Prisma.GroupsUncheckedCreateNestedManyWithoutCoverPhotoInput
 }
 
 export type PhotosUpdateInput = {
@@ -265,6 +270,7 @@ export type PhotosUpdateInput = {
   products?: Prisma.ProductPhotoUpdateManyWithoutPhotoNestedInput
   events?: Prisma.EventPhotoUpdateManyWithoutPhotoNestedInput
   user?: Prisma.UsersUpdateOneWithoutPhotoNestedInput
+  groupCovers?: Prisma.GroupsUpdateManyWithoutCoverPhotoNestedInput
 }
 
 export type PhotosUncheckedUpdateInput = {
@@ -276,6 +282,7 @@ export type PhotosUncheckedUpdateInput = {
   products?: Prisma.ProductPhotoUncheckedUpdateManyWithoutPhotoNestedInput
   events?: Prisma.EventPhotoUncheckedUpdateManyWithoutPhotoNestedInput
   user?: Prisma.UsersUncheckedUpdateOneWithoutPhotoNestedInput
+  groupCovers?: Prisma.GroupsUncheckedUpdateManyWithoutCoverPhotoNestedInput
 }
 
 export type PhotosCreateManyInput = {
@@ -352,6 +359,22 @@ export type PhotosUpdateOneWithoutUserNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.PhotosUpdateToOneWithWhereWithoutUserInput, Prisma.PhotosUpdateWithoutUserInput>, Prisma.PhotosUncheckedUpdateWithoutUserInput>
 }
 
+export type PhotosCreateNestedOneWithoutGroupCoversInput = {
+  create?: Prisma.XOR<Prisma.PhotosCreateWithoutGroupCoversInput, Prisma.PhotosUncheckedCreateWithoutGroupCoversInput>
+  connectOrCreate?: Prisma.PhotosCreateOrConnectWithoutGroupCoversInput
+  connect?: Prisma.PhotosWhereUniqueInput
+}
+
+export type PhotosUpdateOneWithoutGroupCoversNestedInput = {
+  create?: Prisma.XOR<Prisma.PhotosCreateWithoutGroupCoversInput, Prisma.PhotosUncheckedCreateWithoutGroupCoversInput>
+  connectOrCreate?: Prisma.PhotosCreateOrConnectWithoutGroupCoversInput
+  upsert?: Prisma.PhotosUpsertWithoutGroupCoversInput
+  disconnect?: Prisma.PhotosWhereInput | boolean
+  delete?: Prisma.PhotosWhereInput | boolean
+  connect?: Prisma.PhotosWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PhotosUpdateToOneWithWhereWithoutGroupCoversInput, Prisma.PhotosUpdateWithoutGroupCoversInput>, Prisma.PhotosUncheckedUpdateWithoutGroupCoversInput>
+}
+
 export type PhotosCreateNestedOneWithoutProductsInput = {
   create?: Prisma.XOR<Prisma.PhotosCreateWithoutProductsInput, Prisma.PhotosUncheckedCreateWithoutProductsInput>
   connectOrCreate?: Prisma.PhotosCreateOrConnectWithoutProductsInput
@@ -388,6 +411,7 @@ export type PhotosCreateWithoutUserInput = {
   updatedAt?: Date | string
   products?: Prisma.ProductPhotoCreateNestedManyWithoutPhotoInput
   events?: Prisma.EventPhotoCreateNestedManyWithoutPhotoInput
+  groupCovers?: Prisma.GroupsCreateNestedManyWithoutCoverPhotoInput
 }
 
 export type PhotosUncheckedCreateWithoutUserInput = {
@@ -398,6 +422,7 @@ export type PhotosUncheckedCreateWithoutUserInput = {
   updatedAt?: Date | string
   products?: Prisma.ProductPhotoUncheckedCreateNestedManyWithoutPhotoInput
   events?: Prisma.EventPhotoUncheckedCreateNestedManyWithoutPhotoInput
+  groupCovers?: Prisma.GroupsUncheckedCreateNestedManyWithoutCoverPhotoInput
 }
 
 export type PhotosCreateOrConnectWithoutUserInput = {
@@ -424,6 +449,7 @@ export type PhotosUpdateWithoutUserInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.ProductPhotoUpdateManyWithoutPhotoNestedInput
   events?: Prisma.EventPhotoUpdateManyWithoutPhotoNestedInput
+  groupCovers?: Prisma.GroupsUpdateManyWithoutCoverPhotoNestedInput
 }
 
 export type PhotosUncheckedUpdateWithoutUserInput = {
@@ -434,6 +460,67 @@ export type PhotosUncheckedUpdateWithoutUserInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.ProductPhotoUncheckedUpdateManyWithoutPhotoNestedInput
   events?: Prisma.EventPhotoUncheckedUpdateManyWithoutPhotoNestedInput
+  groupCovers?: Prisma.GroupsUncheckedUpdateManyWithoutCoverPhotoNestedInput
+}
+
+export type PhotosCreateWithoutGroupCoversInput = {
+  uid?: string
+  name: string
+  url: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  products?: Prisma.ProductPhotoCreateNestedManyWithoutPhotoInput
+  events?: Prisma.EventPhotoCreateNestedManyWithoutPhotoInput
+  user?: Prisma.UsersCreateNestedOneWithoutPhotoInput
+}
+
+export type PhotosUncheckedCreateWithoutGroupCoversInput = {
+  uid?: string
+  name: string
+  url: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  products?: Prisma.ProductPhotoUncheckedCreateNestedManyWithoutPhotoInput
+  events?: Prisma.EventPhotoUncheckedCreateNestedManyWithoutPhotoInput
+  user?: Prisma.UsersUncheckedCreateNestedOneWithoutPhotoInput
+}
+
+export type PhotosCreateOrConnectWithoutGroupCoversInput = {
+  where: Prisma.PhotosWhereUniqueInput
+  create: Prisma.XOR<Prisma.PhotosCreateWithoutGroupCoversInput, Prisma.PhotosUncheckedCreateWithoutGroupCoversInput>
+}
+
+export type PhotosUpsertWithoutGroupCoversInput = {
+  update: Prisma.XOR<Prisma.PhotosUpdateWithoutGroupCoversInput, Prisma.PhotosUncheckedUpdateWithoutGroupCoversInput>
+  create: Prisma.XOR<Prisma.PhotosCreateWithoutGroupCoversInput, Prisma.PhotosUncheckedCreateWithoutGroupCoversInput>
+  where?: Prisma.PhotosWhereInput
+}
+
+export type PhotosUpdateToOneWithWhereWithoutGroupCoversInput = {
+  where?: Prisma.PhotosWhereInput
+  data: Prisma.XOR<Prisma.PhotosUpdateWithoutGroupCoversInput, Prisma.PhotosUncheckedUpdateWithoutGroupCoversInput>
+}
+
+export type PhotosUpdateWithoutGroupCoversInput = {
+  uid?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  products?: Prisma.ProductPhotoUpdateManyWithoutPhotoNestedInput
+  events?: Prisma.EventPhotoUpdateManyWithoutPhotoNestedInput
+  user?: Prisma.UsersUpdateOneWithoutPhotoNestedInput
+}
+
+export type PhotosUncheckedUpdateWithoutGroupCoversInput = {
+  uid?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  url?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  products?: Prisma.ProductPhotoUncheckedUpdateManyWithoutPhotoNestedInput
+  events?: Prisma.EventPhotoUncheckedUpdateManyWithoutPhotoNestedInput
+  user?: Prisma.UsersUncheckedUpdateOneWithoutPhotoNestedInput
 }
 
 export type PhotosCreateWithoutProductsInput = {
@@ -444,6 +531,7 @@ export type PhotosCreateWithoutProductsInput = {
   updatedAt?: Date | string
   events?: Prisma.EventPhotoCreateNestedManyWithoutPhotoInput
   user?: Prisma.UsersCreateNestedOneWithoutPhotoInput
+  groupCovers?: Prisma.GroupsCreateNestedManyWithoutCoverPhotoInput
 }
 
 export type PhotosUncheckedCreateWithoutProductsInput = {
@@ -454,6 +542,7 @@ export type PhotosUncheckedCreateWithoutProductsInput = {
   updatedAt?: Date | string
   events?: Prisma.EventPhotoUncheckedCreateNestedManyWithoutPhotoInput
   user?: Prisma.UsersUncheckedCreateNestedOneWithoutPhotoInput
+  groupCovers?: Prisma.GroupsUncheckedCreateNestedManyWithoutCoverPhotoInput
 }
 
 export type PhotosCreateOrConnectWithoutProductsInput = {
@@ -480,6 +569,7 @@ export type PhotosUpdateWithoutProductsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   events?: Prisma.EventPhotoUpdateManyWithoutPhotoNestedInput
   user?: Prisma.UsersUpdateOneWithoutPhotoNestedInput
+  groupCovers?: Prisma.GroupsUpdateManyWithoutCoverPhotoNestedInput
 }
 
 export type PhotosUncheckedUpdateWithoutProductsInput = {
@@ -490,6 +580,7 @@ export type PhotosUncheckedUpdateWithoutProductsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   events?: Prisma.EventPhotoUncheckedUpdateManyWithoutPhotoNestedInput
   user?: Prisma.UsersUncheckedUpdateOneWithoutPhotoNestedInput
+  groupCovers?: Prisma.GroupsUncheckedUpdateManyWithoutCoverPhotoNestedInput
 }
 
 export type PhotosCreateWithoutEventsInput = {
@@ -500,6 +591,7 @@ export type PhotosCreateWithoutEventsInput = {
   updatedAt?: Date | string
   products?: Prisma.ProductPhotoCreateNestedManyWithoutPhotoInput
   user?: Prisma.UsersCreateNestedOneWithoutPhotoInput
+  groupCovers?: Prisma.GroupsCreateNestedManyWithoutCoverPhotoInput
 }
 
 export type PhotosUncheckedCreateWithoutEventsInput = {
@@ -510,6 +602,7 @@ export type PhotosUncheckedCreateWithoutEventsInput = {
   updatedAt?: Date | string
   products?: Prisma.ProductPhotoUncheckedCreateNestedManyWithoutPhotoInput
   user?: Prisma.UsersUncheckedCreateNestedOneWithoutPhotoInput
+  groupCovers?: Prisma.GroupsUncheckedCreateNestedManyWithoutCoverPhotoInput
 }
 
 export type PhotosCreateOrConnectWithoutEventsInput = {
@@ -536,6 +629,7 @@ export type PhotosUpdateWithoutEventsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.ProductPhotoUpdateManyWithoutPhotoNestedInput
   user?: Prisma.UsersUpdateOneWithoutPhotoNestedInput
+  groupCovers?: Prisma.GroupsUpdateManyWithoutCoverPhotoNestedInput
 }
 
 export type PhotosUncheckedUpdateWithoutEventsInput = {
@@ -546,6 +640,7 @@ export type PhotosUncheckedUpdateWithoutEventsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.ProductPhotoUncheckedUpdateManyWithoutPhotoNestedInput
   user?: Prisma.UsersUncheckedUpdateOneWithoutPhotoNestedInput
+  groupCovers?: Prisma.GroupsUncheckedUpdateManyWithoutCoverPhotoNestedInput
 }
 
 
@@ -556,11 +651,13 @@ export type PhotosUncheckedUpdateWithoutEventsInput = {
 export type PhotosCountOutputType = {
   products: number
   events: number
+  groupCovers: number
 }
 
 export type PhotosCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   products?: boolean | PhotosCountOutputTypeCountProductsArgs
   events?: boolean | PhotosCountOutputTypeCountEventsArgs
+  groupCovers?: boolean | PhotosCountOutputTypeCountGroupCoversArgs
 }
 
 /**
@@ -587,6 +684,13 @@ export type PhotosCountOutputTypeCountEventsArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.EventPhotoWhereInput
 }
 
+/**
+ * PhotosCountOutputType without action
+ */
+export type PhotosCountOutputTypeCountGroupCoversArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.GroupsWhereInput
+}
+
 
 export type PhotosSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   uid?: boolean
@@ -597,6 +701,7 @@ export type PhotosSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   products?: boolean | Prisma.Photos$productsArgs<ExtArgs>
   events?: boolean | Prisma.Photos$eventsArgs<ExtArgs>
   user?: boolean | Prisma.Photos$userArgs<ExtArgs>
+  groupCovers?: boolean | Prisma.Photos$groupCoversArgs<ExtArgs>
   _count?: boolean | Prisma.PhotosCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["photos"]>
 
@@ -629,6 +734,7 @@ export type PhotosInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   products?: boolean | Prisma.Photos$productsArgs<ExtArgs>
   events?: boolean | Prisma.Photos$eventsArgs<ExtArgs>
   user?: boolean | Prisma.Photos$userArgs<ExtArgs>
+  groupCovers?: boolean | Prisma.Photos$groupCoversArgs<ExtArgs>
   _count?: boolean | Prisma.PhotosCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PhotosIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -640,6 +746,7 @@ export type $PhotosPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     products: Prisma.$ProductPhotoPayload<ExtArgs>[]
     events: Prisma.$EventPhotoPayload<ExtArgs>[]
     user: Prisma.$UsersPayload<ExtArgs> | null
+    groupCovers: Prisma.$GroupsPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     uid: string
@@ -1044,6 +1151,7 @@ export interface Prisma__PhotosClient<T, Null = never, ExtArgs extends runtime.T
   products<T extends Prisma.Photos$productsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Photos$productsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductPhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   events<T extends Prisma.Photos$eventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Photos$eventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventPhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   user<T extends Prisma.Photos$userArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Photos$userArgs<ExtArgs>>): Prisma.Prisma__UsersClient<runtime.Types.Result.GetResult<Prisma.$UsersPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  groupCovers<T extends Prisma.Photos$groupCoversArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Photos$groupCoversArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GroupsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1530,6 +1638,30 @@ export type Photos$userArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
    */
   include?: Prisma.UsersInclude<ExtArgs> | null
   where?: Prisma.UsersWhereInput
+}
+
+/**
+ * Photos.groupCovers
+ */
+export type Photos$groupCoversArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Groups
+   */
+  select?: Prisma.GroupsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Groups
+   */
+  omit?: Prisma.GroupsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.GroupsInclude<ExtArgs> | null
+  where?: Prisma.GroupsWhereInput
+  orderBy?: Prisma.GroupsOrderByWithRelationInput | Prisma.GroupsOrderByWithRelationInput[]
+  cursor?: Prisma.GroupsWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.GroupsScalarFieldEnum | Prisma.GroupsScalarFieldEnum[]
 }
 
 /**

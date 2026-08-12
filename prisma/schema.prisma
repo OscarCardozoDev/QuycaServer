@@ -165,6 +165,19 @@ model Groups {
   name         String   @db.VarChar(100)
   isActive     Boolean  @default(true)
 
+  /// Descripción pública del grupo. La escribe el docente a cargo.
+  description  String?  @db.VarChar(500)
+
+  /// Reglas del grupo, texto libre escrito por el docente. Son informativas:
+  /// el sistema NO las hace cumplir. Ver
+  /// docs/superpowers/specs/2026-08-11-modelo-de-grupos-design.md § 3.
+  rules        String?  @db.Text
+
+  /// Portada del grupo, subida por el docente. Si es null, el frontend cae en
+  /// la imagen de la categoría (`categoryImage(slug)`).
+  coverPhotoId String?  @db.Uuid
+  coverPhoto   Photos?  @relation("GroupCover", fields: [coverPhotoId], references: [uid])
+
   institutionId  String       @db.Uuid
   institution    Institution  @relation(fields: [institutionId], references: [uid])
   categoryId     String       @db.Uuid
@@ -288,6 +301,7 @@ model Photos {
   products   ProductPhoto[]
   events     EventPhoto[]
   user       Users?         @relation("UserPhoto")
+  groupCovers Groups[] @relation("GroupCover")
 
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt

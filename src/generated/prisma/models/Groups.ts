@@ -28,6 +28,9 @@ export type GroupsMinAggregateOutputType = {
   uid: string | null
   name: string | null
   isActive: boolean | null
+  description: string | null
+  rules: string | null
+  coverPhotoId: string | null
   institutionId: string | null
   categoryId: string | null
   profesorId: string | null
@@ -39,6 +42,9 @@ export type GroupsMaxAggregateOutputType = {
   uid: string | null
   name: string | null
   isActive: boolean | null
+  description: string | null
+  rules: string | null
+  coverPhotoId: string | null
   institutionId: string | null
   categoryId: string | null
   profesorId: string | null
@@ -50,6 +56,9 @@ export type GroupsCountAggregateOutputType = {
   uid: number
   name: number
   isActive: number
+  description: number
+  rules: number
+  coverPhotoId: number
   institutionId: number
   categoryId: number
   profesorId: number
@@ -63,6 +72,9 @@ export type GroupsMinAggregateInputType = {
   uid?: true
   name?: true
   isActive?: true
+  description?: true
+  rules?: true
+  coverPhotoId?: true
   institutionId?: true
   categoryId?: true
   profesorId?: true
@@ -74,6 +86,9 @@ export type GroupsMaxAggregateInputType = {
   uid?: true
   name?: true
   isActive?: true
+  description?: true
+  rules?: true
+  coverPhotoId?: true
   institutionId?: true
   categoryId?: true
   profesorId?: true
@@ -85,6 +100,9 @@ export type GroupsCountAggregateInputType = {
   uid?: true
   name?: true
   isActive?: true
+  description?: true
+  rules?: true
+  coverPhotoId?: true
   institutionId?: true
   categoryId?: true
   profesorId?: true
@@ -169,6 +187,9 @@ export type GroupsGroupByOutputType = {
   uid: string
   name: string
   isActive: boolean
+  description: string | null
+  rules: string | null
+  coverPhotoId: string | null
   institutionId: string
   categoryId: string
   profesorId: string | null
@@ -201,11 +222,15 @@ export type GroupsWhereInput = {
   uid?: Prisma.UuidFilter<"Groups"> | string
   name?: Prisma.StringFilter<"Groups"> | string
   isActive?: Prisma.BoolFilter<"Groups"> | boolean
+  description?: Prisma.StringNullableFilter<"Groups"> | string | null
+  rules?: Prisma.StringNullableFilter<"Groups"> | string | null
+  coverPhotoId?: Prisma.UuidNullableFilter<"Groups"> | string | null
   institutionId?: Prisma.UuidFilter<"Groups"> | string
   categoryId?: Prisma.UuidFilter<"Groups"> | string
   profesorId?: Prisma.UuidNullableFilter<"Groups"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Groups"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Groups"> | Date | string
+  coverPhoto?: Prisma.XOR<Prisma.PhotosNullableScalarRelationFilter, Prisma.PhotosWhereInput> | null
   institution?: Prisma.XOR<Prisma.InstitutionScalarRelationFilter, Prisma.InstitutionWhereInput>
   groupCategory?: Prisma.XOR<Prisma.GroupCategoryScalarRelationFilter, Prisma.GroupCategoryWhereInput>
   profesor?: Prisma.XOR<Prisma.UsersNullableScalarRelationFilter, Prisma.UsersWhereInput> | null
@@ -222,11 +247,15 @@ export type GroupsOrderByWithRelationInput = {
   uid?: Prisma.SortOrder
   name?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
+  rules?: Prisma.SortOrderInput | Prisma.SortOrder
+  coverPhotoId?: Prisma.SortOrderInput | Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   profesorId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  coverPhoto?: Prisma.PhotosOrderByWithRelationInput
   institution?: Prisma.InstitutionOrderByWithRelationInput
   groupCategory?: Prisma.GroupCategoryOrderByWithRelationInput
   profesor?: Prisma.UsersOrderByWithRelationInput
@@ -246,11 +275,15 @@ export type GroupsWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.GroupsWhereInput | Prisma.GroupsWhereInput[]
   name?: Prisma.StringFilter<"Groups"> | string
   isActive?: Prisma.BoolFilter<"Groups"> | boolean
+  description?: Prisma.StringNullableFilter<"Groups"> | string | null
+  rules?: Prisma.StringNullableFilter<"Groups"> | string | null
+  coverPhotoId?: Prisma.UuidNullableFilter<"Groups"> | string | null
   institutionId?: Prisma.UuidFilter<"Groups"> | string
   categoryId?: Prisma.UuidFilter<"Groups"> | string
   profesorId?: Prisma.UuidNullableFilter<"Groups"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Groups"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Groups"> | Date | string
+  coverPhoto?: Prisma.XOR<Prisma.PhotosNullableScalarRelationFilter, Prisma.PhotosWhereInput> | null
   institution?: Prisma.XOR<Prisma.InstitutionScalarRelationFilter, Prisma.InstitutionWhereInput>
   groupCategory?: Prisma.XOR<Prisma.GroupCategoryScalarRelationFilter, Prisma.GroupCategoryWhereInput>
   profesor?: Prisma.XOR<Prisma.UsersNullableScalarRelationFilter, Prisma.UsersWhereInput> | null
@@ -267,6 +300,9 @@ export type GroupsOrderByWithAggregationInput = {
   uid?: Prisma.SortOrder
   name?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
+  rules?: Prisma.SortOrderInput | Prisma.SortOrder
+  coverPhotoId?: Prisma.SortOrderInput | Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   profesorId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -284,6 +320,9 @@ export type GroupsScalarWhereWithAggregatesInput = {
   uid?: Prisma.UuidWithAggregatesFilter<"Groups"> | string
   name?: Prisma.StringWithAggregatesFilter<"Groups"> | string
   isActive?: Prisma.BoolWithAggregatesFilter<"Groups"> | boolean
+  description?: Prisma.StringNullableWithAggregatesFilter<"Groups"> | string | null
+  rules?: Prisma.StringNullableWithAggregatesFilter<"Groups"> | string | null
+  coverPhotoId?: Prisma.UuidNullableWithAggregatesFilter<"Groups"> | string | null
   institutionId?: Prisma.UuidWithAggregatesFilter<"Groups"> | string
   categoryId?: Prisma.UuidWithAggregatesFilter<"Groups"> | string
   profesorId?: Prisma.UuidNullableWithAggregatesFilter<"Groups"> | string | null
@@ -295,8 +334,11 @@ export type GroupsCreateInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  coverPhoto?: Prisma.PhotosCreateNestedOneWithoutGroupCoversInput
   institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
   groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
@@ -313,6 +355,9 @@ export type GroupsUncheckedCreateInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  coverPhotoId?: string | null
   institutionId: string
   categoryId: string
   profesorId?: string | null
@@ -331,8 +376,11 @@ export type GroupsUpdateInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  coverPhoto?: Prisma.PhotosUpdateOneWithoutGroupCoversNestedInput
   institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
   groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
@@ -349,6 +397,9 @@ export type GroupsUncheckedUpdateInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverPhotoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -367,6 +418,9 @@ export type GroupsCreateManyInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  coverPhotoId?: string | null
   institutionId: string
   categoryId: string
   profesorId?: string | null
@@ -378,6 +432,8 @@ export type GroupsUpdateManyMutationInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -386,6 +442,9 @@ export type GroupsUncheckedUpdateManyInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverPhotoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -407,6 +466,9 @@ export type GroupsCountOrderByAggregateInput = {
   uid?: Prisma.SortOrder
   name?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  rules?: Prisma.SortOrder
+  coverPhotoId?: Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   profesorId?: Prisma.SortOrder
@@ -418,6 +480,9 @@ export type GroupsMaxOrderByAggregateInput = {
   uid?: Prisma.SortOrder
   name?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  rules?: Prisma.SortOrder
+  coverPhotoId?: Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   profesorId?: Prisma.SortOrder
@@ -429,6 +494,9 @@ export type GroupsMinOrderByAggregateInput = {
   uid?: Prisma.SortOrder
   name?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  rules?: Prisma.SortOrder
+  coverPhotoId?: Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   categoryId?: Prisma.SortOrder
   profesorId?: Prisma.SortOrder
@@ -523,6 +591,48 @@ export type GroupsUpdateOneRequiredWithoutStylesNestedInput = {
   upsert?: Prisma.GroupsUpsertWithoutStylesInput
   connect?: Prisma.GroupsWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.GroupsUpdateToOneWithWhereWithoutStylesInput, Prisma.GroupsUpdateWithoutStylesInput>, Prisma.GroupsUncheckedUpdateWithoutStylesInput>
+}
+
+export type GroupsCreateNestedManyWithoutCoverPhotoInput = {
+  create?: Prisma.XOR<Prisma.GroupsCreateWithoutCoverPhotoInput, Prisma.GroupsUncheckedCreateWithoutCoverPhotoInput> | Prisma.GroupsCreateWithoutCoverPhotoInput[] | Prisma.GroupsUncheckedCreateWithoutCoverPhotoInput[]
+  connectOrCreate?: Prisma.GroupsCreateOrConnectWithoutCoverPhotoInput | Prisma.GroupsCreateOrConnectWithoutCoverPhotoInput[]
+  createMany?: Prisma.GroupsCreateManyCoverPhotoInputEnvelope
+  connect?: Prisma.GroupsWhereUniqueInput | Prisma.GroupsWhereUniqueInput[]
+}
+
+export type GroupsUncheckedCreateNestedManyWithoutCoverPhotoInput = {
+  create?: Prisma.XOR<Prisma.GroupsCreateWithoutCoverPhotoInput, Prisma.GroupsUncheckedCreateWithoutCoverPhotoInput> | Prisma.GroupsCreateWithoutCoverPhotoInput[] | Prisma.GroupsUncheckedCreateWithoutCoverPhotoInput[]
+  connectOrCreate?: Prisma.GroupsCreateOrConnectWithoutCoverPhotoInput | Prisma.GroupsCreateOrConnectWithoutCoverPhotoInput[]
+  createMany?: Prisma.GroupsCreateManyCoverPhotoInputEnvelope
+  connect?: Prisma.GroupsWhereUniqueInput | Prisma.GroupsWhereUniqueInput[]
+}
+
+export type GroupsUpdateManyWithoutCoverPhotoNestedInput = {
+  create?: Prisma.XOR<Prisma.GroupsCreateWithoutCoverPhotoInput, Prisma.GroupsUncheckedCreateWithoutCoverPhotoInput> | Prisma.GroupsCreateWithoutCoverPhotoInput[] | Prisma.GroupsUncheckedCreateWithoutCoverPhotoInput[]
+  connectOrCreate?: Prisma.GroupsCreateOrConnectWithoutCoverPhotoInput | Prisma.GroupsCreateOrConnectWithoutCoverPhotoInput[]
+  upsert?: Prisma.GroupsUpsertWithWhereUniqueWithoutCoverPhotoInput | Prisma.GroupsUpsertWithWhereUniqueWithoutCoverPhotoInput[]
+  createMany?: Prisma.GroupsCreateManyCoverPhotoInputEnvelope
+  set?: Prisma.GroupsWhereUniqueInput | Prisma.GroupsWhereUniqueInput[]
+  disconnect?: Prisma.GroupsWhereUniqueInput | Prisma.GroupsWhereUniqueInput[]
+  delete?: Prisma.GroupsWhereUniqueInput | Prisma.GroupsWhereUniqueInput[]
+  connect?: Prisma.GroupsWhereUniqueInput | Prisma.GroupsWhereUniqueInput[]
+  update?: Prisma.GroupsUpdateWithWhereUniqueWithoutCoverPhotoInput | Prisma.GroupsUpdateWithWhereUniqueWithoutCoverPhotoInput[]
+  updateMany?: Prisma.GroupsUpdateManyWithWhereWithoutCoverPhotoInput | Prisma.GroupsUpdateManyWithWhereWithoutCoverPhotoInput[]
+  deleteMany?: Prisma.GroupsScalarWhereInput | Prisma.GroupsScalarWhereInput[]
+}
+
+export type GroupsUncheckedUpdateManyWithoutCoverPhotoNestedInput = {
+  create?: Prisma.XOR<Prisma.GroupsCreateWithoutCoverPhotoInput, Prisma.GroupsUncheckedCreateWithoutCoverPhotoInput> | Prisma.GroupsCreateWithoutCoverPhotoInput[] | Prisma.GroupsUncheckedCreateWithoutCoverPhotoInput[]
+  connectOrCreate?: Prisma.GroupsCreateOrConnectWithoutCoverPhotoInput | Prisma.GroupsCreateOrConnectWithoutCoverPhotoInput[]
+  upsert?: Prisma.GroupsUpsertWithWhereUniqueWithoutCoverPhotoInput | Prisma.GroupsUpsertWithWhereUniqueWithoutCoverPhotoInput[]
+  createMany?: Prisma.GroupsCreateManyCoverPhotoInputEnvelope
+  set?: Prisma.GroupsWhereUniqueInput | Prisma.GroupsWhereUniqueInput[]
+  disconnect?: Prisma.GroupsWhereUniqueInput | Prisma.GroupsWhereUniqueInput[]
+  delete?: Prisma.GroupsWhereUniqueInput | Prisma.GroupsWhereUniqueInput[]
+  connect?: Prisma.GroupsWhereUniqueInput | Prisma.GroupsWhereUniqueInput[]
+  update?: Prisma.GroupsUpdateWithWhereUniqueWithoutCoverPhotoInput | Prisma.GroupsUpdateWithWhereUniqueWithoutCoverPhotoInput[]
+  updateMany?: Prisma.GroupsUpdateManyWithWhereWithoutCoverPhotoInput | Prisma.GroupsUpdateManyWithWhereWithoutCoverPhotoInput[]
+  deleteMany?: Prisma.GroupsScalarWhereInput | Prisma.GroupsScalarWhereInput[]
 }
 
 export type GroupsCreateNestedOneWithoutInvitationsInput = {
@@ -669,8 +779,11 @@ export type GroupsCreateWithoutProfesorInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  coverPhoto?: Prisma.PhotosCreateNestedOneWithoutGroupCoversInput
   institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
   groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   users?: Prisma.UsersGroupsCreateNestedManyWithoutGroupInput
@@ -686,6 +799,9 @@ export type GroupsUncheckedCreateWithoutProfesorInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  coverPhotoId?: string | null
   institutionId: string
   categoryId: string
   createdAt?: Date | string
@@ -732,6 +848,9 @@ export type GroupsScalarWhereInput = {
   uid?: Prisma.UuidFilter<"Groups"> | string
   name?: Prisma.StringFilter<"Groups"> | string
   isActive?: Prisma.BoolFilter<"Groups"> | boolean
+  description?: Prisma.StringNullableFilter<"Groups"> | string | null
+  rules?: Prisma.StringNullableFilter<"Groups"> | string | null
+  coverPhotoId?: Prisma.UuidNullableFilter<"Groups"> | string | null
   institutionId?: Prisma.UuidFilter<"Groups"> | string
   categoryId?: Prisma.UuidFilter<"Groups"> | string
   profesorId?: Prisma.UuidNullableFilter<"Groups"> | string | null
@@ -743,8 +862,11 @@ export type GroupsCreateWithoutUsersInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  coverPhoto?: Prisma.PhotosCreateNestedOneWithoutGroupCoversInput
   institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
   groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
@@ -760,6 +882,9 @@ export type GroupsUncheckedCreateWithoutUsersInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  coverPhotoId?: string | null
   institutionId: string
   categoryId: string
   profesorId?: string | null
@@ -793,8 +918,11 @@ export type GroupsUpdateWithoutUsersInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  coverPhoto?: Prisma.PhotosUpdateOneWithoutGroupCoversNestedInput
   institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
   groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
@@ -810,6 +938,9 @@ export type GroupsUncheckedUpdateWithoutUsersInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverPhotoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -827,8 +958,11 @@ export type GroupsCreateWithoutProductsInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  coverPhoto?: Prisma.PhotosCreateNestedOneWithoutGroupCoversInput
   institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
   groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
@@ -844,6 +978,9 @@ export type GroupsUncheckedCreateWithoutProductsInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  coverPhotoId?: string | null
   institutionId: string
   categoryId: string
   profesorId?: string | null
@@ -877,8 +1014,11 @@ export type GroupsUpdateWithoutProductsInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  coverPhoto?: Prisma.PhotosUpdateOneWithoutGroupCoversNestedInput
   institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
   groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
@@ -894,6 +1034,9 @@ export type GroupsUncheckedUpdateWithoutProductsInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverPhotoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -911,8 +1054,11 @@ export type GroupsCreateWithoutStylesInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  coverPhoto?: Prisma.PhotosCreateNestedOneWithoutGroupCoversInput
   institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
   groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
@@ -928,6 +1074,9 @@ export type GroupsUncheckedCreateWithoutStylesInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  coverPhotoId?: string | null
   institutionId: string
   categoryId: string
   profesorId?: string | null
@@ -961,8 +1110,11 @@ export type GroupsUpdateWithoutStylesInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  coverPhoto?: Prisma.PhotosUpdateOneWithoutGroupCoversNestedInput
   institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
   groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
@@ -978,6 +1130,9 @@ export type GroupsUncheckedUpdateWithoutStylesInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverPhotoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -991,12 +1146,81 @@ export type GroupsUncheckedUpdateWithoutStylesInput = {
   classes?: Prisma.ClassesUncheckedUpdateManyWithoutGroupNestedInput
 }
 
+export type GroupsCreateWithoutCoverPhotoInput = {
+  uid?: string
+  name: string
+  isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
+  groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
+  profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
+  users?: Prisma.UsersGroupsCreateNestedManyWithoutGroupInput
+  products?: Prisma.ProductsCreateNestedManyWithoutGroupInput
+  events?: Prisma.GroupEventCreateNestedManyWithoutGroupInput
+  styles?: Prisma.StylesCreateNestedManyWithoutGroupInput
+  invitations?: Prisma.EventInvitationCreateNestedManyWithoutGroupInput
+  schedules?: Prisma.ScheduleCreateNestedManyWithoutGroupInput
+  classes?: Prisma.ClassesCreateNestedManyWithoutGroupInput
+}
+
+export type GroupsUncheckedCreateWithoutCoverPhotoInput = {
+  uid?: string
+  name: string
+  isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  institutionId: string
+  categoryId: string
+  profesorId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  users?: Prisma.UsersGroupsUncheckedCreateNestedManyWithoutGroupInput
+  products?: Prisma.ProductsUncheckedCreateNestedManyWithoutGroupInput
+  events?: Prisma.GroupEventUncheckedCreateNestedManyWithoutGroupInput
+  styles?: Prisma.StylesUncheckedCreateNestedManyWithoutGroupInput
+  invitations?: Prisma.EventInvitationUncheckedCreateNestedManyWithoutGroupInput
+  schedules?: Prisma.ScheduleUncheckedCreateNestedManyWithoutGroupInput
+  classes?: Prisma.ClassesUncheckedCreateNestedManyWithoutGroupInput
+}
+
+export type GroupsCreateOrConnectWithoutCoverPhotoInput = {
+  where: Prisma.GroupsWhereUniqueInput
+  create: Prisma.XOR<Prisma.GroupsCreateWithoutCoverPhotoInput, Prisma.GroupsUncheckedCreateWithoutCoverPhotoInput>
+}
+
+export type GroupsCreateManyCoverPhotoInputEnvelope = {
+  data: Prisma.GroupsCreateManyCoverPhotoInput | Prisma.GroupsCreateManyCoverPhotoInput[]
+  skipDuplicates?: boolean
+}
+
+export type GroupsUpsertWithWhereUniqueWithoutCoverPhotoInput = {
+  where: Prisma.GroupsWhereUniqueInput
+  update: Prisma.XOR<Prisma.GroupsUpdateWithoutCoverPhotoInput, Prisma.GroupsUncheckedUpdateWithoutCoverPhotoInput>
+  create: Prisma.XOR<Prisma.GroupsCreateWithoutCoverPhotoInput, Prisma.GroupsUncheckedCreateWithoutCoverPhotoInput>
+}
+
+export type GroupsUpdateWithWhereUniqueWithoutCoverPhotoInput = {
+  where: Prisma.GroupsWhereUniqueInput
+  data: Prisma.XOR<Prisma.GroupsUpdateWithoutCoverPhotoInput, Prisma.GroupsUncheckedUpdateWithoutCoverPhotoInput>
+}
+
+export type GroupsUpdateManyWithWhereWithoutCoverPhotoInput = {
+  where: Prisma.GroupsScalarWhereInput
+  data: Prisma.XOR<Prisma.GroupsUpdateManyMutationInput, Prisma.GroupsUncheckedUpdateManyWithoutCoverPhotoInput>
+}
+
 export type GroupsCreateWithoutInvitationsInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  coverPhoto?: Prisma.PhotosCreateNestedOneWithoutGroupCoversInput
   institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
   groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
@@ -1012,6 +1236,9 @@ export type GroupsUncheckedCreateWithoutInvitationsInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  coverPhotoId?: string | null
   institutionId: string
   categoryId: string
   profesorId?: string | null
@@ -1045,8 +1272,11 @@ export type GroupsUpdateWithoutInvitationsInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  coverPhoto?: Prisma.PhotosUpdateOneWithoutGroupCoversNestedInput
   institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
   groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
@@ -1062,6 +1292,9 @@ export type GroupsUncheckedUpdateWithoutInvitationsInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverPhotoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1079,8 +1312,11 @@ export type GroupsCreateWithoutEventsInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  coverPhoto?: Prisma.PhotosCreateNestedOneWithoutGroupCoversInput
   institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
   groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
@@ -1096,6 +1332,9 @@ export type GroupsUncheckedCreateWithoutEventsInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  coverPhotoId?: string | null
   institutionId: string
   categoryId: string
   profesorId?: string | null
@@ -1129,8 +1368,11 @@ export type GroupsUpdateWithoutEventsInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  coverPhoto?: Prisma.PhotosUpdateOneWithoutGroupCoversNestedInput
   institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
   groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
@@ -1146,6 +1388,9 @@ export type GroupsUncheckedUpdateWithoutEventsInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverPhotoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1163,8 +1408,11 @@ export type GroupsCreateWithoutSchedulesInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  coverPhoto?: Prisma.PhotosCreateNestedOneWithoutGroupCoversInput
   institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
   groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
@@ -1180,6 +1428,9 @@ export type GroupsUncheckedCreateWithoutSchedulesInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  coverPhotoId?: string | null
   institutionId: string
   categoryId: string
   profesorId?: string | null
@@ -1213,8 +1464,11 @@ export type GroupsUpdateWithoutSchedulesInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  coverPhoto?: Prisma.PhotosUpdateOneWithoutGroupCoversNestedInput
   institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
   groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
@@ -1230,6 +1484,9 @@ export type GroupsUncheckedUpdateWithoutSchedulesInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverPhotoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1247,8 +1504,11 @@ export type GroupsCreateWithoutClassesInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  coverPhoto?: Prisma.PhotosCreateNestedOneWithoutGroupCoversInput
   institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
   groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
@@ -1264,6 +1524,9 @@ export type GroupsUncheckedCreateWithoutClassesInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  coverPhotoId?: string | null
   institutionId: string
   categoryId: string
   profesorId?: string | null
@@ -1297,8 +1560,11 @@ export type GroupsUpdateWithoutClassesInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  coverPhoto?: Prisma.PhotosUpdateOneWithoutGroupCoversNestedInput
   institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
   groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
@@ -1314,6 +1580,9 @@ export type GroupsUncheckedUpdateWithoutClassesInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverPhotoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1331,8 +1600,11 @@ export type GroupsCreateWithoutInstitutionInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  coverPhoto?: Prisma.PhotosCreateNestedOneWithoutGroupCoversInput
   groupCategory: Prisma.GroupCategoryCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
   users?: Prisma.UsersGroupsCreateNestedManyWithoutGroupInput
@@ -1348,6 +1620,9 @@ export type GroupsUncheckedCreateWithoutInstitutionInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  coverPhotoId?: string | null
   categoryId: string
   profesorId?: string | null
   createdAt?: Date | string
@@ -1391,8 +1666,11 @@ export type GroupsCreateWithoutGroupCategoryInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  coverPhoto?: Prisma.PhotosCreateNestedOneWithoutGroupCoversInput
   institution: Prisma.InstitutionCreateNestedOneWithoutGroupsInput
   profesor?: Prisma.UsersCreateNestedOneWithoutManagedGroupsInput
   users?: Prisma.UsersGroupsCreateNestedManyWithoutGroupInput
@@ -1408,6 +1686,9 @@ export type GroupsUncheckedCreateWithoutGroupCategoryInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  coverPhotoId?: string | null
   institutionId: string
   profesorId?: string | null
   createdAt?: Date | string
@@ -1451,6 +1732,9 @@ export type GroupsCreateManyProfesorInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  coverPhotoId?: string | null
   institutionId: string
   categoryId: string
   createdAt?: Date | string
@@ -1461,8 +1745,11 @@ export type GroupsUpdateWithoutProfesorInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  coverPhoto?: Prisma.PhotosUpdateOneWithoutGroupCoversNestedInput
   institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
   groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   users?: Prisma.UsersGroupsUpdateManyWithoutGroupNestedInput
@@ -1478,6 +1765,9 @@ export type GroupsUncheckedUpdateWithoutProfesorInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverPhotoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1495,8 +1785,77 @@ export type GroupsUncheckedUpdateManyWithoutProfesorInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverPhotoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type GroupsCreateManyCoverPhotoInput = {
+  uid?: string
+  name: string
+  isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  institutionId: string
+  categoryId: string
+  profesorId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type GroupsUpdateWithoutCoverPhotoInput = {
+  uid?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
+  groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
+  profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
+  users?: Prisma.UsersGroupsUpdateManyWithoutGroupNestedInput
+  products?: Prisma.ProductsUpdateManyWithoutGroupNestedInput
+  events?: Prisma.GroupEventUpdateManyWithoutGroupNestedInput
+  styles?: Prisma.StylesUpdateManyWithoutGroupNestedInput
+  invitations?: Prisma.EventInvitationUpdateManyWithoutGroupNestedInput
+  schedules?: Prisma.ScheduleUpdateManyWithoutGroupNestedInput
+  classes?: Prisma.ClassesUpdateManyWithoutGroupNestedInput
+}
+
+export type GroupsUncheckedUpdateWithoutCoverPhotoInput = {
+  uid?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UsersGroupsUncheckedUpdateManyWithoutGroupNestedInput
+  products?: Prisma.ProductsUncheckedUpdateManyWithoutGroupNestedInput
+  events?: Prisma.GroupEventUncheckedUpdateManyWithoutGroupNestedInput
+  styles?: Prisma.StylesUncheckedUpdateManyWithoutGroupNestedInput
+  invitations?: Prisma.EventInvitationUncheckedUpdateManyWithoutGroupNestedInput
+  schedules?: Prisma.ScheduleUncheckedUpdateManyWithoutGroupNestedInput
+  classes?: Prisma.ClassesUncheckedUpdateManyWithoutGroupNestedInput
+}
+
+export type GroupsUncheckedUpdateManyWithoutCoverPhotoInput = {
+  uid?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1505,6 +1864,9 @@ export type GroupsCreateManyInstitutionInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  coverPhotoId?: string | null
   categoryId: string
   profesorId?: string | null
   createdAt?: Date | string
@@ -1515,8 +1877,11 @@ export type GroupsUpdateWithoutInstitutionInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  coverPhoto?: Prisma.PhotosUpdateOneWithoutGroupCoversNestedInput
   groupCategory?: Prisma.GroupCategoryUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
   users?: Prisma.UsersGroupsUpdateManyWithoutGroupNestedInput
@@ -1532,6 +1897,9 @@ export type GroupsUncheckedUpdateWithoutInstitutionInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverPhotoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1549,6 +1917,9 @@ export type GroupsUncheckedUpdateManyWithoutInstitutionInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverPhotoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   categoryId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1559,6 +1930,9 @@ export type GroupsCreateManyGroupCategoryInput = {
   uid?: string
   name: string
   isActive?: boolean
+  description?: string | null
+  rules?: string | null
+  coverPhotoId?: string | null
   institutionId: string
   profesorId?: string | null
   createdAt?: Date | string
@@ -1569,8 +1943,11 @@ export type GroupsUpdateWithoutGroupCategoryInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  coverPhoto?: Prisma.PhotosUpdateOneWithoutGroupCoversNestedInput
   institution?: Prisma.InstitutionUpdateOneRequiredWithoutGroupsNestedInput
   profesor?: Prisma.UsersUpdateOneWithoutManagedGroupsNestedInput
   users?: Prisma.UsersGroupsUpdateManyWithoutGroupNestedInput
@@ -1586,6 +1963,9 @@ export type GroupsUncheckedUpdateWithoutGroupCategoryInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverPhotoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1603,6 +1983,9 @@ export type GroupsUncheckedUpdateManyWithoutGroupCategoryInput = {
   uid?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverPhotoId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   profesorId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1698,11 +2081,15 @@ export type GroupsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   uid?: boolean
   name?: boolean
   isActive?: boolean
+  description?: boolean
+  rules?: boolean
+  coverPhotoId?: boolean
   institutionId?: boolean
   categoryId?: boolean
   profesorId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  coverPhoto?: boolean | Prisma.Groups$coverPhotoArgs<ExtArgs>
   institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
   groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   profesor?: boolean | Prisma.Groups$profesorArgs<ExtArgs>
@@ -1720,11 +2107,15 @@ export type GroupsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   uid?: boolean
   name?: boolean
   isActive?: boolean
+  description?: boolean
+  rules?: boolean
+  coverPhotoId?: boolean
   institutionId?: boolean
   categoryId?: boolean
   profesorId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  coverPhoto?: boolean | Prisma.Groups$coverPhotoArgs<ExtArgs>
   institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
   groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   profesor?: boolean | Prisma.Groups$profesorArgs<ExtArgs>
@@ -1734,11 +2125,15 @@ export type GroupsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   uid?: boolean
   name?: boolean
   isActive?: boolean
+  description?: boolean
+  rules?: boolean
+  coverPhotoId?: boolean
   institutionId?: boolean
   categoryId?: boolean
   profesorId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  coverPhoto?: boolean | Prisma.Groups$coverPhotoArgs<ExtArgs>
   institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
   groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   profesor?: boolean | Prisma.Groups$profesorArgs<ExtArgs>
@@ -1748,6 +2143,9 @@ export type GroupsSelectScalar = {
   uid?: boolean
   name?: boolean
   isActive?: boolean
+  description?: boolean
+  rules?: boolean
+  coverPhotoId?: boolean
   institutionId?: boolean
   categoryId?: boolean
   profesorId?: boolean
@@ -1755,8 +2153,9 @@ export type GroupsSelectScalar = {
   updatedAt?: boolean
 }
 
-export type GroupsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "name" | "isActive" | "institutionId" | "categoryId" | "profesorId" | "createdAt" | "updatedAt", ExtArgs["result"]["groups"]>
+export type GroupsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "name" | "isActive" | "description" | "rules" | "coverPhotoId" | "institutionId" | "categoryId" | "profesorId" | "createdAt" | "updatedAt", ExtArgs["result"]["groups"]>
 export type GroupsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  coverPhoto?: boolean | Prisma.Groups$coverPhotoArgs<ExtArgs>
   institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
   groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   profesor?: boolean | Prisma.Groups$profesorArgs<ExtArgs>
@@ -1770,11 +2169,13 @@ export type GroupsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   _count?: boolean | Prisma.GroupsCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type GroupsIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  coverPhoto?: boolean | Prisma.Groups$coverPhotoArgs<ExtArgs>
   institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
   groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   profesor?: boolean | Prisma.Groups$profesorArgs<ExtArgs>
 }
 export type GroupsIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  coverPhoto?: boolean | Prisma.Groups$coverPhotoArgs<ExtArgs>
   institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
   groupCategory?: boolean | Prisma.GroupCategoryDefaultArgs<ExtArgs>
   profesor?: boolean | Prisma.Groups$profesorArgs<ExtArgs>
@@ -1783,6 +2184,7 @@ export type GroupsIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
 export type $GroupsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Groups"
   objects: {
+    coverPhoto: Prisma.$PhotosPayload<ExtArgs> | null
     institution: Prisma.$InstitutionPayload<ExtArgs>
     groupCategory: Prisma.$GroupCategoryPayload<ExtArgs>
     profesor: Prisma.$UsersPayload<ExtArgs> | null
@@ -1798,6 +2200,21 @@ export type $GroupsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     uid: string
     name: string
     isActive: boolean
+    /**
+     * Descripción pública del grupo. La escribe el docente a cargo.
+     */
+    description: string | null
+    /**
+     * Reglas del grupo, texto libre escrito por el docente. Son informativas:
+     * el sistema NO las hace cumplir. Ver
+     * docs/superpowers/specs/2026-08-11-modelo-de-grupos-design.md § 3.
+     */
+    rules: string | null
+    /**
+     * Portada del grupo, subida por el docente. Si es null, el frontend cae en
+     * la imagen de la categoría (`categoryImage(slug)`).
+     */
+    coverPhotoId: string | null
     institutionId: string
     categoryId: string
     profesorId: string | null
@@ -2197,6 +2614,7 @@ readonly fields: GroupsFieldRefs;
  */
 export interface Prisma__GroupsClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  coverPhoto<T extends Prisma.Groups$coverPhotoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Groups$coverPhotoArgs<ExtArgs>>): Prisma.Prisma__PhotosClient<runtime.Types.Result.GetResult<Prisma.$PhotosPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   institution<T extends Prisma.InstitutionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InstitutionDefaultArgs<ExtArgs>>): Prisma.Prisma__InstitutionClient<runtime.Types.Result.GetResult<Prisma.$InstitutionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   groupCategory<T extends Prisma.GroupCategoryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.GroupCategoryDefaultArgs<ExtArgs>>): Prisma.Prisma__GroupCategoryClient<runtime.Types.Result.GetResult<Prisma.$GroupCategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   profesor<T extends Prisma.Groups$profesorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Groups$profesorArgs<ExtArgs>>): Prisma.Prisma__UsersClient<runtime.Types.Result.GetResult<Prisma.$UsersPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -2239,6 +2657,9 @@ export interface GroupsFieldRefs {
   readonly uid: Prisma.FieldRef<"Groups", 'String'>
   readonly name: Prisma.FieldRef<"Groups", 'String'>
   readonly isActive: Prisma.FieldRef<"Groups", 'Boolean'>
+  readonly description: Prisma.FieldRef<"Groups", 'String'>
+  readonly rules: Prisma.FieldRef<"Groups", 'String'>
+  readonly coverPhotoId: Prisma.FieldRef<"Groups", 'String'>
   readonly institutionId: Prisma.FieldRef<"Groups", 'String'>
   readonly categoryId: Prisma.FieldRef<"Groups", 'String'>
   readonly profesorId: Prisma.FieldRef<"Groups", 'String'>
@@ -2637,6 +3058,25 @@ export type GroupsDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Limit how many Groups to delete.
    */
   limit?: number
+}
+
+/**
+ * Groups.coverPhoto
+ */
+export type Groups$coverPhotoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Photos
+   */
+  select?: Prisma.PhotosSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Photos
+   */
+  omit?: Prisma.PhotosOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PhotosInclude<ExtArgs> | null
+  where?: Prisma.PhotosWhereInput
 }
 
 /**
