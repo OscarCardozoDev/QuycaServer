@@ -31,11 +31,12 @@ describe('GroupService.getMyGroups', () => {
     // verificó en vivo que sin este filtro explícito el método devolvía
     // grupos de otras instituciones. Por eso el where lleva institutionId
     // además de userId, y este test lo fija para que no vuelva a romperse.
+    // Task 4 agrega isActive: true para excluir grupos desactivados.
     await service.getMyGroups('u1', 'inst-1');
 
     expect(prisma.usersGroups.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { userId: 'u1', group: { institutionId: 'inst-1' } },
+        where: { userId: 'u1', group: { institutionId: 'inst-1', isActive: true } },
       }),
     );
   });

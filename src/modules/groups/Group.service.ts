@@ -189,16 +189,18 @@ export class GroupService {
     const { page = 1, limit = 10 } = options;
 
     return this.prisma.groups.findMany({
+      where: { isActive: true },
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { createdAt: 'desc' },
       select: {
         uid: true,
         name: true,
-        // La usa el frontend para la imagen del grupo. Antes mapeaba nombres
-        // hardcodeados ('Musica Instrumental', 'Dibujo y pintura') que
-        // resolvían undefined para cualquier grupo nuevo.
-        groupCategory: { select: { slug: true } },
+        description: true,
+        groupCategory: { select: { uid: true, name: true, slug: true } },
+        coverPhoto: { select: { url: true } },
+        profesor: { select: { uid: true, name: true, lastName: true } },
+        _count: { select: { users: true } },
       },
     });
   }
@@ -210,14 +212,10 @@ export class GroupService {
     return this.prisma.groups.findUnique({
       where: { uid: groupId },
       include: {
-        profesor: {
-          select: { uid: true, name: true },
-        },
-        users: {
-          select: {
-            user: { select: { uid: true, name: true } },
-          },
-        },
+        groupCategory: { select: { uid: true, name: true, slug: true } },
+        coverPhoto: { select: { uid: true, url: true } },
+        profesor: { select: { uid: true, name: true } },
+        users: { select: { user: { select: { uid: true, name: true } } } },
       },
     });
   }
@@ -241,19 +239,18 @@ export class GroupService {
   }
 
   /* =========================
-   * DELETE
+   * DELETE (soft)
+   * Un grupo con obras, estudiantes, horarios o clases no se puede borrar: la
+   * FK lo impide y el error sale como 500. `isActive` existía desde siempre y
+   * no lo usaba nadie.
    * ========================= */
   async deleteGroup(groupId: string) {
-    const group = await this.prisma.groups.findUnique({
-      where: { uid: groupId },
-    });
+    const group = await this.prisma.groups.findUnique({ where: { uid: groupId } });
+    if (!group) throw new NotFoundException('Group not found');
 
-    if (!group) {
-      throw new NotFoundException('Group not found');
-    }
-
-    await this.prisma.groups.delete({
+    await this.prisma.groups.update({
       where: { uid: groupId },
+      data: { isActive: false },
     });
 
     return true;
@@ -352,7 +349,7 @@ export class GroupService {
    */
   async getMyGroups(userId: string, institutionId: string) {
     const rows = await this.prisma.usersGroups.findMany({
-      where: { userId, group: { institutionId } },
+      where: { userId, group: { institutionId, isActive: true } },
       select: { group: { select: { uid: true, name: true } } },
     });
 
