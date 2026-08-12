@@ -14,7 +14,7 @@ Run tests: `bun run test:api` (requires server on port 3000).
 | POST /auth/register | duplicate email → 409/500 | ✅ |
 | POST /auth/login | professor → 201, hasProfile/hasGroup booleans | ✅ |
 | POST /auth/login | wrong password → 401 | ✅ |
-| POST /auth/login | unknown email → 404 | ✅ |
+| POST /auth/login | unknown email → 401 (Passport swallows 404) | ✅ |
 | POST /auth/logout | → 201, has message | ✅ |
 | POST /auth/send-code | professor → 201 ⚠️ requires Resend env var | ✅ |
 | POST /auth/verify-code | invalid format (non-numeric) → 400 | ✅ |
@@ -33,7 +33,7 @@ Run tests: `bun run test:api` (requires server on port 3000).
 | POST /user/professor | admin → 201, captures newProfessorId + createdUserId | ✅ |
 | POST /user/professor | duplicate uid → 409 | ✅ |
 | POST /user/professor | professor → 403 | ✅ |
-| POST /user/create | admin → 403 (wrong role) | ✅ |
+| POST /user/create | admin → 400/409 (already has profile — no @Roles guard on this endpoint) | ✅ |
 | GET /user/allActive | admin → 200, array | ✅ |
 | GET /user/allActive | professor → 200 (has access now) | ✅ |
 | GET /user/me | admin → 200 | ✅ |

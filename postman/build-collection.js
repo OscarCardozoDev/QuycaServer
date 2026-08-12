@@ -86,6 +86,9 @@ const authFolder = {
       url: '{{baseUrl}}/auth/register',
       headers: jsonHeader(),
       body: { mail: '{{newUserMail}}', password: '{{newUserPassword}}' },
+      preRequest: [
+        "pm.environment.set('newUserMail', 'test_' + Date.now() + '@usantoto.edu.co');",
+      ],
       tests: [
         "pm.test('Status 201', () => pm.response.to.have.status(201));",
         "const json = pm.response.json();",
@@ -127,13 +130,13 @@ const authFolder = {
       ],
     }),
     makeItem({
-      name: 'Login - unknown email returns 404',
+      name: 'Login - unknown email returns 401',
       method: 'POST',
       url: '{{baseUrl}}/auth/login',
       headers: jsonHeader(),
       body: { mail: 'nobody@nowhere.com', password: 'Test@1234!' },
       tests: [
-        "pm.test('Status 404 on unknown email', () => pm.response.to.have.status(404));",
+        "pm.test('Status 401 on unknown email', () => pm.response.to.have.status(401));",
       ],
     }),
     makeItem({
@@ -214,11 +217,14 @@ const userFolder = {
       method: 'POST',
       url: '{{baseUrl}}/user/professor',
       headers: jsonHeader(),
+      preRequest: [
+        "pm.environment.set('professorUsername', 'prof_api_' + Date.now());",
+      ],
       body: {
         uid: '{{newUserId}}',
         name: 'Nuevo',
         lastName: 'Profesor',
-        username: 'nuevo_profesor_api_001',
+        username: '{{professorUsername}}',
         description: 'Profesor de prueba',
         gender: 'M',
         telNumber: '3001234567',
@@ -305,12 +311,12 @@ const userFolder = {
       ],
     }),
     makeItem({
-      name: 'Create Student Profile - 403 for admin',
+      name: 'Create Student Profile - 400 for admin (already has profile)',
       method: 'POST', url: '{{baseUrl}}/user/create',
       headers: jsonHeader(),
       body: { name: 'X', lastName: 'Y', username: 'xy_001', gender: 'M', telNumber: '3000000002', roleId: '00000000-0000-0000-0000-000000000010', roleData: {} },
       tests: [
-        "pm.test('Status 403 — admin cannot create student profile', () => pm.response.to.have.status(403));",
+        "pm.test('Status 400 — admin already has profile', () => pm.expect(pm.response.code).to.be.oneOf([400, 409]));",
       ],
     }),
     // ── Professor ──────────────────────────────────────────────────────────────
@@ -371,9 +377,15 @@ const institutionsFolder = {
       name: 'Create Institution (public)',
       method: 'POST', url: '{{baseUrl}}/institutions',
       headers: jsonHeader(),
+      preRequest: [
+        "var ts = Date.now();",
+        "pm.environment.set('institutionSlug', 'test-inst-' + ts);",
+        "pm.environment.set('rectorMail', 'rector_' + ts + '@quyca.com');",
+        "pm.environment.set('rectorPassword', 'RectorTest@123!');",
+      ],
       body: {
         name: 'Institución Test API',
-        slug: 'test-inst-api',
+        slug: '{{institutionSlug}}',
         type: 'EDUCATIONAL',
         planSlug: 'academia',
         representativeName: 'Rector',
@@ -386,7 +398,6 @@ const institutionsFolder = {
         "const json = pm.response.json();",
         "pm.test('Has uid', () => pm.expect(json.uid).to.be.a('string'));",
         "pm.environment.set('institutionId', json.uid);",
-        "pm.environment.set('institutionSlug', 'test-inst-api');",
       ],
     }),
     makeItem({
@@ -394,7 +405,7 @@ const institutionsFolder = {
       method: 'POST', url: '{{baseUrl}}/institutions',
       headers: jsonHeader(),
       body: {
-        name: 'Dup', slug: 'test-inst-api', type: 'EDUCATIONAL', planSlug: 'academia',
+        name: 'Dup', slug: '{{institutionSlug}}', type: 'EDUCATIONAL', planSlug: 'academia',
         representativeName: 'X', representativeLastName: 'Y', email: 'dup@test.com', password: 'Test@1234!',
       },
       tests: [
@@ -415,7 +426,7 @@ const institutionsFolder = {
       method: 'GET', url: '{{baseUrl}}/institutions/{{institutionSlug}}',
       tests: [
         "pm.test('Status 200', () => pm.response.to.have.status(200));",
-        "pm.test('slug matches', () => pm.expect(pm.response.json().slug).to.equal('test-inst-api'));",
+        "pm.test('slug matches', () => pm.expect(pm.response.json().slug).to.equal(pm.environment.get('institutionSlug')));",
       ],
     }),
     makeItem({

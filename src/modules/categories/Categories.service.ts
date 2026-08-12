@@ -1,12 +1,22 @@
-import { Injectable, Inject, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  ConflictException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
-  CreateCategoryUseCase, CreateContentRequestUseCase, ReviewContentRequestUseCase,
+  CreateCategoryUseCase,
+  CreateContentRequestUseCase,
+  ReviewContentRequestUseCase,
 } from './Categories.interface';
 
 @Injectable()
 export class CategoriesService {
-  constructor(@Inject(PrismaService) private readonly prismaService: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly prismaService: PrismaService,
+  ) {}
 
   async getActiveCategories() {
     return this.prismaService.groupCategory.findMany({
@@ -31,7 +41,13 @@ export class CategoriesService {
       where: { institutionId },
       select: {
         category: {
-          select: { uid: true, name: true, slug: true, iconSlug: true, isActive: true },
+          select: {
+            uid: true,
+            name: true,
+            slug: true,
+            iconSlug: true,
+            isActive: true,
+          },
         },
       },
     });
@@ -96,7 +112,10 @@ export class CategoriesService {
     const existing = await this.prismaService.groupCategory.findUnique({
       where: { slug: data.slug },
     });
-    if (existing) throw new ConflictException(`Category slug "${data.slug}" already exists`);
+    if (existing)
+      throw new ConflictException(
+        `Category slug "${data.slug}" already exists`,
+      );
 
     return this.prismaService.groupCategory.create({
       data,
@@ -104,15 +123,25 @@ export class CategoriesService {
     });
   }
 
-  async updateCategory(id: string, data: { name?: string; iconSlug?: string; isActive?: boolean }) {
-    const cat = await this.prismaService.groupCategory.findUnique({ where: { uid: id } });
+  async updateCategory(
+    id: string,
+    data: { name?: string; iconSlug?: string; isActive?: boolean },
+  ) {
+    const cat = await this.prismaService.groupCategory.findUnique({
+      where: { uid: id },
+    });
     if (!cat) throw new NotFoundException('Category not found');
-    return this.prismaService.groupCategory.update({ where: { uid: id }, data });
+    return this.prismaService.groupCategory.update({
+      where: { uid: id },
+      data,
+    });
   }
 
   async createContentRequest(data: CreateContentRequestUseCase) {
     if (data.type === 'STYLE' && !data.categoryId) {
-      throw new BadRequestException('categoryId is required for STYLE requests');
+      throw new BadRequestException(
+        'categoryId is required for STYLE requests',
+      );
     }
     return this.prismaService.contentRequest.create({
       data: {
@@ -151,7 +180,9 @@ export class CategoriesService {
 
     if (data.approved && request.type === 'CATEGORY') {
       const slug = request.requestedName.toLowerCase().replace(/\s+/g, '-');
-      const existing = await this.prismaService.groupCategory.findUnique({ where: { slug } });
+      const existing = await this.prismaService.groupCategory.findUnique({
+        where: { slug },
+      });
       if (!existing) {
         await this.prismaService.groupCategory.create({
           data: { name: request.requestedName, slug, iconSlug: 'default' },

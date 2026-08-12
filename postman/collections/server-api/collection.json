@@ -32,6 +32,15 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('newUserMail', 'test_' + Date.now() + '@usantoto.edu.co');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "exec": [
@@ -148,7 +157,7 @@
           ]
         },
         {
-          "name": "Login - unknown email returns 404",
+          "name": "Login - unknown email returns 401",
           "request": {
             "method": "POST",
             "header": [
@@ -173,7 +182,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 404 on unknown email', () => pm.response.to.have.status(404));"
+                  "pm.test('Status 401 on unknown email', () => pm.response.to.have.status(401));"
                 ],
                 "type": "text/javascript"
               }
@@ -479,7 +488,7 @@
             "url": "{{baseUrl}}/user/professor",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"uid\": \"{{newUserId}}\",\n  \"name\": \"Nuevo\",\n  \"lastName\": \"Profesor\",\n  \"username\": \"nuevo_profesor_api_001\",\n  \"description\": \"Profesor de prueba\",\n  \"gender\": \"M\",\n  \"telNumber\": \"3001234567\"\n}",
+              "raw": "{\n  \"uid\": \"{{newUserId}}\",\n  \"name\": \"Nuevo\",\n  \"lastName\": \"Profesor\",\n  \"username\": \"{{professorUsername}}\",\n  \"description\": \"Profesor de prueba\",\n  \"gender\": \"M\",\n  \"telNumber\": \"3001234567\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -488,6 +497,15 @@
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('professorUsername', 'prof_api_' + Date.now());"
+                ],
+                "type": "text/javascript"
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -740,7 +758,7 @@
           ]
         },
         {
-          "name": "Create Student Profile - 403 for admin",
+          "name": "Create Student Profile - 400 for admin (already has profile)",
           "request": {
             "method": "POST",
             "header": [
@@ -765,7 +783,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 — admin cannot create student profile', () => pm.response.to.have.status(403));"
+                  "pm.test('Status 400 — admin already has profile', () => pm.expect(pm.response.code).to.be.oneOf([400, 409]));"
                 ],
                 "type": "text/javascript"
               }
@@ -1029,7 +1047,7 @@
             "url": "{{baseUrl}}/institutions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Institución Test API\",\n  \"slug\": \"test-inst-api\",\n  \"type\": \"EDUCATIONAL\",\n  \"planSlug\": \"academia\",\n  \"representativeName\": \"Rector\",\n  \"representativeLastName\": \"Test\",\n  \"email\": \"{{rectorMail}}\",\n  \"password\": \"{{rectorPassword}}\"\n}",
+              "raw": "{\n  \"name\": \"Institución Test API\",\n  \"slug\": \"{{institutionSlug}}\",\n  \"type\": \"EDUCATIONAL\",\n  \"planSlug\": \"academia\",\n  \"representativeName\": \"Rector\",\n  \"representativeLastName\": \"Test\",\n  \"email\": \"{{rectorMail}}\",\n  \"password\": \"{{rectorPassword}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1039,14 +1057,25 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var ts = Date.now();",
+                  "pm.environment.set('institutionSlug', 'test-inst-' + ts);",
+                  "pm.environment.set('rectorMail', 'rector_' + ts + '@quyca.com');",
+                  "pm.environment.set('rectorPassword', 'RectorTest@123!');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "exec": [
                   "pm.test('Status 201', () => pm.response.to.have.status(201));",
                   "const json = pm.response.json();",
                   "pm.test('Has uid', () => pm.expect(json.uid).to.be.a('string'));",
-                  "pm.environment.set('institutionId', json.uid);",
-                  "pm.environment.set('institutionSlug', 'test-inst-api');"
+                  "pm.environment.set('institutionId', json.uid);"
                 ],
                 "type": "text/javascript"
               }
@@ -1066,7 +1095,7 @@
             "url": "{{baseUrl}}/institutions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Dup\",\n  \"slug\": \"test-inst-api\",\n  \"type\": \"EDUCATIONAL\",\n  \"planSlug\": \"academia\",\n  \"representativeName\": \"X\",\n  \"representativeLastName\": \"Y\",\n  \"email\": \"dup@test.com\",\n  \"password\": \"Test@1234!\"\n}",
+              "raw": "{\n  \"name\": \"Dup\",\n  \"slug\": \"{{institutionSlug}}\",\n  \"type\": \"EDUCATIONAL\",\n  \"planSlug\": \"academia\",\n  \"representativeName\": \"X\",\n  \"representativeLastName\": \"Y\",\n  \"email\": \"dup@test.com\",\n  \"password\": \"Test@1234!\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1132,7 +1161,7 @@
               "script": {
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
-                  "pm.test('slug matches', () => pm.expect(pm.response.json().slug).to.equal('test-inst-api'));"
+                  "pm.test('slug matches', () => pm.expect(pm.response.json().slug).to.equal(pm.environment.get('institutionSlug')));"
                 ],
                 "type": "text/javascript"
               }
