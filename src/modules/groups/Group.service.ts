@@ -69,22 +69,22 @@ export class GroupService {
   }
 
   /* =========================
-   * OFFERED-CATEGORY GUARD
-   * La institución solo dicta las categorías que eligió ofertar: si la USTA
-   * Tunja marcó artes y música, un grupo de teatro no se crea. La lista vive
-   * en InstitutionCategory, que NO está scopeado (ver tenant.extension.ts),
-   * así que el institutionId va escrito a mano — sin él, un categoryId
-   * ofertado por CUALQUIER institución pasaría la validación.
+   * PLAN LIMIT GUARD
+   * El tope de grupos del plan. Hasta hoy `maxGroups` solo se mostraba en la
+   * pantalla de planes y no lo miraba nadie: era la única palanca de cobro del
+   * producto y era decorativa.
    * ========================= */
-  private async assertCategoryIsOffered(categoryId: string, institutionId: string) {
-    const offered = await this.prisma.institutionCategory.findUnique({
-      where: { institutionId_categoryId: { institutionId, categoryId } },
-      select: { uid: true },
-    });
+  private async assertPlanHasRoom(maxGroups: number | null) {
+    if (maxGroups === null) return;
 
-    if (!offered) {
-      throw new ForbiddenException(
-        'La institución no oferta esta categoría. Agregala en la configuración de categorías antes de crear el grupo.',
+    // Groups es scoped: la extensión inyecta el institutionId. Escribirlo a
+    // mano acá sería ruido y una pista falsa.
+    const current = await this.prisma.groups.count({ where: { isActive: true } });
+
+    if (current >= maxGroups) {
+      throw new HttpException(
+        `Tu plan permite ${maxGroups} grupos y ya tenés ${current}. Subí de plan para crear más.`,
+        HttpStatus.PAYMENT_REQUIRED,
       );
     }
   }
@@ -93,9 +93,12 @@ export class GroupService {
    * CREATE
    * ========================= */
   async createGroupUseCase(data: CreateGroupUseCase) {
-    const { name, profesorId, institutionId, categoryId, users } = data;
+    const {
+      name, profesorId, institutionId, categoryId, users,
+      description, rules, coverPhotoId, maxGroups,
+    } = data;
 
-    await this.assertCategoryIsOffered(categoryId, institutionId);
+    await this.assertPlanHasRoom(maxGroups);
 
     const idsToValidate = [...(profesorId ? [profesorId] : []), ...(users ?? [])];
     await this.assertActiveMembers(idsToValidate, institutionId);
@@ -108,6 +111,9 @@ export class GroupService {
           profesorId,
           institutionId,
           categoryId,
+          description,
+          rules,
+          coverPhotoId,
         },
         select: { uid: true },
       });
@@ -181,7 +187,7 @@ export class GroupService {
    * UPDATE
    * ========================= */
   async updateGroupUseCase(data: UpdateGroupUseCase) {
-    const { groupId, institutionId, data: updateData } = data;
+    const { groupId, data: updateData } = data;
 
     const group = await this.prisma.groups.findUnique({
       where: { uid: groupId },
@@ -191,10 +197,8 @@ export class GroupService {
       throw new NotFoundException('Group not found');
     }
 
-    if (updateData.profesorId) {
-      await this.assertActiveMembers([updateData.profesorId], institutionId);
-    }
-
+    // profesorId ya no llega por acá: UpdateGroupDto lo saca a propósito
+    // (Task 2). Reasignar profesor es PATCH /groups/change-profesor/:uid.
     return this.prisma.$transaction(async (tx) => {
       // 1️⃣ Update grupo
       await tx.groups.update({

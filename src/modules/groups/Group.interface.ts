@@ -27,14 +27,27 @@ export interface CreateGroupUseCase {
   institutionId: string;
   categoryId: string;
   users?: string[];
+  description?: string;
+  rules?: string;
+  coverPhotoId?: string;
+  /**
+   * Tope de grupos del plan de la institución. `null` = sin límite, y así
+   * queda: el plan `empirico` es el de quyca-platform, ponerle tope sería un
+   * tope global de la plataforma.
+   */
+  maxGroups: number | null;
 }
 
 export interface UpdateGroupUseCase {
   groupId: string;
   institutionId: string;
+  uid: string;
+  contextRole: string;
   data: {
     name?: string;
-    profesorId?: string;
+    description?: string;
+    rules?: string;
+    coverPhotoId?: string;
   };
 }
 

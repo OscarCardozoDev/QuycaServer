@@ -233,6 +233,7 @@ describe('GroupService — tenant & membership enforcement', () => {
           categoryId: 'cat-1',
           institutionId,
           users: ['outsider'],
+          maxGroups: null,
         }),
       ).rejects.toThrow(ForbiddenException);
       expect(prisma.$transaction).not.toHaveBeenCalled();
@@ -247,6 +248,7 @@ describe('GroupService — tenant & membership enforcement', () => {
           categoryId: 'cat-1',
           institutionId,
           profesorId: 'foreign-profesor',
+          maxGroups: null,
         }),
       ).rejects.toThrow(ForbiddenException);
       expect(prisma.$transaction).not.toHaveBeenCalled();
@@ -267,6 +269,7 @@ describe('GroupService — tenant & membership enforcement', () => {
         institutionId,
         profesorId: 'prof-1',
         users: ['student-1'],
+        maxGroups: null,
       });
 
       expect(prisma.groups.create).toHaveBeenCalledWith(
@@ -284,28 +287,22 @@ describe('GroupService — tenant & membership enforcement', () => {
     });
   });
 
-  describe('updateGroupUseCase (membership guard, optional profesorId)', () => {
-    it('throws ForbiddenException when the update payload assigns a non-member profesorId', async () => {
-      prisma.groups.findUnique.mockResolvedValue({ uid: 'g1' });
-      prisma.userInstitution.findMany.mockResolvedValue([]); // not a member
-
-      await expect(
-        service.updateGroupUseCase({
-          groupId: 'g1',
-          institutionId,
-          data: { profesorId: 'outsider' },
-        }),
-      ).rejects.toThrow(ForbiddenException);
-      expect(prisma.groups.update).not.toHaveBeenCalled();
-    });
-
-    it('updates without any membership query when profesorId is absent from the payload', async () => {
+  // profesorId salió de UpdateGroupUseCase.data en la Task 2: reasignar
+  // profesor es PATCH /groups/change-profesor/:uid, así que el escenario que
+  // este describe probaba ("update reasigna profesor") ya no existe — con
+  // forbidNonWhitelisted el DTO ni deja llegar el campo. uid/contextRole son
+  // obligatorios en la interfaz desde la Task 2 pero el servicio todavía no
+  // los usa para nada: eso lo cierra la Task 3 (assertCanEditGroup).
+  describe('updateGroupUseCase', () => {
+    it('actualiza el grupo sin consultar membresía', async () => {
       prisma.groups.findUnique.mockResolvedValue({ uid: 'g1' });
       prisma.groups.update.mockResolvedValue({});
 
       const result = await service.updateGroupUseCase({
         groupId: 'g1',
         institutionId,
+        uid: 'u-cualquiera',
+        contextRole: 'coordinator',
         data: { name: 'Nuevo nombre' },
       });
 

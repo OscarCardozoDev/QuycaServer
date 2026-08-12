@@ -54,6 +54,7 @@ export class GroupController {
     return this.groupService.createGroupUseCase({
       ...body,
       institutionId: institution.uid,
+      maxGroups: institution.subscriptionPlan.maxGroups,
     });
   }
 
@@ -91,14 +92,23 @@ export class GroupController {
   async update(
     @Param() params: GroupParamsDto,
     @Body() body: UpdateGroupDto,
+    @CurrentUser('uid') uid: string,
     @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Req() req: AuthenticatedRequest,
   ) {
+    // uid/contextRole solo viajan para cumplir la firma de UpdateGroupUseCase
+    // (Task 2). El guard @RequireContextRole de este endpoint todavía es el
+    // único chequeo de permisos: assertCanEditGroup (Task 3) es quien los usa.
     return this.groupService.updateGroupUseCase({
       groupId: params.uid,
       institutionId: institution.uid,
+      uid,
+      contextRole: req.contextRole || '',
       data: {
         name: body.name,
-        profesorId: body.profesorId,
+        description: body.description,
+        rules: body.rules,
+        coverPhotoId: body.coverPhotoId,
       },
     });
   }
