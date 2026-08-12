@@ -86,8 +86,6 @@ export class GroupController {
   }
 
   @Put('update/:uid')
-  @UseGuards(ContextRoleGuard)
-  @RequireContextRole('rector', 'coordinator')
   @ApiOperation({ summary: 'Actualizar grupo' })
   async update(
     @Param() params: GroupParamsDto,
@@ -96,9 +94,6 @@ export class GroupController {
     @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
     @Req() req: AuthenticatedRequest,
   ) {
-    // uid/contextRole solo viajan para cumplir la firma de UpdateGroupUseCase
-    // (Task 2). El guard @RequireContextRole de este endpoint todavía es el
-    // único chequeo de permisos: assertCanEditGroup (Task 3) es quien los usa.
     return this.groupService.updateGroupUseCase({
       groupId: params.uid,
       institutionId: institution.uid,
@@ -159,21 +154,27 @@ export class GroupController {
 
   @Get('student/get/:groupId')
   @ApiOperation({ summary: 'Obtener estudiantes de un grupo' })
-  async getAllStudents(@Param('groupId') groupId: string) {
-    return this.groupService.getAllStudentsByGroup(groupId);
+  async getAllStudents(
+    @Param('groupId') groupId: string,
+    @CurrentUser('uid') uid: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.groupService.getAllStudentsByGroup(groupId, uid, req.contextRole || '');
   }
 
   @Delete('student/delete/:groupId')
-  @UseGuards(ContextRoleGuard)
-  @RequireContextRole('rector', 'coordinator', 'institutional')
   @ApiOperation({ summary: 'Eliminar un estudiante del grupo' })
   async deleteStudent(
     @Param('groupId') groupId: string,
     @Body() body: DeleteStudentDto,
+    @CurrentUser('uid') uid: string,
+    @Req() req: AuthenticatedRequest,
   ) {
     await this.groupService.deleteOneStudentByGroup({
       groupId,
       userId: body.userId,
+      uid,
+      contextRole: req.contextRole || '',
     });
     return { success: true };
   }
@@ -188,18 +189,20 @@ export class GroupController {
   }
 
   @Put('student/update/:groupId')
-  @UseGuards(ContextRoleGuard)
-  @RequireContextRole('rector', 'coordinator', 'institutional')
   @ApiOperation({ summary: 'Actualizar lista de estudiantes del grupo' })
   async updateStudents(
     @Param('groupId') groupId: string,
     @Body() body: UpdateStudentsDto,
     @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @CurrentUser('uid') uid: string,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.groupService.updateStudentsByGroup({
       groupId,
       users: body.users,
       institutionId: institution.uid,
+      uid,
+      contextRole: req.contextRole || '',
     });
   }
 }

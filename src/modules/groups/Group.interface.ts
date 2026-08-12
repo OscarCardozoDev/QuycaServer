@@ -72,9 +72,13 @@ export interface UpdateStudentsByGroupUseCase {
   groupId: string;
   users: string[];
   institutionId: string;
+  uid: string;
+  contextRole: string;
 }
 
 export interface DeleteStudentByGroupUseCase {
   groupId: string;
   userId: string;
+  uid: string;
+  contextRole: string;
 }

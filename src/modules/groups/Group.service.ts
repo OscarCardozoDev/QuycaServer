@@ -69,6 +69,45 @@ export class GroupService {
   }
 
   /* =========================
+   * GROUP ACCESS GUARDS
+   * Segundo eje de aislamiento. El primero —la institución— lo aplica la
+   * extensión de Prisma en cada query y por eso es invisible; éste no existía.
+   *
+   * Los dos tiran 404 y no 403 cuando el grupo no es tuyo: un 403 confirma que
+   * el grupo existe y quién es su gente, que es justo lo que se está tapando.
+   * ========================= */
+
+  /** Ver el interior: gestión, o miembro del grupo. */
+  private async assertCanViewGroup(groupId: string, uid: string, contextRole: string) {
+    if (contextRole === 'rector' || contextRole === 'coordinator') return;
+
+    // UsersGroups es tabla puente sin institutionId y no pasa por la
+    // extensión. Acá alcanza porque el groupId ya se validó contra Groups —
+    // que sí es scoped — en el propio caso de uso.
+    const membership = await this.prisma.usersGroups.findUnique({
+      where: { userId_groupId: { userId: uid, groupId } },
+      select: { uid: true },
+    });
+
+    if (!membership) throw new NotFoundException('Group not found');
+  }
+
+  /** Modificar: gestión, o el profesor a cargo. */
+  private async assertCanEditGroup(groupId: string, uid: string, contextRole: string) {
+    if (contextRole === 'rector' || contextRole === 'coordinator') return;
+
+    const group = await this.prisma.groups.findUnique({
+      where: { uid: groupId },
+      select: { profesorId: true },
+    });
+
+    if (!group) throw new NotFoundException('Group not found');
+    if (group.profesorId !== uid) {
+      throw new ForbiddenException('Solo el profesor a cargo puede editar este grupo');
+    }
+  }
+
+  /* =========================
    * PLAN LIMIT GUARD
    * El tope de grupos del plan. Hasta hoy `maxGroups` solo se mostraba en la
    * pantalla de planes y no lo miraba nadie: era la única palanca de cobro del
@@ -187,27 +226,18 @@ export class GroupService {
    * UPDATE
    * ========================= */
   async updateGroupUseCase(data: UpdateGroupUseCase) {
-    const { groupId, data: updateData } = data;
+    const { groupId, uid, contextRole, data: updateData } = data;
 
-    const group = await this.prisma.groups.findUnique({
-      where: { uid: groupId },
-    });
-
-    if (!group) {
-      throw new NotFoundException('Group not found');
-    }
+    await this.assertCanEditGroup(groupId, uid, contextRole);
 
     // profesorId ya no llega por acá: UpdateGroupDto lo saca a propósito
     // (Task 2). Reasignar profesor es PATCH /groups/change-profesor/:uid.
-    return this.prisma.$transaction(async (tx) => {
-      // 1️⃣ Update grupo
-      await tx.groups.update({
-        where: { uid: groupId },
-        data: updateData,
-      });
-
-      return { uid: groupId };
+    await this.prisma.groups.update({
+      where: { uid: groupId },
+      data: updateData,
     });
+
+    return { uid: groupId };
   }
 
   /* =========================
@@ -451,7 +481,7 @@ export class GroupService {
   /* =========================
    * GET ALL STUDENTS BY GROUP
    * ========================= */
-  async getAllStudentsByGroup(groupId: string) {
+  async getAllStudentsByGroup(groupId: string, uid: string, contextRole: string) {
     const group = await this.prisma.groups.findUnique({
       where: { uid: groupId },
     });
@@ -459,6 +489,8 @@ export class GroupService {
     if (!group) {
       throw new NotFoundException('Group not found');
     }
+
+    await this.assertCanViewGroup(groupId, uid, contextRole);
 
     const userTypeId = this.configService.get<string>('config.roles.user');
 
@@ -500,7 +532,7 @@ export class GroupService {
    * DELETE ONE STUDENT BY GROUP
    * ========================= */
   async deleteOneStudentByGroup(data: DeleteStudentByGroupUseCase) {
-    const { groupId, userId } = data;
+    const { groupId, userId, uid, contextRole } = data;
 
     const group = await this.prisma.groups.findUnique({
       where: { uid: groupId },
@@ -509,6 +541,8 @@ export class GroupService {
     if (!group) {
       throw new NotFoundException('Group not found');
     }
+
+    await this.assertCanEditGroup(groupId, uid, contextRole);
 
     return this.prisma.$transaction(async (tx) => {
       await tx.usersGroups.delete({
@@ -526,7 +560,7 @@ export class GroupService {
    * UPDATE STUDENTS BY GROUP
    * ========================= */
   async updateStudentsByGroup(data: UpdateStudentsByGroupUseCase) {
-    const { groupId, users, institutionId } = data;
+    const { groupId, users, institutionId, uid, contextRole } = data;
 
     const group = await this.prisma.groups.findUnique({
       where: { uid: groupId },
@@ -535,6 +569,8 @@ export class GroupService {
     if (!group) {
       throw new NotFoundException('Group not found');
     }
+
+    await this.assertCanEditGroup(groupId, uid, contextRole);
 
     await this.assertActiveMembers(users, institutionId);
 

@@ -76,9 +76,9 @@ describe('GroupService — tenant & membership enforcement', () => {
     it('throws NotFoundException for a groupId outside the active tenant and never reads the roster', async () => {
       prisma.groups.findUnique.mockResolvedValue(null); // extension scoped it out
 
-      await expect(service.getAllStudentsByGroup('foreign-group')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.getAllStudentsByGroup('foreign-group', 'u-rector', 'rector'),
+      ).rejects.toThrow(NotFoundException);
       expect(prisma.usersGroups.findMany).not.toHaveBeenCalled();
     });
 
@@ -86,7 +86,9 @@ describe('GroupService — tenant & membership enforcement', () => {
       prisma.groups.findUnique.mockResolvedValue({ uid: 'g1' });
       prisma.usersGroups.findMany.mockResolvedValue([]);
 
-      await service.getAllStudentsByGroup('g1');
+      // rector: assertCanViewGroup vuelve enseguida sin tocar usersGroups.findUnique
+      // (no está mockeado en esta suite — no es lo que se prueba acá).
+      await service.getAllStudentsByGroup('g1', 'u-rector', 'rector');
 
       expect(prisma.usersGroups.findMany).toHaveBeenCalled();
     });
@@ -149,6 +151,8 @@ describe('GroupService — tenant & membership enforcement', () => {
           groupId: 'g1',
           users: ['member-1', 'outsider'],
           institutionId,
+          uid: 'u-coord',
+          contextRole: 'coordinator',
         }),
       ).rejects.toThrow(/outsider/);
       expect(prisma.usersGroups.deleteMany).not.toHaveBeenCalled();
