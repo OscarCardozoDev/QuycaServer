@@ -9,7 +9,9 @@ import {
   Body,
   Param,
   Query,
+  Req,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CurrentUser } from 'src/decorators/currentUser';
@@ -31,6 +33,7 @@ import { FeatureGuard } from 'src/guards/feature.guard';
 import { RequireContextRole } from 'src/decorators/context-role.decorator';
 import { RequireFeature } from 'src/decorators/feature.decorator';
 import { Institution } from 'src/decorators/institution.decorator';
+import type { AuthenticatedRequest } from 'src/interface/jwtPayload';
 import type { Institution as InstitutionModel, SubscriptionPlan } from 'src/generated/prisma/client';
 
 @ApiTags('groups')
@@ -131,10 +134,14 @@ export class GroupController {
     @CurrentUser('uid') uid: string,
     @Body() body: AddStudentDto,
     @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Req() req: AuthenticatedRequest,
   ) {
-    const userId = body.userId ?? uid;
+    const targetUserId = body.userId ?? uid;
+    if (targetUserId !== uid && !['rector', 'coordinator', 'institutional'].includes(req.contextRole || '')) {
+      throw new ForbiddenException('Solo un rector, coordinador o profesor puede agregar a otra persona a un grupo');
+    }
     return this.groupService.addStudentToGroups({
-      userId,
+      userId: targetUserId,
       groupIds: body.groupIds,
       institutionId: institution.uid,
     });

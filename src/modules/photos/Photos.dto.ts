@@ -3,6 +3,7 @@ import { IsString } from 'class-validator';
 
 export class PhotoParamsDto {
   @ApiProperty({ example: 'uuid-de-la-foto' })
+  @IsString()
   uid: string;
 }
 

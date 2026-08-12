@@ -1,5 +1,6 @@
 import {
   Injectable, Inject, NotFoundException, ConflictException, BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
@@ -114,12 +115,21 @@ export class InstitutionService {
     });
   }
 
-  async getBySlug(slug: string) {
+  async getBySlug(slug: string, requesterUid: string) {
     const institution = await this.prismaService.institution.findUnique({
       where: { slug },
       include: { subscriptionPlan: true },
     });
     if (!institution) throw new NotFoundException('Institution not found');
+
+    const membership = await this.prismaService.userInstitution.findUnique({
+      where: { userId_institutionId: { userId: requesterUid, institutionId: institution.uid } }
+    });
+
+    if (!membership || !membership.isActive) {
+      throw new ForbiddenException('User is not a member of this institution');
+    }
+
     return institution;
   }
 

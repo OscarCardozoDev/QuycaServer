@@ -29,8 +29,8 @@ export class InstitutionController {
   @Get('institutions/:slug')
   @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Obtener institución por slug' })
-  async getBySlug(@Param('slug') slug: string) {
-    return this.institutionService.getBySlug(slug);
+  async getBySlug(@Param('slug') slug: string, @Req() req: AuthenticatedRequest) {
+    return this.institutionService.getBySlug(slug, req.user.uid);
   }
 
   @Patch('institutions/:id')
