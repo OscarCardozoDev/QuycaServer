@@ -359,6 +359,48 @@ export class ProductService {
     );
   }
 
+  /**
+   * La misma lectura que `getAllByGroup`, para el dashboard.
+   *
+   * La diferencia es TODA la diferencia: sin `runWithoutTenant()`, la
+   * extensión inyecta el institutionId y un groupId de otra institución
+   * devuelve vacío. La pública existe para la galería, que no tiene tenant
+   * resuelto — ver el spec 2026-08-12-pantalla-del-grupo-design § 5.
+   */
+  async getAllByGroupPrivate(
+    groupId: string,
+    options: GetProductsOptions = {},
+  ) {
+    const { page = 1, limit = 10 } = options;
+
+    return this.prisma.products.findMany({
+      where: { groupId },
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        photos: {
+          select: {
+            photo: {
+              select: {
+                uid: true,
+                name: true,
+                url: true,
+              },
+            },
+            isMain: true,
+          },
+        },
+        authors: {
+          select: {
+            isAuthor: true,
+            userId: true,
+          },
+        },
+      },
+    });
+  }
+
   // Público: alimenta la galería sin sesión, ver Product.controller.ts.
   async getAllByAuthor(authorId: string, options: GetProductsOptions = {}) {
     const { page = 1, limit = 10 } = options;

@@ -83,6 +83,18 @@ export class ProductController {
     return this.productsService.getAllByGroup(groupId, query);
   }
 
+  @Get('group/:uid')
+  @UseGuards(AuthGuard, TenantGuard)
+  @ApiOperation({
+    summary: 'Obras del grupo, acotadas a la institución activa',
+  })
+  async getGroupPrivate(
+    @Param('uid') groupId: string,
+    @Query() query: GetProductsDto,
+  ) {
+    return this.productsService.getAllByGroupPrivate(groupId, query);
+  }
+
   @Get('getAuthor/:uid')
   @ApiOperation({ summary: 'Obtener obras por autor' })
   async getAllByAuthor(

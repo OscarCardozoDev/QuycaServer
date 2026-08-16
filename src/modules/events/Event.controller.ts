@@ -111,6 +111,18 @@ export class EventController {
     return this.eventService.getByGroup(groupId, query);
   }
 
+  @Get('group/:uid')
+  @UseGuards(AuthGuard, TenantGuard)
+  @ApiOperation({
+    summary: 'Eventos del grupo, acotados a la institución activa',
+  })
+  async getByGroupPrivate(
+    @Param('uid', new ParseUUIDPipe()) groupId: string,
+    @Query() query: GetEventsDto,
+  ) {
+    return this.eventService.getByGroupPrivate(groupId, query);
+  }
+
   @Get('available-products/:groupId')
   @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
   @ApiOperation({

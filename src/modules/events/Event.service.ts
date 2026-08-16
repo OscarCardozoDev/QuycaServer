@@ -427,6 +427,38 @@ export class EventService {
     );
   }
 
+  /** La lectura de `getByGroup` para el dashboard, sin el bypass de tenant. */
+  async getByGroupPrivate(groupId: string, options: GetEventsOptions = {}) {
+    const { page = 1, limit = 10 } = options;
+
+    return this.prisma.events.findMany({
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { startDate: 'asc' },
+      where: {
+        isActive: true,
+        status: { in: [EventStatus.APPROVED, EventStatus.COMPLETED] },
+        groups: { some: { groupId } },
+      },
+      select: {
+        uid: true,
+        name: true,
+        eventType: true,
+        status: true,
+        startDate: true,
+        endDate: true,
+        photos: {
+          where: { photoType: EventPhotoType.HERO },
+          select: {
+            photoType: true,
+            photo: { select: { uid: true, url: true } },
+          },
+          take: 1,
+        },
+      },
+    });
+  }
+
   /**
    * Obras APPROVED del grupo disponibles para agregar a un evento.
    */
