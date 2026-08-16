@@ -164,9 +164,21 @@ async function main() {
         type: 'EDUCATIONAL',
         status: 'ACTIVE',
         subscriptionPlanId: empiricoUid,
+        // quyca-platform no es una institución cliente: su plan lo fija el
+        // seed, no lo elige nadie. Sin este sello, `resolveOnboardingSteps`
+        // ve `planChosenAt == null` y traba a cualquier rector suyo en el paso
+        // 'choose-plan'.
+        planChosenAt: new Date(),
       },
     });
     console.log('  ✅ Institution "quyca-platform" created');
+  } else if (existing.planChosenAt == null) {
+    // Bases sembradas antes de que existiera el sello: se marca una sola vez.
+    await prisma.institution.update({
+      where: { uid: existing.uid },
+      data: { planChosenAt: new Date() },
+    });
+    console.log('  ✅ Institution "quyca-platform" — planChosenAt sellado');
   } else {
     console.log('  ⏭  Institution "quyca-platform" already exists');
   }
@@ -205,6 +217,73 @@ async function main() {
       console.log(`  ⏭  Grupo de plataforma "${cat.name}" already exists`);
     }
   }
+
+  // 7. Usuario admin de desarrollo
+  //
+  // `Credentials` y `Users` son tablas separadas que comparten el MISMO uid: el
+  // de `Credentials` manda, y la fila de `Users` se crea con ese uid a mano. No
+  // hay FK entre las dos, la identidad es la clave primaria.
+  //
+  // El hash es bcrypt de una contraseña de prueba, puesto literal a propósito:
+  // sembrar no debería depender de bcrypt en tiempo de seed, y así el seed es
+  // determinista. ⚠️ Es una credencial de desarrollo — no sembrar esto en
+  // producción.
+  const ADMIN_MAIL = 'admin@gmail.com';
+  const ADMIN_PASSWORD_HASH =
+    '$2a$12$ez0MVVzCF8lbiQm/n6OQTOyAKrQs2uiqlOgbPinfR9xBwKymr85Ta';
+
+  const adminCredential = await prisma.credentials.upsert({
+    where: { mail: ADMIN_MAIL },
+    // `isEmailVerified: true` no es cosmético: el login resuelve los pasos de
+    // onboarding con ese flag, y sin él la cuenta queda trabada pidiendo el
+    // código de verificación que en desarrollo no llega.
+    update: { password: ADMIN_PASSWORD_HASH, isEmailVerified: true },
+    create: {
+      mail: ADMIN_MAIL,
+      password: ADMIN_PASSWORD_HASH,
+      isEmailVerified: true,
+    },
+    select: { uid: true },
+  });
+
+  await prisma.users.upsert({
+    where: { uid: adminCredential.uid },
+    update: { userTypeId: USER_TYPE_IDS.super_admin, isActive: true },
+    create: {
+      uid: adminCredential.uid,
+      name: 'Admin',
+      lastName: 'Quyca',
+      username: 'admin',
+      gender: 'M',
+      telNumber: '3000000000',
+      userTypeId: USER_TYPE_IDS.super_admin,
+    },
+  });
+  console.log(`  ✅ Usuario admin "${ADMIN_MAIL}" — uid: ${adminCredential.uid}`);
+
+  // Membresía en quyca-platform.
+  //
+  // `UserTypes.super_admin` es identidad global y alcanza para los endpoints
+  // marcados con @AllowCrossTenant(), pero NO para el resto: `TenantGuard`
+  // resuelve el slug del header y exige membresía activa, así que sin esta fila
+  // el admin recibe 403 en todo el dashboard. `contextRole` es lo que autoriza
+  // (nunca el userType), y va en minúscula: es el slug de `Roles`.
+  await prisma.userInstitution.upsert({
+    where: {
+      userId_institutionId: {
+        userId: adminCredential.uid,
+        institutionId: platform.uid,
+      },
+    },
+    update: { contextRole: 'rector', isActive: true },
+    create: {
+      userId: adminCredential.uid,
+      institutionId: platform.uid,
+      contextRole: 'rector',
+      isActive: true,
+    },
+  });
+  console.log('  ✅ Admin con membresía "rector" en quyca-platform');
 
   console.log('\n🎉 Seed complete.');
 }

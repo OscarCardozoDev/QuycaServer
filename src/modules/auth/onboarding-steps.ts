@@ -31,7 +31,9 @@ export interface OnboardingState {
   hasPlatformGroup: boolean;
 }
 
-export function resolveOnboardingSteps(state: OnboardingState): OnboardingStep[] {
+export function resolveOnboardingSteps(
+  state: OnboardingState,
+): OnboardingStep[] {
   const steps: OnboardingStep[] = [];
 
   if (!state.isEmailVerified) steps.push('verify-email');
