@@ -10,7 +10,6 @@ import {
   Param,
   Query,
   Req,
-  NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
