@@ -75,14 +75,12 @@ export class GroupController {
 
   @Get('get/:uid')
   @ApiOperation({ summary: 'Obtener grupo por UID' })
-  async getById(@Param() params: GroupParamsDto) {
-    const group = await this.groupService.getById(params.uid);
-
-    if (!group) {
-      throw new NotFoundException('Group not found');
-    }
-
-    return group;
+  async getById(
+    @Param() params: GroupParamsDto,
+    @CurrentUser('uid') uid: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.groupService.getById(params.uid, uid, req.contextRole || '');
   }
 
   @Put('update/:uid')

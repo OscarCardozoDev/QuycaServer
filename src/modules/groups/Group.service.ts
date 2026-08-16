@@ -208,8 +208,8 @@ export class GroupService {
   /* =========================
    * GET BY ID
    * ========================= */
-  async getById(groupId: string) {
-    return this.prisma.groups.findUnique({
+  async getById(groupId: string, uid: string, contextRole: string) {
+    const group = await this.prisma.groups.findUnique({
       where: { uid: groupId },
       include: {
         groupCategory: { select: { uid: true, name: true, slug: true } },
@@ -218,6 +218,14 @@ export class GroupService {
         users: { select: { user: { select: { uid: true, name: true } } } },
       },
     });
+
+    // El findUnique va primero y a propósito: `Groups` es scoped, así que un
+    // grupo de otra institución ya vuelve null acá y nunca llega al assert.
+    if (!group) throw new NotFoundException('Group not found');
+
+    await this.assertCanViewGroup(groupId, uid, contextRole);
+
+    return group;
   }
 
   /* =========================
