@@ -74,6 +74,13 @@ export class InstitutionQueueDto {
   status?: string;
 }
 
+export class GlobalQueueDto {
+  @ApiPropertyOptional({ enum: ['PENDING', 'APPROVED', 'REJECTED'] })
+  @IsOptional()
+  @IsIn(['PENDING', 'APPROVED', 'REJECTED'])
+  status?: string;
+}
+
 export class ReviewLessonDto {
   @ApiProperty({ example: true, description: 'true aprueba, false rechaza.' })
   @IsBoolean()

@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LessonService } from './Lesson.service';
 import type { CreateChapterDto, UpdateChapterDto } from './Chapter.dto';
@@ -57,6 +57,12 @@ export class ChapterService {
   ) {
     await this.lessonService.assertCanEditLesson(lessonId, userId, contextRole);
 
+    const owned = await this.prisma.chapters.findFirst({
+      where: { uid: chapterId, lessonId, isActive: true },
+      select: { uid: true },
+    });
+    if (!owned) throw new NotFoundException('El capítulo no existe en esta lección');
+
     const chapter = await this.prisma.chapters.update({
       where: { uid: chapterId },
       data: {
@@ -78,6 +84,12 @@ export class ChapterService {
     contextRole: string,
   ) {
     await this.lessonService.assertCanEditLesson(lessonId, userId, contextRole);
+
+    const owned = await this.prisma.chapters.findFirst({
+      where: { uid: chapterId, lessonId, isActive: true },
+      select: { uid: true },
+    });
+    if (!owned) throw new NotFoundException('El capítulo no existe en esta lección');
 
     await this.prisma.chapters.update({
       where: { uid: chapterId },

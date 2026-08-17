@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ChapterService } from './Chapter.service';
 import { LessonService } from './Lesson.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -18,6 +18,7 @@ describe('ChapterService', () => {
         aggregate: jest.fn().mockResolvedValue({ _max: { sequence: 4 } }),
         create: jest.fn().mockResolvedValue({ uid: 'cap-5' }),
         update: jest.fn().mockResolvedValue({}),
+        findFirst: jest.fn().mockResolvedValue({ uid: 'cap-1' }),
         findMany: jest.fn().mockResolvedValue([
           { uid: 'cap-1' },
           { uid: 'cap-2' },
@@ -132,5 +133,33 @@ describe('ChapterService', () => {
         ],
       }),
     );
+  });
+
+  // Sin este chequeo, un chapterId de otra lección (dentro del mismo tenant)
+  // pasaba directo al update: agujero intra-tenant.
+  it('actualizar un capítulo ajeno a la lección falla con 404', async () => {
+    prisma.chapters.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.update(
+        LESSON,
+        'cap-de-otra-leccion',
+        { title: 'x', contentMd: 'y' },
+        AUTOR,
+        'institutional',
+      ),
+    ).rejects.toBeInstanceOf(NotFoundException);
+
+    expect(prisma.chapters.update).not.toHaveBeenCalled();
+  });
+
+  it('desactivar un capítulo ajeno a la lección falla con 404', async () => {
+    prisma.chapters.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.deactivate(LESSON, 'cap-de-otra-leccion', AUTOR, 'institutional'),
+    ).rejects.toBeInstanceOf(NotFoundException);
+
+    expect(prisma.chapters.update).not.toHaveBeenCalled();
   });
 });

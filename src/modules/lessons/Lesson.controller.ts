@@ -16,7 +16,7 @@ import type { Institution as InstitutionModel } from 'src/generated/prisma/clien
 import { LessonService } from './Lesson.service';
 import {
   LessonParamsDto, CreateLessonDto, UpdateLessonDto,
-  ListLessonsDto, InstitutionQueueDto, ReviewLessonDto,
+  ListLessonsDto, InstitutionQueueDto, GlobalQueueDto, ReviewLessonDto,
 } from './Lesson.dto';
 
 @ApiTags('lessons')
@@ -88,8 +88,8 @@ export class LessonController {
   @Roles('super_admin')
   @AllowCrossTenant()
   @ApiOperation({ summary: 'Cola de revisión global (SUPER_ADMIN)' })
-  adminQueue(@Query('status') status?: string) {
-    return this.lessonService.getAdminQueue(status);
+  adminQueue(@Query() query: GlobalQueueDto) {
+    return this.lessonService.getAdminQueue(query.status);
   }
 
   @Patch('admin/:uid/review')

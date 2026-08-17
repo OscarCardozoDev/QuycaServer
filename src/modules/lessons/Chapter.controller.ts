@@ -8,7 +8,9 @@ import { CurrentUser } from 'src/decorators/currentUser';
 import type { AuthenticatedRequest } from 'src/interface/jwtPayload';
 import { LessonService } from './Lesson.service';
 import { ChapterService } from './Chapter.service';
-import { CreateChapterDto, UpdateChapterDto, ReorderChaptersDto } from './Chapter.dto';
+import {
+  ChapterParamsDto, CreateChapterDto, UpdateChapterDto, ReorderChaptersDto,
+} from './Chapter.dto';
 
 @ApiTags('lessons')
 @UseGuards(AuthGuard, TenantGuard)
@@ -55,46 +57,63 @@ export class ChapterController {
   @Get(':uid')
   @ApiOperation({ summary: 'Un capítulo con su navegación anterior/siguiente' })
   read(
-    @Param('lessonId') lessonId: string,
-    @Param('uid') chapterId: string,
+    @Param() params: ChapterParamsDto,
     @CurrentUser('uid') uid: string,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.lessonService.readChapter(lessonId, chapterId, uid, req.contextRole || '');
+    return this.lessonService.readChapter(
+      params.lessonId,
+      params.uid,
+      uid,
+      req.contextRole || '',
+    );
   }
 
   @Post(':uid/complete')
   @ApiOperation({ summary: 'Marcar el capítulo como completado' })
   complete(
-    @Param('lessonId') lessonId: string,
-    @Param('uid') chapterId: string,
+    @Param() params: ChapterParamsDto,
     @CurrentUser('uid') uid: string,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.chapterService.complete(lessonId, chapterId, uid, req.contextRole || '');
+    return this.chapterService.complete(
+      params.lessonId,
+      params.uid,
+      uid,
+      req.contextRole || '',
+    );
   }
 
   @Put(':uid')
   @ApiOperation({ summary: 'Actualizar un capítulo' })
   update(
-    @Param('lessonId') lessonId: string,
-    @Param('uid') chapterId: string,
+    @Param() params: ChapterParamsDto,
     @Body() body: UpdateChapterDto,
     @CurrentUser('uid') uid: string,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.chapterService.update(lessonId, chapterId, body, uid, req.contextRole || '');
+    return this.chapterService.update(
+      params.lessonId,
+      params.uid,
+      body,
+      uid,
+      req.contextRole || '',
+    );
   }
 
   @Delete(':uid')
   @ApiOperation({ summary: 'Desactivar un capítulo y recompactar la secuencia' })
   async remove(
-    @Param('lessonId') lessonId: string,
-    @Param('uid') chapterId: string,
+    @Param() params: ChapterParamsDto,
     @CurrentUser('uid') uid: string,
     @Req() req: AuthenticatedRequest,
   ) {
-    await this.chapterService.deactivate(lessonId, chapterId, uid, req.contextRole || '');
+    await this.chapterService.deactivate(
+      params.lessonId,
+      params.uid,
+      uid,
+      req.contextRole || '',
+    );
     return { success: true };
   }
 }
