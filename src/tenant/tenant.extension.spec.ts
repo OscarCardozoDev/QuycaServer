@@ -8,10 +8,10 @@ import {
 } from './tenant.extension';
 
 describe('SCOPED_MODELS', () => {
-  it('incluye los 8 modelos scoped', () => {
+  it('incluye los 10 modelos scoped', () => {
     expect([...SCOPED_MODELS].sort()).toEqual([
-      'Attendance', 'Classes', 'ContentRequest', 'Events',
-      'Groups', 'Products', 'Schedule', 'Styles',
+      'Attendance', 'Chapters', 'Classes', 'ContentRequest', 'Events',
+      'Groups', 'Lessons', 'Products', 'Schedule', 'Styles',
     ]);
   });
 

@@ -410,7 +410,11 @@ export const ModelName = {
   UserInstitution: 'UserInstitution',
   GroupCategory: 'GroupCategory',
   InstitutionInvitation: 'InstitutionInvitation',
-  ContentRequest: 'ContentRequest'
+  ContentRequest: 'ContentRequest',
+  Lessons: 'Lessons',
+  Chapters: 'Chapters',
+  ChapterPhoto: 'ChapterPhoto',
+  LessonProgress: 'LessonProgress'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -426,7 +430,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "userTypes" | "roles" | "users" | "credentials" | "verificationCodes" | "groups" | "usersGroups" | "products" | "styles" | "productStyle" | "photos" | "productPhoto" | "events" | "eventProduct" | "eventInvitation" | "eventPhoto" | "userProduct" | "groupEvent" | "schedule" | "classes" | "attendance" | "subscriptionPlan" | "institution" | "userInstitution" | "groupCategory" | "institutionInvitation" | "contentRequest"
+    modelProps: "userTypes" | "roles" | "users" | "credentials" | "verificationCodes" | "groups" | "usersGroups" | "products" | "styles" | "productStyle" | "photos" | "productPhoto" | "events" | "eventProduct" | "eventInvitation" | "eventPhoto" | "userProduct" | "groupEvent" | "schedule" | "classes" | "attendance" | "subscriptionPlan" | "institution" | "userInstitution" | "groupCategory" | "institutionInvitation" | "contentRequest" | "lessons" | "chapters" | "chapterPhoto" | "lessonProgress"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2428,6 +2432,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Lessons: {
+      payload: Prisma.$LessonsPayload<ExtArgs>
+      fields: Prisma.LessonsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LessonsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LessonsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonsPayload>
+        }
+        findFirst: {
+          args: Prisma.LessonsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LessonsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonsPayload>
+        }
+        findMany: {
+          args: Prisma.LessonsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonsPayload>[]
+        }
+        create: {
+          args: Prisma.LessonsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonsPayload>
+        }
+        createMany: {
+          args: Prisma.LessonsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.LessonsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonsPayload>[]
+        }
+        delete: {
+          args: Prisma.LessonsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonsPayload>
+        }
+        update: {
+          args: Prisma.LessonsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonsPayload>
+        }
+        deleteMany: {
+          args: Prisma.LessonsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LessonsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.LessonsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonsPayload>[]
+        }
+        upsert: {
+          args: Prisma.LessonsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonsPayload>
+        }
+        aggregate: {
+          args: Prisma.LessonsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLessons>
+        }
+        groupBy: {
+          args: Prisma.LessonsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LessonsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LessonsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LessonsCountAggregateOutputType> | number
+        }
+      }
+    }
+    Chapters: {
+      payload: Prisma.$ChaptersPayload<ExtArgs>
+      fields: Prisma.ChaptersFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChaptersFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChaptersPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChaptersFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChaptersPayload>
+        }
+        findFirst: {
+          args: Prisma.ChaptersFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChaptersPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChaptersFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChaptersPayload>
+        }
+        findMany: {
+          args: Prisma.ChaptersFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChaptersPayload>[]
+        }
+        create: {
+          args: Prisma.ChaptersCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChaptersPayload>
+        }
+        createMany: {
+          args: Prisma.ChaptersCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChaptersCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChaptersPayload>[]
+        }
+        delete: {
+          args: Prisma.ChaptersDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChaptersPayload>
+        }
+        update: {
+          args: Prisma.ChaptersUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChaptersPayload>
+        }
+        deleteMany: {
+          args: Prisma.ChaptersDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChaptersUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChaptersUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChaptersPayload>[]
+        }
+        upsert: {
+          args: Prisma.ChaptersUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChaptersPayload>
+        }
+        aggregate: {
+          args: Prisma.ChaptersAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChapters>
+        }
+        groupBy: {
+          args: Prisma.ChaptersGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChaptersGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChaptersCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChaptersCountAggregateOutputType> | number
+        }
+      }
+    }
+    ChapterPhoto: {
+      payload: Prisma.$ChapterPhotoPayload<ExtArgs>
+      fields: Prisma.ChapterPhotoFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChapterPhotoFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChapterPhotoPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChapterPhotoFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChapterPhotoPayload>
+        }
+        findFirst: {
+          args: Prisma.ChapterPhotoFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChapterPhotoPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChapterPhotoFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChapterPhotoPayload>
+        }
+        findMany: {
+          args: Prisma.ChapterPhotoFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChapterPhotoPayload>[]
+        }
+        create: {
+          args: Prisma.ChapterPhotoCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChapterPhotoPayload>
+        }
+        createMany: {
+          args: Prisma.ChapterPhotoCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChapterPhotoCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChapterPhotoPayload>[]
+        }
+        delete: {
+          args: Prisma.ChapterPhotoDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChapterPhotoPayload>
+        }
+        update: {
+          args: Prisma.ChapterPhotoUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChapterPhotoPayload>
+        }
+        deleteMany: {
+          args: Prisma.ChapterPhotoDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChapterPhotoUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChapterPhotoUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChapterPhotoPayload>[]
+        }
+        upsert: {
+          args: Prisma.ChapterPhotoUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChapterPhotoPayload>
+        }
+        aggregate: {
+          args: Prisma.ChapterPhotoAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChapterPhoto>
+        }
+        groupBy: {
+          args: Prisma.ChapterPhotoGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChapterPhotoGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChapterPhotoCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChapterPhotoCountAggregateOutputType> | number
+        }
+      }
+    }
+    LessonProgress: {
+      payload: Prisma.$LessonProgressPayload<ExtArgs>
+      fields: Prisma.LessonProgressFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LessonProgressFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonProgressPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LessonProgressFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonProgressPayload>
+        }
+        findFirst: {
+          args: Prisma.LessonProgressFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonProgressPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LessonProgressFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonProgressPayload>
+        }
+        findMany: {
+          args: Prisma.LessonProgressFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonProgressPayload>[]
+        }
+        create: {
+          args: Prisma.LessonProgressCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonProgressPayload>
+        }
+        createMany: {
+          args: Prisma.LessonProgressCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.LessonProgressCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonProgressPayload>[]
+        }
+        delete: {
+          args: Prisma.LessonProgressDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonProgressPayload>
+        }
+        update: {
+          args: Prisma.LessonProgressUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonProgressPayload>
+        }
+        deleteMany: {
+          args: Prisma.LessonProgressDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LessonProgressUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.LessonProgressUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonProgressPayload>[]
+        }
+        upsert: {
+          args: Prisma.LessonProgressUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LessonProgressPayload>
+        }
+        aggregate: {
+          args: Prisma.LessonProgressAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLessonProgress>
+        }
+        groupBy: {
+          args: Prisma.LessonProgressGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LessonProgressGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LessonProgressCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LessonProgressCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2847,6 +3147,70 @@ export const ContentRequestScalarFieldEnum = {
 export type ContentRequestScalarFieldEnum = (typeof ContentRequestScalarFieldEnum)[keyof typeof ContentRequestScalarFieldEnum]
 
 
+export const LessonsScalarFieldEnum = {
+  uid: 'uid',
+  title: 'title',
+  summary: 'summary',
+  isActive: 'isActive',
+  coverPhotoId: 'coverPhotoId',
+  institutionId: 'institutionId',
+  categoryId: 'categoryId',
+  groupId: 'groupId',
+  authorId: 'authorId',
+  institutionStatus: 'institutionStatus',
+  institutionFeedback: 'institutionFeedback',
+  institutionReviewedBy: 'institutionReviewedBy',
+  institutionReviewedAt: 'institutionReviewedAt',
+  globalStatus: 'globalStatus',
+  globalFeedback: 'globalFeedback',
+  globalReviewedBy: 'globalReviewedBy',
+  globalReviewedAt: 'globalReviewedAt',
+  isPublic: 'isPublic',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LessonsScalarFieldEnum = (typeof LessonsScalarFieldEnum)[keyof typeof LessonsScalarFieldEnum]
+
+
+export const ChaptersScalarFieldEnum = {
+  uid: 'uid',
+  lessonId: 'lessonId',
+  sequence: 'sequence',
+  title: 'title',
+  contentMd: 'contentMd',
+  videoUrl: 'videoUrl',
+  isActive: 'isActive',
+  institutionId: 'institutionId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChaptersScalarFieldEnum = (typeof ChaptersScalarFieldEnum)[keyof typeof ChaptersScalarFieldEnum]
+
+
+export const ChapterPhotoScalarFieldEnum = {
+  uid: 'uid',
+  chapterId: 'chapterId',
+  photoId: 'photoId',
+  sequence: 'sequence',
+  createdAt: 'createdAt'
+} as const
+
+export type ChapterPhotoScalarFieldEnum = (typeof ChapterPhotoScalarFieldEnum)[keyof typeof ChapterPhotoScalarFieldEnum]
+
+
+export const LessonProgressScalarFieldEnum = {
+  uid: 'uid',
+  userId: 'userId',
+  chapterId: 'chapterId',
+  lessonId: 'lessonId',
+  completedAt: 'completedAt'
+} as const
+
+export type LessonProgressScalarFieldEnum = (typeof LessonProgressScalarFieldEnum)[keyof typeof LessonProgressScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -3105,6 +3469,34 @@ export type ListEnumRequestStatusFieldRefInput<$PrismaModel> = FieldRefInputType
 
 
 /**
+ * Reference to a field of type 'LessonStatus'
+ */
+export type EnumLessonStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LessonStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'LessonStatus[]'
+ */
+export type ListEnumLessonStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LessonStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'LessonGlobalStatus'
+ */
+export type EnumLessonGlobalStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LessonGlobalStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'LessonGlobalStatus[]'
+ */
+export type ListEnumLessonGlobalStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LessonGlobalStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -3239,6 +3631,10 @@ export type GlobalOmitConfig = {
   groupCategory?: Prisma.GroupCategoryOmit
   institutionInvitation?: Prisma.InstitutionInvitationOmit
   contentRequest?: Prisma.ContentRequestOmit
+  lessons?: Prisma.LessonsOmit
+  chapters?: Prisma.ChaptersOmit
+  chapterPhoto?: Prisma.ChapterPhotoOmit
+  lessonProgress?: Prisma.LessonProgressOmit
 }
 
 /* Types for Logging */

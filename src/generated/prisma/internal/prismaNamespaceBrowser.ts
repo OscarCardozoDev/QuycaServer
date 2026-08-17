@@ -77,7 +77,11 @@ export const ModelName = {
   UserInstitution: 'UserInstitution',
   GroupCategory: 'GroupCategory',
   InstitutionInvitation: 'InstitutionInvitation',
-  ContentRequest: 'ContentRequest'
+  ContentRequest: 'ContentRequest',
+  Lessons: 'Lessons',
+  Chapters: 'Chapters',
+  ChapterPhoto: 'ChapterPhoto',
+  LessonProgress: 'LessonProgress'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -474,6 +478,70 @@ export const ContentRequestScalarFieldEnum = {
 } as const
 
 export type ContentRequestScalarFieldEnum = (typeof ContentRequestScalarFieldEnum)[keyof typeof ContentRequestScalarFieldEnum]
+
+
+export const LessonsScalarFieldEnum = {
+  uid: 'uid',
+  title: 'title',
+  summary: 'summary',
+  isActive: 'isActive',
+  coverPhotoId: 'coverPhotoId',
+  institutionId: 'institutionId',
+  categoryId: 'categoryId',
+  groupId: 'groupId',
+  authorId: 'authorId',
+  institutionStatus: 'institutionStatus',
+  institutionFeedback: 'institutionFeedback',
+  institutionReviewedBy: 'institutionReviewedBy',
+  institutionReviewedAt: 'institutionReviewedAt',
+  globalStatus: 'globalStatus',
+  globalFeedback: 'globalFeedback',
+  globalReviewedBy: 'globalReviewedBy',
+  globalReviewedAt: 'globalReviewedAt',
+  isPublic: 'isPublic',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LessonsScalarFieldEnum = (typeof LessonsScalarFieldEnum)[keyof typeof LessonsScalarFieldEnum]
+
+
+export const ChaptersScalarFieldEnum = {
+  uid: 'uid',
+  lessonId: 'lessonId',
+  sequence: 'sequence',
+  title: 'title',
+  contentMd: 'contentMd',
+  videoUrl: 'videoUrl',
+  isActive: 'isActive',
+  institutionId: 'institutionId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChaptersScalarFieldEnum = (typeof ChaptersScalarFieldEnum)[keyof typeof ChaptersScalarFieldEnum]
+
+
+export const ChapterPhotoScalarFieldEnum = {
+  uid: 'uid',
+  chapterId: 'chapterId',
+  photoId: 'photoId',
+  sequence: 'sequence',
+  createdAt: 'createdAt'
+} as const
+
+export type ChapterPhotoScalarFieldEnum = (typeof ChapterPhotoScalarFieldEnum)[keyof typeof ChapterPhotoScalarFieldEnum]
+
+
+export const LessonProgressScalarFieldEnum = {
+  uid: 'uid',
+  userId: 'userId',
+  chapterId: 'chapterId',
+  lessonId: 'lessonId',
+  completedAt: 'completedAt'
+} as const
+
+export type LessonProgressScalarFieldEnum = (typeof LessonProgressScalarFieldEnum)[keyof typeof LessonProgressScalarFieldEnum]
 
 
 export const SortOrder = {

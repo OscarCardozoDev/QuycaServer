@@ -41,6 +41,12 @@ export class SqlInjectionGuard implements CanActivate {
     'banner',
     'picture',
     'attachment',
+    // Markdown de un capítulo de lección. Un separador `---` dispara
+    // /--\s*$/m y un bloque de código con /* */ dispara el patrón de
+    // comentarios: los dos son contenido legítimo. No debilita nada real —
+    // Prisma parametriza toda consulta y este campo va a una columna Text
+    // que nunca se concatena a SQL.
+    'contentmd',
   ]);
 
   // Detecta si un string parece ser base64 (data URL o base64 puro)

@@ -33,6 +33,8 @@ interface Fixtures {
   classId: string;
   attendanceId: string;
   contentRequestId: string;
+  lessonId: string;
+  chapterId: string;
 }
 
 let fxA: Fixtures;
@@ -164,6 +166,27 @@ async function createFixtures(institutionId: string, label: string): Promise<Fix
     select: { uid: true },
   });
 
+  const lesson = await raw.lessons.create({
+    data: {
+      title: `Lección ${label} ${SUFFIX}`,
+      categoryId,
+      authorId: user.uid,
+      institutionId,
+    },
+    select: { uid: true },
+  });
+
+  const chapter = await raw.chapters.create({
+    data: {
+      lessonId: lesson.uid,
+      sequence: 1,
+      title: `Capítulo 1 ${label}`,
+      contentMd: '# Contenido\n\n---\n\nTexto de prueba.',
+      institutionId,
+    },
+    select: { uid: true },
+  });
+
   return {
     userId: user.uid,
     groupId: group.uid,
@@ -174,6 +197,8 @@ async function createFixtures(institutionId: string, label: string): Promise<Fix
     classId: classRow.uid,
     attendanceId: attendance.uid,
     contentRequestId: contentRequest.uid,
+    lessonId: lesson.uid,
+    chapterId: chapter.uid,
   };
 }
 
@@ -222,6 +247,11 @@ afterAll(async () => {
   const steps: Array<[string, () => Promise<unknown>]> = [
     ['attendance', () => raw.attendance.deleteMany({ where: { institutionId: { in: ids } } })],
     ['contentRequest', () => raw.contentRequest.deleteMany({ where: { institutionId: { in: ids } } })],
+    // Lessons/Chapters antes de 'users' e 'institution': Chapters.lessonId y
+    // Lessons.authorId/institutionId son RESTRICT (ver migration.sql), así
+    // que un borrado fuera de este orden deja el afterAll fallando por FK.
+    ['chapters', () => raw.chapters.deleteMany({ where: { institutionId: { in: ids } } })],
+    ['lessons', () => raw.lessons.deleteMany({ where: { institutionId: { in: ids } } })],
     ['classes', () => raw.classes.deleteMany({ where: { institutionId: { in: ids } } })],
     ['schedule', () => raw.schedule.deleteMany({ where: { institutionId: { in: ids } } })],
     ['events', () => raw.events.deleteMany({ where: { institutionId: { in: ids } } })],
@@ -283,9 +313,11 @@ const SCOPED_MODEL_CASES = [
     () => fxA.contentRequestId,
     () => fxB.contentRequestId,
   ),
+  scopedCase('Lessons', prisma.lessons, () => fxA.lessonId, () => fxB.lessonId),
+  scopedCase('Chapters', prisma.chapters, () => fxA.chapterId, () => fxB.chapterId),
 ];
 
-describe('aislamiento cruzado — los 8 modelos scoped', () => {
+describe('aislamiento cruzado — los 10 modelos scoped', () => {
   it.each(SCOPED_MODEL_CASES)(
     '$name: findMany bajo el tenant A no devuelve filas de B',
     async ({ client, ownUid, otherUid }) => {
