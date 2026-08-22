@@ -152,14 +152,27 @@ describe('LessonService — los dos caminos de lectura', () => {
       ).resolves.toBeDefined();
     });
 
-    // Si el autor pudiera editar después de aprobada, la revisión no
-    // significaría nada.
-    it('el autor NO edita una aprobada', async () => {
+    // Antes esto estaba prohibido, con el argumento de que si no la revisión
+    // no significaría nada. Lo que la protege ahora es `markForReview()`: el
+    // autor corrige, y la lección vuelve sola a la cola. Cerrarle la puerta
+    // acá dejaba a un docente sin poder arreglar una errata de su propia
+    // lección sin pedirle el favor al rector.
+    it('el autor edita una aprobada — el reseteo lo hace markForReview', async () => {
       prisma.lessons.findUnique.mockResolvedValue(lessonRow());
 
       await expect(
         service.assertCanEditLesson(LESSON, AUTOR, 'institutional'),
-      ).rejects.toBeInstanceOf(NotFoundException);
+      ).resolves.toBeDefined();
+    });
+
+    it('el autor edita una que ya está en la cola', async () => {
+      prisma.lessons.findUnique.mockResolvedValue(
+        lessonRow({ institutionStatus: 'PENDING' }),
+      );
+
+      await expect(
+        service.assertCanEditLesson(LESSON, AUTOR, 'institutional'),
+      ).resolves.toBeDefined();
     });
 
     it('otro docente no edita la ajena', async () => {

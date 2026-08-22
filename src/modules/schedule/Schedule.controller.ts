@@ -10,12 +10,12 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ScheduleService } from './Schedule.service';
-import { AuthGuard } from 'src/middleware/jwt.guard';
+import { AuthGuard } from 'src/guards/jwt.guard';
 import { TenantGuard } from 'src/tenant/tenant.guard';
 import { ContextRoleGuard } from 'src/guards/context-role.guard';
 import { RequireContextRole } from 'src/decorators/context-role.decorator';
 import { Institution } from 'src/decorators/institution.decorator';
-import type { Institution as InstitutionModel, SubscriptionPlan } from 'src/generated/prisma/client';
+import type { ActiveInstitution } from 'src/interface/jwtPayload';
 import {
   CreateScheduleDto,
   UpdateScheduleDto,
@@ -35,7 +35,7 @@ export class ScheduleController {
   @ApiOperation({ summary: 'Crear horario y generar sesiones del semestre' })
   async create(
     @Body() body: CreateScheduleDto,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Institution() institution: ActiveInstitution,
   ) {
     return this.scheduleService.create({
       ...body,
@@ -56,7 +56,7 @@ export class ScheduleController {
   async update(
     @Param() params: ScheduleParamsDto,
     @Body() body: UpdateScheduleDto,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Institution() institution: ActiveInstitution,
   ) {
     return this.scheduleService.update({
       scheduleId: params.uid,

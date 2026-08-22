@@ -10,12 +10,12 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ClassesService } from './Classes.service';
-import { AuthGuard } from 'src/middleware/jwt.guard';
+import { AuthGuard } from 'src/guards/jwt.guard';
 import { TenantGuard } from 'src/tenant/tenant.guard';
 import { ContextRoleGuard } from 'src/guards/context-role.guard';
 import { RequireContextRole } from 'src/decorators/context-role.decorator';
 import { Institution } from 'src/decorators/institution.decorator';
-import type { Institution as InstitutionModel, SubscriptionPlan } from 'src/generated/prisma/client';
+import type { ActiveInstitution } from 'src/interface/jwtPayload';
 import { CurrentUser } from 'src/decorators/currentUser';
 import {
   ClassParamsDto,
@@ -39,7 +39,7 @@ export class ClassesController {
   @ApiOperation({ summary: 'Crear clase manual' })
   async create(
     @Body() body: CreateClassDto,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Institution() institution: ActiveInstitution,
   ) {
     return this.classesService.create({
       groupId: body.groupId,
@@ -58,7 +58,7 @@ export class ClassesController {
   async attend(
     @CurrentUser('uid') userId: string,
     @Body() body: AttendDto,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Institution() institution: ActiveInstitution,
   ) {
     return this.classesService.attend({
       classId: body.classId,

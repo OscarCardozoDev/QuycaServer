@@ -2,7 +2,7 @@ import {
   Controller, Get, Post, Put, Delete, Patch, Body, Param, UseGuards, Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { AuthGuard } from 'src/middleware/jwt.guard';
+import { AuthGuard } from 'src/guards/jwt.guard';
 import { TenantGuard } from 'src/tenant/tenant.guard';
 import { CurrentUser } from 'src/decorators/currentUser';
 import type { AuthenticatedRequest } from 'src/interface/jwtPayload';

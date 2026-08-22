@@ -12,15 +12,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { AuthGuard } from 'src/middleware/jwt.guard';
+import { AuthGuard } from 'src/guards/jwt.guard';
 import { TenantGuard } from 'src/tenant/tenant.guard';
 import { ContextRoleGuard } from 'src/guards/context-role.guard';
 import { RequireContextRole } from 'src/decorators/context-role.decorator';
 import { Institution } from 'src/decorators/institution.decorator';
-import type {
-  Institution as InstitutionModel,
-  SubscriptionPlan,
-} from 'src/generated/prisma/client';
+import type { ActiveInstitution } from 'src/interface/jwtPayload';
 import { EventService } from './Event.service';
 import {
   CreateEventDto,
@@ -51,7 +48,7 @@ export class EventController {
   async create(
     @Body() body: CreateEventDto,
     @Institution()
-    institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    institution: ActiveInstitution,
   ) {
     return this.eventService.createEventUseCase({
       event: {

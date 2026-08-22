@@ -24,7 +24,7 @@ import {
   ResetPasswordDto,
   AuthSessionResponseDto,
 } from './Auth.dto';
-import { AuthGuard } from 'src/middleware/jwt.guard';
+import { AuthGuard } from 'src/guards/jwt.guard';
 import type { AuthenticatedRequest } from 'src/interface/jwtPayload';
 import { Roles } from 'src/decorators/roles.decorator';
 

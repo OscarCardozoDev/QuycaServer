@@ -122,29 +122,78 @@ export class LessonService {
   }
 
   /**
-   * Devuelve la lección si el usuario puede editarla. El autor la pierde
-   * cuando pasa a PENDING o APPROVED: si pudiera editarla después de
-   * aprobada, la revisión no significaría nada.
+   * Devuelve la lección si el usuario puede editarla.
+   *
+   * El autor puede SIEMPRE, en cualquier estado. Antes no: se le cerraba la
+   * puerta al pasar a PENDING o APPROVED, con el argumento de que si no la
+   * revisión no significaría nada. El argumento era correcto pero la solución
+   * estaba en el lugar equivocado — dejaba al docente sin poder corregir una
+   * errata de su propia lección aprobada, que es el caso normal, y para
+   * conseguirlo tenía que pedirle el favor al rector.
+   *
+   * Lo que protege la revisión ahora es `markForReview()`: editar una lección
+   * APPROVED la devuelve a la cola y la saca del catálogo. El contenido
+   * aprobado sigue siendo contenido revisado; lo que cambia es que corregirlo
+   * cuesta una revisión, no un permiso.
    */
   async assertCanEditLesson(uid: string, userId: string, contextRole: string) {
     const lesson = await this.findInTenant(uid);
     if (!lesson) throw new NotFoundException('La lección no existe');
 
     if (MANAGE_ROLES.includes(contextRole)) return lesson;
-    if (
-      lesson.authorId === userId &&
-      AUTHOR_EDITABLE_STATUSES.includes(lesson.institutionStatus)
-    ) {
-      return lesson;
-    }
+    if (lesson.authorId === userId) return lesson;
 
     throw new NotFoundException('La lección no existe');
   }
 
   /**
-   * Capítulos de una lección legible. Elige la fuente según por qué camino
-   * salió la lección: si es de otra institución, sus capítulos también están
-   * fuera del tenant y necesitan el mismo bypass.
+   * Devuelve una lección aprobada a la cola de revisión porque su contenido
+   * cambió. Es la contrapartida de que el autor pueda editar en cualquier
+   * estado: sin esto, una lección se aprueba una vez y después se le cambia
+   * el texto entero sin que nadie lo mire.
+   *
+   * Solo actúa sobre APPROVED, y el resto de los estados se dejan como están
+   * a propósito:
+   *
+   * - DRAFT nunca se revisó: forzarlo a PENDING le sacaría al autor el botón
+   *   "Enviar a revisión" y mandaría a la cola borradores a medio escribir.
+   * - PENDING ya está en la cola.
+   * - REJECTED es el autor corrigiendo; reenviar lo decide él, con `submit`.
+   *
+   * `isPublic` se apaga y `globalStatus` se borra porque el contenido que
+   * Quyca aprobó ya no es el que está guardado. Es la diferencia con
+   * `unpublish()`, que conserva `globalStatus` justamente porque ahí el
+   * contenido no cambió: es un retiro de vitrina, no una edición.
+   */
+  async markForReview(lessonId: string) {
+    const lesson = await this.findInTenant(lessonId);
+    if (!lesson || lesson.institutionStatus !== 'APPROVED') return null;
+
+    return this.prisma.lessons.update({
+      where: { uid: lessonId },
+      data: {
+        institutionStatus: 'PENDING',
+        institutionFeedback: null,
+        institutionReviewedBy: null,
+        institutionReviewedAt: null,
+        globalStatus: null,
+        globalFeedback: null,
+        globalReviewedBy: null,
+        globalReviewedAt: null,
+        isPublic: false,
+      },
+    });
+  }
+
+  /**
+   * Capítulos de una lección legible, cada uno con `completed` PARA QUIEN LEE.
+   * Elige la fuente según por qué camino salió la lección: si es de otra
+   * institución, sus capítulos también están fuera del tenant y necesitan el
+   * mismo bypass.
+   *
+   * El progreso viaja en el índice y no solo en el detalle de un capítulo
+   * porque la pantalla de la lección tiene que poder marcar la lista entera
+   * sin pedir los N capítulos de a uno.
    */
   async readChapters(lessonUid: string, userId: string, contextRole: string) {
     const { lesson, crossTenant } = await this.resolveLesson(
@@ -156,12 +205,35 @@ export class LessonService {
     // El bypass se usa SOLO cuando la lección salió del camino publicado, que
     // es exactamente la precondición de findPublicChapters. Una lección propia
     // lee sus capítulos con el filtro puesto.
-    if (crossTenant) return this.findPublicChapters(lesson.uid);
+    const chapters = crossTenant
+      ? await this.findPublicChapters(lesson.uid)
+      : await this.prisma.chapters.findMany({
+          where: { lessonId: lesson.uid, isActive: true },
+          orderBy: { sequence: 'asc' },
+        });
 
-    return this.prisma.chapters.findMany({
-      where: { lessonId: lesson.uid, isActive: true },
-      orderBy: { sequence: 'asc' },
+    return this.withProgress(lesson.uid, userId, chapters);
+  }
+
+  /**
+   * Le pega `completed` a cada capítulo con UNA sola consulta.
+   *
+   * `LessonProgress` NO es un modelo scoped: la extensión de Prisma no lo
+   * filtra por institución. El `userId` explícito no es una optimización, es
+   * lo único que impide devolver el avance de todos los usuarios.
+   */
+  private async withProgress<T extends { uid: string }>(
+    lessonId: string,
+    userId: string,
+    chapters: T[],
+  ): Promise<(T & { completed: boolean })[]> {
+    const progress = await this.prisma.lessonProgress.findMany({
+      where: { userId, lessonId },
+      select: { chapterId: true },
     });
+    const done = new Set(progress.map((p) => p.chapterId));
+
+    return chapters.map((c) => ({ ...c, completed: done.has(c.uid) }));
   }
 
   /**
@@ -183,20 +255,23 @@ export class LessonService {
       throw new NotFoundException('El capítulo no existe en esta lección');
     }
 
-    // LessonProgress NO es scoped: se filtra siempre por userId explícito.
-    const progress = await this.prisma.lessonProgress.findMany({
-      where: { userId, lessonId: lessonUid },
-      select: { chapterId: true },
-    });
-    const done = new Set(progress.map((p) => p.chapterId));
+    // El progreso ya vino resuelto en `readChapters`: consultarlo otra vez acá
+    // sería la misma query dos veces por lectura de capítulo.
+    return this.navigation(chapters, index);
+  }
 
+  /** El envoltorio de lectura. Lo comparten la lectura normal y la del admin. */
+  private navigation<T extends { uid: string; completed: boolean }>(
+    chapters: T[],
+    index: number,
+  ) {
     return {
       chapter: chapters[index],
       prevUid: index > 0 ? chapters[index - 1].uid : null,
       nextUid: index < chapters.length - 1 ? chapters[index + 1].uid : null,
-      completed: done.has(chapterUid),
+      completed: chapters[index].completed,
       totalChapters: chapters.length,
-      completedChapters: chapters.filter((c) => done.has(c.uid)).length,
+      completedChapters: chapters.filter((c) => c.completed).length,
     };
   }
 
@@ -265,7 +340,7 @@ export class LessonService {
       );
     }
 
-    return this.prisma.lessons.update({
+    const updated = await this.prisma.lessons.update({
       where: { uid: input.lessonId },
       data: {
         title: input.data.title,
@@ -274,6 +349,12 @@ export class LessonService {
         coverPhotoId: input.data.coverPhotoId,
       },
     });
+
+    // Después del update y no antes: si el update falla, el estado no se toca.
+    // Se devuelve la fila que dejó `markForReview` cuando hubo reseteo: la de
+    // `updated` todavía dice APPROVED y la pantalla pintaría el badge viejo.
+    const reviewed = await this.markForReview(input.lessonId);
+    return reviewed ?? updated;
   }
 
   /** Borrar es desactivar: una lección con progreso de estudiantes no se borra. */
@@ -495,6 +576,60 @@ export class LessonService {
       include: LESSON_INCLUDE,
       orderBy: { updatedAt: 'desc' },
     });
+  }
+
+  /**
+   * El detalle que ve el revisor de Quyca.
+   *
+   * NO pasa por `getReadableLesson`, y no es un atajo: los dos caminos de esa
+   * puerta le cierran la puerta al admin justamente en el único caso que le
+   * importa. El scoped la filtra por la institución activa del admin (que no
+   * es la de la lección), y el publicado exige `isPublic: true` — que es
+   * FALSE mientras la lección está en la cola, porque `isPublic` recién se
+   * enciende cuando el admin aprueba. Resultado: el revisor recibía 404 justo
+   * sobre lo que tenía que revisar y aprobaba a ciegas.
+   *
+   * Acá no hay `runWithoutTenant` porque no hace falta: estas rutas llevan
+   * `@AllowCrossTenant()` y el `CrossTenantGuard` ya dejó el bypass puesto en
+   * el store del request. Mismo mecanismo que `getAdminQueue`.
+   *
+   * `isActive` sí se exige: una lección desactivada no se revisa.
+   */
+  async getAdminLesson(uid: string) {
+    const lesson = await this.prisma.lessons.findFirst({
+      where: { uid, isActive: true },
+      include: LESSON_INCLUDE,
+    });
+    if (!lesson) throw new NotFoundException('La lección no existe');
+    return lesson;
+  }
+
+  /** Los capítulos de una lección de la cola, en cualquier estado. */
+  async getAdminChapters(uid: string, userId: string) {
+    await this.getAdminLesson(uid);
+
+    const chapters = await this.prisma.chapters.findMany({
+      where: { lessonId: uid, isActive: true },
+      orderBy: { sequence: 'asc' },
+    });
+
+    return this.withProgress(uid, userId, chapters);
+  }
+
+  /**
+   * Un capítulo de la cola con su navegación. Misma forma exacta que
+   * `readChapter` — la pantalla de lectura es la misma y no tiene por qué
+   * saber por qué endpoint entró.
+   */
+  async getAdminChapter(uid: string, chapterUid: string, userId: string) {
+    const chapters = await this.getAdminChapters(uid, userId);
+
+    const index = chapters.findIndex((c) => c.uid === chapterUid);
+    if (index === -1) {
+      throw new NotFoundException('El capítulo no existe en esta lección');
+    }
+
+    return this.navigation(chapters, index);
   }
 
   /**

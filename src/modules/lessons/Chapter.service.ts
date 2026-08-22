@@ -8,6 +8,16 @@ import type { CreateChapterDto, UpdateChapterDto } from './Chapter.dto';
  * capítulo es siempre dentro del propio tenant. Las LECTURAS, que sí pueden
  * ser cross-tenant, viven en LessonService, que es el único archivo del
  * módulo que apaga el filtro.
+ *
+ * Las CUATRO mutaciones —crear, actualizar, desactivar y reordenar— terminan
+ * con `lessonService.markForReview()`. Los capítulos SON el contenido de la
+ * lección, así que tocarlos invalida la aprobación igual que cambiarle el
+ * título: si esto solo estuviera en `updateLesson`, se podría reescribir un
+ * capítulo entero de una lección aprobada y publicada sin que nadie lo mire.
+ * Reordenar cuenta: cambia lo que el estudiante lee y en qué orden.
+ *
+ * `complete()` es la excepción y no lleva el reseteo: marcar progreso no
+ * cambia el contenido.
  */
 @Injectable()
 export class ChapterService {
@@ -45,6 +55,7 @@ export class ChapterService {
     });
 
     await this.syncPhotos(chapter.uid, dto.photoIds);
+    await this.lessonService.markForReview(lessonId);
     return chapter;
   }
 
@@ -73,6 +84,7 @@ export class ChapterService {
     });
 
     await this.syncPhotos(chapterId, dto.photoIds);
+    await this.lessonService.markForReview(lessonId);
     return chapter;
   }
 
@@ -110,6 +122,8 @@ export class ChapterService {
         }),
       ),
     );
+
+    await this.lessonService.markForReview(lessonId);
   }
 
   /**
@@ -147,6 +161,8 @@ export class ChapterService {
         }),
       ),
     );
+
+    await this.lessonService.markForReview(lessonId);
   }
 
   /**

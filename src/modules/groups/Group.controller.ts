@@ -15,7 +15,7 @@ import {
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CurrentUser } from 'src/decorators/currentUser';
 import { GroupService } from './Group.service';
-import { AuthGuard } from 'src/middleware/jwt.guard';
+import { AuthGuard } from 'src/guards/jwt.guard';
 import {
   GroupParamsDto,
   GetGroupsDto,
@@ -32,8 +32,7 @@ import { FeatureGuard } from 'src/guards/feature.guard';
 import { RequireContextRole } from 'src/decorators/context-role.decorator';
 import { RequireFeature } from 'src/decorators/feature.decorator';
 import { Institution } from 'src/decorators/institution.decorator';
-import type { AuthenticatedRequest } from 'src/interface/jwtPayload';
-import type { Institution as InstitutionModel, SubscriptionPlan } from 'src/generated/prisma/client';
+import type { ActiveInstitution, AuthenticatedRequest } from 'src/interface/jwtPayload';
 
 @ApiTags('groups')
 @UseGuards(AuthGuard, TenantGuard)
@@ -48,7 +47,7 @@ export class GroupController {
   @ApiOperation({ summary: 'Crear grupo' })
   async create(
     @Body() body: CreateGroupDto,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Institution() institution: ActiveInstitution,
   ) {
     return this.groupService.createGroupUseCase({
       ...body,
@@ -67,7 +66,7 @@ export class GroupController {
   @ApiOperation({ summary: 'Grupos del usuario autenticado' })
   async getMine(
     @CurrentUser('uid') uid: string,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Institution() institution: ActiveInstitution,
   ) {
     return this.groupService.getMyGroups(uid, institution.uid);
   }
@@ -88,7 +87,7 @@ export class GroupController {
     @Param() params: GroupParamsDto,
     @Body() body: UpdateGroupDto,
     @CurrentUser('uid') uid: string,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Institution() institution: ActiveInstitution,
     @Req() req: AuthenticatedRequest,
   ) {
     return this.groupService.updateGroupUseCase({
@@ -121,7 +120,7 @@ export class GroupController {
   async changeProfesor(
     @Param() params: GroupParamsDto,
     @Body() body: ChangeProfesorDto,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Institution() institution: ActiveInstitution,
   ) {
     return this.groupService.changeProfesor({
       groupId: params.uid,
@@ -135,7 +134,7 @@ export class GroupController {
   async addStudent(
     @CurrentUser('uid') uid: string,
     @Body() body: AddStudentDto,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Institution() institution: ActiveInstitution,
     @Req() req: AuthenticatedRequest,
   ) {
     const targetUserId = body.userId ?? uid;
@@ -190,7 +189,7 @@ export class GroupController {
   async updateStudents(
     @Param('groupId') groupId: string,
     @Body() body: UpdateStudentsDto,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Institution() institution: ActiveInstitution,
     @CurrentUser('uid') uid: string,
     @Req() req: AuthenticatedRequest,
   ) {

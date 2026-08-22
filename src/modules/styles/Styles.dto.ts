@@ -35,14 +35,3 @@ export class UpdateStyleDto {
   @IsString()
   categoryId?: string;
 }
-
-export class StyleDto {
-  @ApiProperty({ example: 'uuid-del-estilo' })
-  @IsOptional()
-  uid?: string;
-
-  @ApiPropertyOptional({ example: 'uuid-de-la-categoria' })
-  @IsOptional()
-  @IsString()
-  categoryId?: string;
-}

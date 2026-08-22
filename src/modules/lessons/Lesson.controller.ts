@@ -2,7 +2,7 @@ import {
   Controller, Get, Post, Put, Patch, Delete, Body, Param, Query, UseGuards, Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { AuthGuard } from 'src/middleware/jwt.guard';
+import { AuthGuard } from 'src/guards/jwt.guard';
 import { TenantGuard } from 'src/tenant/tenant.guard';
 import { ContextRoleGuard } from 'src/guards/context-role.guard';
 import { CrossTenantGuard } from 'src/tenant/cross-tenant.guard';
@@ -15,7 +15,7 @@ import type { AuthenticatedRequest } from 'src/interface/jwtPayload';
 import type { Institution as InstitutionModel } from 'src/generated/prisma/client';
 import { LessonService } from './Lesson.service';
 import {
-  LessonParamsDto, CreateLessonDto, UpdateLessonDto,
+  LessonParamsDto, AdminChapterParamsDto, CreateLessonDto, UpdateLessonDto,
   ListLessonsDto, InstitutionQueueDto, GlobalQueueDto, ReviewLessonDto,
 } from './Lesson.dto';
 
@@ -90,6 +90,50 @@ export class LessonController {
   @ApiOperation({ summary: 'Cola de revisión global (SUPER_ADMIN)' })
   adminQueue(@Query() query: GlobalQueueDto) {
     return this.lessonService.getAdminQueue(query.status);
+  }
+
+  // ── Lectura del revisor de Quyca ──
+  //
+  // Existen porque `GET /lessons/get/:uid` le daba 404 al admin sobre las
+  // lecciones de su propia cola: lleva `TenantGuard`, así que la extensión
+  // filtra por la institución activa del admin, y el camino publicado exige
+  // `isPublic` — que está en false hasta que él mismo apruebe. Revisaba a
+  // ciegas. Ver el comentario de `getAdminLesson`.
+  //
+  // Van DESPUÉS de `@Get('admin')` (que es la cola, dos segmentos) para que
+  // 'admin' no quede capturado como un :uid.
+
+  @Get('admin/:uid')
+  @UseGuards(AuthGuard, CrossTenantGuard)
+  @Roles('super_admin')
+  @AllowCrossTenant()
+  @ApiOperation({ summary: 'Detalle de una lección de la cola global (SUPER_ADMIN)' })
+  adminLesson(@Param() params: LessonParamsDto) {
+    return this.lessonService.getAdminLesson(params.uid);
+  }
+
+  @Get('admin/:uid/chapters')
+  @UseGuards(AuthGuard, CrossTenantGuard)
+  @Roles('super_admin')
+  @AllowCrossTenant()
+  @ApiOperation({ summary: 'Capítulos de una lección de la cola global (SUPER_ADMIN)' })
+  adminChapters(
+    @Param() params: LessonParamsDto,
+    @CurrentUser('uid') uid: string,
+  ) {
+    return this.lessonService.getAdminChapters(params.uid, uid);
+  }
+
+  @Get('admin/:uid/chapters/:chapterId')
+  @UseGuards(AuthGuard, CrossTenantGuard)
+  @Roles('super_admin')
+  @AllowCrossTenant()
+  @ApiOperation({ summary: 'Un capítulo de la cola global, con navegación (SUPER_ADMIN)' })
+  adminChapter(
+    @Param() params: AdminChapterParamsDto,
+    @CurrentUser('uid') uid: string,
+  ) {
+    return this.lessonService.getAdminChapter(params.uid, params.chapterId, uid);
   }
 
   @Patch('admin/:uid/review')

@@ -1,7 +1,7 @@
 import { Controller, Get, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { RolesService } from './Roles.service';
-import { AuthGuard } from 'src/middleware/jwt.guard';
+import { AuthGuard } from 'src/guards/jwt.guard';
 
 @ApiTags('roles')
 @Controller('roles')

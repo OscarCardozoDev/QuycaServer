@@ -12,12 +12,12 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { AuthGuard } from 'src/middleware/jwt.guard';
+import { AuthGuard } from 'src/guards/jwt.guard';
 import { TenantGuard } from 'src/tenant/tenant.guard';
 import { ContextRoleGuard } from 'src/guards/context-role.guard';
 import { RequireContextRole } from 'src/decorators/context-role.decorator';
 import { Institution } from 'src/decorators/institution.decorator';
-import type { Institution as InstitutionModel, SubscriptionPlan } from 'src/generated/prisma/client';
+import type { ActiveInstitution } from 'src/interface/jwtPayload';
 import { ProductService } from './Product.service';
 import {
   CreateProductDto,
@@ -41,7 +41,7 @@ export class ProductController {
   @ApiOperation({ summary: 'Crear una obra' })
   async create(
     @Body() body: CreateProductDto,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Institution() institution: ActiveInstitution,
   ) {
     return this.productsService.createProductUseCase({
       product: {

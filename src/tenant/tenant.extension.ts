@@ -22,7 +22,7 @@ export const SCOPED_MODELS = new Set<string>([
   'Chapters',
 ]);
 
-export type TenantAction =
+type TenantAction =
   | { skip: true }
   | { skip: false; institutionId: string };
 

@@ -3,13 +3,12 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { InstitutionService } from './Institution.service';
-import { AuthGuard } from 'src/middleware/jwt.guard';
+import { AuthGuard } from 'src/guards/jwt.guard';
 import { TenantGuard } from 'src/tenant/tenant.guard';
 import { ContextRoleGuard } from 'src/guards/context-role.guard';
 import { RequireContextRole } from 'src/decorators/context-role.decorator';
 import { Institution } from 'src/decorators/institution.decorator';
-import type { AuthenticatedRequest } from 'src/interface/jwtPayload';
-import type { Institution as InstitutionModel, SubscriptionPlan } from 'src/generated/prisma/client';
+import type { ActiveInstitution, AuthenticatedRequest } from 'src/interface/jwtPayload';
 import {
   CreateInstitutionDto, UpdateInstitutionDto,
   CreateInvitationDto, RespondInvitationDto, ChangePlanDto,
@@ -40,7 +39,7 @@ export class InstitutionController {
   async update(
     @Param('id') _id: string,
     @Body() dto: UpdateInstitutionDto,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Institution() institution: ActiveInstitution,
   ) {
     return this.institutionService.update(institution.uid, dto);
   }
@@ -52,7 +51,7 @@ export class InstitutionController {
   async changePlan(
     @Param('id') id: string,
     @Body() dto: ChangePlanDto,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Institution() institution: ActiveInstitution,
   ) {
     // El `:id` NO autoriza: la institución la resuelve el TenantGuard desde el
     // header X-Institution-Slug. Se valida que coincidan para que el parámetro
@@ -70,7 +69,7 @@ export class InstitutionController {
   async createInvitation(
     @Param('id') _id: string,
     @Body() dto: CreateInvitationDto,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Institution() institution: ActiveInstitution,
   ) {
     return this.institutionService.createInvitation({
       institutionId: institution.uid,
@@ -85,7 +84,7 @@ export class InstitutionController {
   @ApiOperation({ summary: 'Listar invitaciones de la institución' })
   async getInvitations(
     @Param('id') _id: string,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Institution() institution: ActiveInstitution,
   ) {
     return this.institutionService.getInvitations(institution.uid);
   }

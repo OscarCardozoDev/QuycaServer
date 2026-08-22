@@ -32,7 +32,12 @@ describe('ChapterService', () => {
       $transaction: jest.fn((ops: unknown[]) => Promise.all(ops as Promise<unknown>[])),
     };
 
-    lessonService = { assertCanEditLesson: jest.fn().mockResolvedValue({ uid: LESSON }) };
+    lessonService = {
+      assertCanEditLesson: jest.fn().mockResolvedValue({ uid: LESSON }),
+      // Toda mutación de capítulo la llama: es lo que devuelve a la cola una
+      // lección aprobada cuyo contenido cambió.
+      markForReview: jest.fn().mockResolvedValue(null),
+    };
 
     const module = await Test.createTestingModule({
       providers: [
@@ -161,5 +166,43 @@ describe('ChapterService', () => {
     ).rejects.toBeInstanceOf(NotFoundException);
 
     expect(prisma.chapters.update).not.toHaveBeenCalled();
+  });
+
+  /**
+   * Los capítulos SON el contenido de la lección. Si el reseteo viviera solo
+   * en `updateLesson`, se podría reescribir un capítulo entero de una lección
+   * aprobada y publicada sin que nadie lo vuelva a mirar — que es justamente
+   * lo que la doble aprobación existe para impedir.
+   */
+  describe('toda mutación devuelve la lección a la cola', () => {
+    it('crear', async () => {
+      await service.create(LESSON, { title: 'x', contentMd: 'y' }, AUTOR, 'institutional');
+      expect(lessonService.markForReview).toHaveBeenCalledWith(LESSON);
+    });
+
+    it('actualizar', async () => {
+      await service.update(LESSON, 'cap-1', { title: 'x', contentMd: 'y' }, AUTOR, 'institutional');
+      expect(lessonService.markForReview).toHaveBeenCalledWith(LESSON);
+    });
+
+    it('desactivar', async () => {
+      await service.deactivate(LESSON, 'cap-1', AUTOR, 'institutional');
+      expect(lessonService.markForReview).toHaveBeenCalledWith(LESSON);
+    });
+
+    /** Reordenar cambia qué lee el estudiante y en qué orden: también cuenta. */
+    it('reordenar', async () => {
+      await service.reorder(LESSON, ['cap-3', 'cap-1', 'cap-2'], AUTOR, 'institutional');
+      expect(lessonService.markForReview).toHaveBeenCalledWith(LESSON);
+    });
+
+    /** Marcar progreso no es editar: el que estudia no cambia el contenido. */
+    it('completar un capítulo NO la devuelve a la cola', async () => {
+      lessonService.readChapter = jest.fn().mockResolvedValue({ chapter: { uid: 'cap-1' } });
+      prisma.lessonProgress = { upsert: jest.fn().mockResolvedValue({}) };
+
+      await service.complete(LESSON, 'cap-1', AUTOR, 'student');
+      expect(lessonService.markForReview).not.toHaveBeenCalled();
+    });
   });
 });

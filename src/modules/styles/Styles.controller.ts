@@ -13,12 +13,12 @@ import {
 import { ApiTags, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { StylesService } from './Styles.service';
 import { CreateStyleDto, UpdateStyleDto } from './Styles.dto';
-import { AuthGuard } from 'src/middleware/jwt.guard';
+import { AuthGuard } from 'src/guards/jwt.guard';
 import { TenantGuard } from 'src/tenant/tenant.guard';
 import { ContextRoleGuard } from 'src/guards/context-role.guard';
 import { RequireContextRole } from 'src/decorators/context-role.decorator';
 import { Institution } from 'src/decorators/institution.decorator';
-import type { Institution as InstitutionModel, SubscriptionPlan } from 'src/generated/prisma/client';
+import type { ActiveInstitution } from 'src/interface/jwtPayload';
 
 @ApiTags('styles')
 @Controller('styles')
@@ -69,7 +69,7 @@ export class StylesController {
   @ApiOperation({ summary: 'Crear estilo' })
   async createStyle(
     @Body() body: CreateStyleDto,
-    @Institution() institution: InstitutionModel & { subscriptionPlan: SubscriptionPlan },
+    @Institution() institution: ActiveInstitution,
   ) {
     return this.stylesService.create({
       ...body,

@@ -7,6 +7,25 @@ export class LessonParamsDto {
   uid: string;
 }
 
+/**
+ * Los params de las rutas de lectura del admin
+ * (`/lessons/admin/:uid/chapters/:chapterId`).
+ *
+ * No se reusa `ChapterParamsDto`: ése nombra la lección `lessonId` porque su
+ * ruta es `/lessons/:lessonId/chapters/:uid`, y acá los dos segmentos se
+ * llaman al revés. Un DTO cuyos nombres no coinciden con los de la ruta deja
+ * las dos propiedades en `undefined` sin que el ValidationPipe se queje.
+ */
+export class AdminChapterParamsDto {
+  @ApiProperty({ example: 'uuid-de-la-leccion' })
+  @IsString()
+  uid: string;
+
+  @ApiProperty({ example: 'uuid-del-capitulo' })
+  @IsString()
+  chapterId: string;
+}
+
 export class CreateLessonDto {
   @ApiProperty({ example: 'Básico Guitarra 1' })
   @IsString()

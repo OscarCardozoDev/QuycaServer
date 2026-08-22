@@ -85,3 +85,70 @@ describe('LessonService.readChapter — navegación anterior/siguiente', () => {
     );
   });
 });
+
+/**
+ * El índice de la lección marcaba todo sin completar aunque el estudiante ya
+ * hubiera terminado capítulos: `readChapters` devolvía las filas crudas de
+ * Prisma y el progreso solo lo calculaba `readChapter`, que es el detalle de
+ * UNO. La pantalla de la lección no tiene por qué pedir los N capítulos de a
+ * uno para saber cuáles están hechos.
+ */
+describe('LessonService.readChapters — el progreso viaja en el índice', () => {
+  let service: LessonService;
+  let prisma: any;
+
+  beforeEach(async () => {
+    prisma = {
+      lessons: {
+        findUnique: jest.fn().mockResolvedValue({
+          uid: LESSON,
+          authorId: 'u-autor',
+          institutionStatus: 'APPROVED',
+          isActive: true,
+        }),
+        findFirst: jest.fn(),
+      },
+      chapters: { findMany: jest.fn().mockResolvedValue(CHAPTERS) },
+      lessonProgress: { findMany: jest.fn().mockResolvedValue([]) },
+    };
+
+    const module = await Test.createTestingModule({
+      providers: [LessonService, { provide: PrismaService, useValue: prisma }],
+    }).compile();
+
+    service = module.get(LessonService);
+  });
+
+  it('marca completed en cada fila', async () => {
+    prisma.lessonProgress.findMany.mockResolvedValue([
+      { chapterId: 'cap-1' },
+      { chapterId: 'cap-3' },
+    ]);
+
+    const rows = await service.readChapters(LESSON, LECTOR, 'student');
+
+    expect(rows.map((c) => c.completed)).toEqual([true, false, true]);
+  });
+
+  it('sin progreso, ninguna fila queda marcada', async () => {
+    const rows = await service.readChapters(LESSON, LECTOR, 'student');
+
+    expect(rows.every((c) => c.completed === false)).toBe(true);
+  });
+
+  it('el progreso se pide UNA vez, no una por capítulo', async () => {
+    await service.readChapters(LESSON, LECTOR, 'student');
+
+    expect(prisma.lessonProgress.findMany).toHaveBeenCalledTimes(1);
+  });
+
+  it('acotado al usuario: LessonProgress no es scoped', async () => {
+    await service.readChapters(LESSON, LECTOR, 'student');
+
+    expect(prisma.lessonProgress.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ userId: LECTOR, lessonId: LESSON }),
+      }),
+    );
+  });
+});

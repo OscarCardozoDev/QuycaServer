@@ -358,7 +358,22 @@ export class GroupService {
   async getMyGroups(userId: string, institutionId: string) {
     const rows = await this.prisma.usersGroups.findMany({
       where: { userId, group: { institutionId, isActive: true } },
-      select: { group: { select: { uid: true, name: true } } },
+      select: {
+        group: {
+          select: {
+            uid: true,
+            name: true,
+            // La categoría viaja acá porque el selector de grupo del sidebar
+            // es lo que decide qué categoría de lecciones ve el usuario
+            // (`GET /lessons/available?category=`). Sin este select el
+            // frontend cacheaba `categorySlug: null` para todo el que no
+            // fuera rector, y el filtro no se podía armar: un alumno de
+            // Música veía las lecciones de Artes. Mismo shape que devuelve
+            // `getAllGroups`, para que el caché de grupos sea uno solo.
+            groupCategory: { select: { slug: true } },
+          },
+        },
+      },
     });
 
     // Se aplana: al caller le importan los grupos, no las filas puente.

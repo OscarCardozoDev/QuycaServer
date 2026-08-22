@@ -20,7 +20,7 @@ import {
   UpdateUserPhotoDto,
 } from './User.dto';
 import type { JwtPayload } from 'src/interface/jwtPayload';
-import { AuthGuard } from 'src/middleware/jwt.guard';
+import { AuthGuard } from 'src/guards/jwt.guard';
 import { TenantGuard } from 'src/tenant/tenant.guard';
 import { ContextRoleGuard } from 'src/guards/context-role.guard';
 import { RequireContextRole } from 'src/decorators/context-role.decorator';

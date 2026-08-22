@@ -2,19 +2,10 @@
  * PARAMS / OPTIONS
  * ========================= */
 
-export interface GroupParams {
-  uid: string; // ← solo una declaración
-}
-
 export interface GetGroupsOptions {
   page?: number;
   limit?: number;
   institutionId?: string;
-}
-
-export interface GroupStudentParams {
-  groupId: string;
-  userId: string;
 }
 
 /* =========================

@@ -50,15 +50,6 @@ export interface CreateStudentUseCase {
   photo?: { base64: string; name: string; folder: string };
 }
 
-export interface UpdateUserUseCase {
-  name?: string;
-  lastName?: string;
-  username?: string;
-  description?: string;
-  gender?: string;
-  telNumber?: string;
-}
-
 export interface UserUidResult {
   uid: string;
   photo?: { uid: string };
