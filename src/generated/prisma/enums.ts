@@ -9,17 +9,6 @@
 * 🟢 You can import this file directly.
 */
 
-export const Category = {
-  ARTES: 'ARTES',
-  TEATRO: 'TEATRO',
-  DANZAS: 'DANZAS',
-  MUSICA: 'MUSICA',
-  CANTO: 'CANTO'
-} as const
-
-export type Category = (typeof Category)[keyof typeof Category]
-
-
 export const ProductStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
@@ -67,3 +56,56 @@ export const InvitationStatus = {
 } as const
 
 export type InvitationStatus = (typeof InvitationStatus)[keyof typeof InvitationStatus]
+
+
+export const InstitutionType = {
+  EDUCATIONAL: 'EDUCATIONAL',
+  INDEPENDENT: 'INDEPENDENT'
+} as const
+
+export type InstitutionType = (typeof InstitutionType)[keyof typeof InstitutionType]
+
+
+export const InstitutionStatus = {
+  TRIAL: 'TRIAL',
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED'
+} as const
+
+export type InstitutionStatus = (typeof InstitutionStatus)[keyof typeof InstitutionStatus]
+
+
+export const ContentRequestType = {
+  CATEGORY: 'CATEGORY',
+  STYLE: 'STYLE'
+} as const
+
+export type ContentRequestType = (typeof ContentRequestType)[keyof typeof ContentRequestType]
+
+
+export const RequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type RequestStatus = (typeof RequestStatus)[keyof typeof RequestStatus]
+
+
+export const LessonStatus = {
+  DRAFT: 'DRAFT',
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type LessonStatus = (typeof LessonStatus)[keyof typeof LessonStatus]
+
+
+export const LessonGlobalStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type LessonGlobalStatus = (typeof LessonGlobalStatus)[keyof typeof LessonGlobalStatus]

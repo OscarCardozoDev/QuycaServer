@@ -7,11 +7,17 @@ import {
   Body,
   Param,
   Query,
+  UseGuards,
   NotFoundException,
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { Roles } from 'src/decorators/roles.decorator';
+import { AuthGuard } from 'src/guards/jwt.guard';
+import { TenantGuard } from 'src/tenant/tenant.guard';
+import { ContextRoleGuard } from 'src/guards/context-role.guard';
+import { RequireContextRole } from 'src/decorators/context-role.decorator';
+import { Institution } from 'src/decorators/institution.decorator';
+import type { ActiveInstitution } from 'src/interface/jwtPayload';
 import { ProductService } from './Product.service';
 import {
   CreateProductDto,
@@ -30,9 +36,13 @@ export class ProductController {
   // ─── CREATE ───────────────────────────────────────────────────────────────
 
   @Post('create')
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('student', 'institutional')
   @ApiOperation({ summary: 'Crear una obra' })
-  @Roles('student', 'professor')
-  async create(@Body() body: CreateProductDto) {
+  async create(
+    @Body() body: CreateProductDto,
+    @Institution() institution: ActiveInstitution,
+  ) {
     return this.productsService.createProductUseCase({
       product: {
         name: body.name,
@@ -45,14 +55,15 @@ export class ProductController {
       authors: body.authors,
       styles: body.styles,
       images: body.images,
+      institutionId: institution.uid,
     });
   }
 
   // ─── READ ─────────────────────────────────────────────────────────────────
+  // Público: alimenta la galería sin sesión. Se resuelve en Task 13.
 
   @Get('getAll')
   @ApiOperation({ summary: 'Obtener todos los productos paginadas' })
-  @Roles('admin')
   async getAll(@Query() query: GetProductsDto) {
     return this.productsService.getAll(query);
   }
@@ -64,13 +75,24 @@ export class ProductController {
   }
 
   @Get('getGroup/:uid')
-  @Roles('admin', 'professor')
   @ApiOperation({ summary: 'Obtener obras por grupo' })
   async getAllByGroup(
     @Param('uid') groupId: string,
     @Query() query: GetProductsDto,
   ) {
     return this.productsService.getAllByGroup(groupId, query);
+  }
+
+  @Get('group/:uid')
+  @UseGuards(AuthGuard, TenantGuard)
+  @ApiOperation({
+    summary: 'Obras del grupo, acotadas a la institución activa',
+  })
+  async getGroupPrivate(
+    @Param('uid') groupId: string,
+    @Query() query: GetProductsDto,
+  ) {
+    return this.productsService.getAllByGroupPrivate(groupId, query);
   }
 
   @Get('getAuthor/:uid')
@@ -93,14 +115,16 @@ export class ProductController {
   // ─── UPDATE ───────────────────────────────────────────────────────────────
 
   @Put('approveMany')
-  @Roles('professor')
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('institutional')
   @ApiOperation({ summary: 'Aprobar varias obras seleccionadas a la vez' })
   approveManyProducts(@Body() dto: ApproveManyDto) {
     return this.productsService.approveMany(dto.productIds);
   }
 
   @Patch('status/:uid')
-  @Roles('professor')
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('institutional')
   @ApiOperation({ summary: 'Aprobar o negar una obra individual' })
   updateProductStatus(
     @Param('uid', new ParseUUIDPipe()) uid: string,
@@ -114,7 +138,8 @@ export class ProductController {
   }
 
   @Put('update/:uid')
-  @Roles('student', 'professor')
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('student', 'institutional')
   @ApiOperation({ summary: 'Actualizar una obra' })
   async update(
     @Param() params: ProductParamsDto,

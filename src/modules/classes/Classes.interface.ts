@@ -4,6 +4,7 @@ export interface CreateClassUseCase {
   startTime: string;
   endTime: string;
   topic?: string;
+  institutionId: string;
 }
 
 export interface UpdateTopicUseCase {
@@ -15,6 +16,7 @@ export interface UpdateTopicUseCase {
 export interface AttendUseCase {
   classId: string;
   userId: string;
+  institutionId: string;
 }
 
 export interface CurrentClassResult {

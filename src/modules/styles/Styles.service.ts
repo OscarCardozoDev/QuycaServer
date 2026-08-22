@@ -1,65 +1,137 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   Style,
-  Category,
   StyleUidResult,
   CreateStyleUseCase,
   UpdateStyleUseCase,
 } from './Styles.interface';
+import { runWithoutTenant } from 'src/tenant/tenant-context';
 
 @Injectable()
 export class StylesService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(@Inject(PrismaService) private prismaService: PrismaService) {}
 
+  /* =========================
+   * FK GUARD
+   * `groupId` is a direct FK on `Styles` supplied by the client. The
+   * tenant extension only scopes the top-level call it intercepts, not
+   * nested relations resolved by FK — an unchecked foreign groupId would
+   * let a `Styles` row (correctly stamped with the caller's own
+   * institutionId) point at another tenant's group. `groups.findUnique`
+   * is itself scoped, so a foreign id simply comes back null.
+   *
+   * `categoryId` is NOT checked here: `GroupCategory` is a global,
+   * platform-level catalog (no `institutionId` column, not in
+   * SCOPED_MODELS, managed only by `super_admin` via CategoriesController)
+   * shared by every institution — there is no "wrong tenant" for it.
+   * ========================= */
+  private async assertGroupInTenant(groupId: string): Promise<void> {
+    const group = await this.prismaService.groups.findUnique({
+      where: { uid: groupId },
+      select: { uid: true },
+    });
+    if (!group) {
+      throw new NotFoundException('Group not found');
+    }
+  }
+
+  // Público: alimenta la galería sin sesión, ver Styles.controller.ts.
   async getAll(): Promise<Style[]> {
+    return runWithoutTenant(() =>
+      this.prismaService.styles.findMany({
+        select: {
+          uid: true,
+          name: true,
+          description: true,
+          categoryId: true,
+          groupId: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+    );
+  }
+
+  /**
+   * Estilos de la institución activa.
+   *
+   * Deliberadamente SIN runWithoutTenant: es lo único que lo distingue de
+   * getAll(). La extensión de Prisma inyecta el institutionId del store, así
+   * que devuelve solo los estilos del tenant en curso.
+   *
+   * Existe porque getAll() y getAllByGroup() son públicos y cross-tenant —
+   * alimentan la galería, que es una vitrina y muestra a todas las
+   * instituciones. Usarlos desde el dashboard le ofrecería al artista los
+   * estilos definidos por otra institución.
+   */
+  async getMine(): Promise<Style[]> {
     return this.prismaService.styles.findMany({
       select: {
         uid: true,
         name: true,
         description: true,
-        category: true,
+        categoryId: true,
         groupId: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
   }
 
-  async getAllByGroup(category: Category): Promise<Style[]> {
-    return this.prismaService.styles.findMany({
-      where: { category },
-      select: {
-        uid: true,
-        name: true,
-        description: true,
-        category: true,
-        groupId: true,
-      },
-    });
+  // Público: alimenta la galería sin sesión, ver Styles.controller.ts.
+  async getAllByGroup(categoryId: string): Promise<Style[]> {
+    return runWithoutTenant(() =>
+      this.prismaService.styles.findMany({
+        where: { categoryId },
+        select: {
+          uid: true,
+          name: true,
+          description: true,
+          categoryId: true,
+          groupId: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+    );
   }
 
+  // Público: alimenta la galería sin sesión, ver Styles.controller.ts.
   async get(uid: string): Promise<Style> {
-    const style = await this.prismaService.styles.findUnique({
-      where: { uid },
-      select: {
-        uid: true,
-        name: true,
-        description: true,
-        groupId: true,
-        category: true,
-      },
-    });
+    const style = await runWithoutTenant(() =>
+      this.prismaService.styles.findUnique({
+        where: { uid },
+        select: {
+          uid: true,
+          name: true,
+          description: true,
+          groupId: true,
+          categoryId: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+    );
 
     if (!style) throw new NotFoundException(`Style with uid ${uid} not found`);
     return style;
   }
 
   async create(style: CreateStyleUseCase): Promise<StyleUidResult> {
+    await this.assertGroupInTenant(style.groupId);
+
     const created = await this.prismaService.styles.create({
       data: {
         name: style.name,
         description: style.description,
         groupId: style.groupId,
-        category: style.category,
+        categoryId: style.categoryId,
+        institutionId: style.institutionId,
       },
       select: { uid: true },
     });

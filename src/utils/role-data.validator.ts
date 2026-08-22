@@ -1,18 +1,5 @@
 // server/src/utils/role-data.validator.ts
 
-export interface PregraduateData  { career: string; semester: string }
-export interface PostgraduateData { career: string }
-export interface FunctionaryData  { department: string }
-export interface AlumniData       { career: string }
-export interface ParticularData   {}
-
-export type RoleData =
-  | PregraduateData
-  | PostgraduateData
-  | FunctionaryData
-  | AlumniData
-  | ParticularData;
-
 function checkFields(data: unknown, fields: string[]): string[] {
   if (!data || typeof data !== 'object') {
     return ['roleData must be an object'];
@@ -37,12 +24,19 @@ function pickFields(data: unknown, fields: string[]): Record<string, string> {
   return result;
 }
 
+// Platform-wide Roles slugs (see env/seed.static.ts). None require any
+// roleData fields today — per-institution custom profile fields are a
+// separate, not-yet-built feature. validateRoleData stays strict on unknown
+// slugs (see below) so a typo is caught rather than silently accepted;
+// registering a slug here is what "supported" means, not an implicit
+// fallback.
 const ROLE_SCHEMAS: Record<string, string[]> = {
-  pregrado:    ['career', 'semester'],
-  posgrado:    ['career'],
-  funcionario: ['department'],
-  egresado:    ['career'],
-  particular:  [],
+  student: [],
+  'self-taught': [],
+  institutional: [],
+  independent: [],
+  rector: [],
+  coordinator: [],
 };
 
 export function validateRoleData(

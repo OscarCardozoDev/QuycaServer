@@ -16,13 +16,15 @@ import { CurrentUser } from 'src/decorators/currentUser';
 import { UserService } from './User.service';
 import {
   CreateStudentDto,
-  CreateProfessorDto,
   UpdateUserDto,
   UpdateUserPhotoDto,
 } from './User.dto';
 import type { JwtPayload } from 'src/interface/jwtPayload';
-import { AuthGuard } from 'src/middleware/jwt.guard';
-import { Roles } from 'src/decorators/roles.decorator';
+import { AuthGuard } from 'src/guards/jwt.guard';
+import { TenantGuard } from 'src/tenant/tenant.guard';
+import { ContextRoleGuard } from 'src/guards/context-role.guard';
+import { RequireContextRole } from 'src/decorators/context-role.decorator';
+import { Institution } from 'src/decorators/institution.decorator';
 
 @ApiTags('user')
 @Controller('user')
@@ -46,32 +48,7 @@ export class UserController {
         description: body.description,
         gender: body.gender,
         telNumber: body.telNumber,
-        roleId: body.roleId,
         roleData: body.roleData,
-      },
-      photo: body.photo,
-    });
-  }
-
-  @Post('professor')
-  @ApiOperation({
-    summary:
-      'Crear perfil de profesor (solo admin) — el profesor debe haber hecho register primero',
-  })
-  @UseGuards(AuthGuard)
-  @Roles('admin')
-  @HttpCode(HttpStatus.CREATED)
-  async createProfessor(@Body() body: CreateProfessorDto) {
-    // uid viene del body (UID de las Credentials del profesor), no del admin que hace la petición
-    return this.userService.createProfessorUseCase({
-      uid: body.uid,
-      user: {
-        name: body.name,
-        lastName: body.lastName,
-        username: body.username,
-        description: body.description,
-        gender: body.gender,
-        telNumber: body.telNumber,
       },
       photo: body.photo,
     });
@@ -79,11 +56,10 @@ export class UserController {
 
   @Get('allActive')
   @ApiOperation({ summary: 'Obtener todos los usuarios activos' })
-  @UseGuards(AuthGuard)
-  @Roles('admin', 'professor')
+  @UseGuards(AuthGuard, TenantGuard)
   @HttpCode(HttpStatus.OK)
-  async getActiveUsers() {
-    return this.userService.getActiveUsers();
+  async getActiveUsers(@Institution() institution: { uid: string }) {
+    return this.userService.getActiveUsers(institution.uid);
   }
 
   @Get('me')
@@ -91,7 +67,7 @@ export class UserController {
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async getCurrentUser(@CurrentUser() user: JwtPayload) {
-    return this.userService.getUser(user.uid);
+    return this.userService.getMe(user.uid);
   }
 
   @Get('author/:uid')
@@ -111,46 +87,49 @@ export class UserController {
   @Put('update')
   @ApiOperation({ summary: 'Actualizar usuario actual' })
   @UseGuards(AuthGuard)
-  @Roles('professor', 'student')
   @HttpCode(HttpStatus.OK)
   async updateCurrentUser(
     @CurrentUser() user: JwtPayload,
     @Body() body: UpdateUserDto,
   ) {
-    return this.userService.updateUser(user.uid, body);
+    return this.userService.updateOwnUser(user.uid, body);
   }
 
   @Put(':uid')
-  @ApiOperation({ summary: 'Actualizar usuario por UID (admin)' })
-  @UseGuards(AuthGuard)
-  @Roles('admin')
+  @ApiOperation({ summary: 'Actualizar usuario por UID (rector/coordinador de su institución)' })
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @HttpCode(HttpStatus.OK)
-  async updateUser(@Param('uid') uid: string, @Body() body: UpdateUserDto) {
-    return this.userService.updateUser(uid, body);
+  async updateUser(
+    @Param('uid') uid: string,
+    @Body() body: UpdateUserDto,
+    @Institution() institution: { uid: string },
+  ) {
+    return this.userService.updateUserAsAdmin(uid, body, institution.uid);
   }
 
   @Patch('photo')
   @ApiOperation({ summary: 'Actualizar foto del usuario actual' })
   @UseGuards(AuthGuard)
-  @Roles('student', 'professor')
   @HttpCode(HttpStatus.OK)
   async updateCurrentUserPhoto(
     @CurrentUser() user: JwtPayload,
     @Body() body: UpdateUserPhotoDto,
   ) {
-    return this.userService.updateUserPhoto(user.uid, body);
+    return this.userService.updateOwnUserPhoto(user.uid, body);
   }
 
   @Patch(':uid/photo')
-  @ApiOperation({ summary: 'Actualizar foto de usuario por UID (admin)' })
-  @UseGuards(AuthGuard)
-  @Roles('admin')
+  @ApiOperation({ summary: 'Actualizar foto de usuario por UID (rector/coordinador de su institución)' })
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @HttpCode(HttpStatus.OK)
   async updateUserPhoto(
     @Param('uid') uid: string,
     @Body() body: UpdateUserPhotoDto,
+    @Institution() institution: { uid: string },
   ) {
-    return this.userService.updateUserPhoto(uid, body);
+    return this.userService.updateUserPhotoAsAdmin(uid, body, institution.uid);
   }
 
   @Patch('deactivate')
@@ -158,24 +137,30 @@ export class UserController {
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   async deactivateCurrentUser(@CurrentUser() user: JwtPayload) {
-    return this.userService.deactivateUser(user.uid);
+    return this.userService.deactivateOwnUser(user.uid);
   }
 
   @Patch(':uid/deactivate')
-  @ApiOperation({ summary: 'Desactivar usuario por UID (admin)' })
-  @UseGuards(AuthGuard)
-  @Roles('admin')
+  @ApiOperation({ summary: 'Desactivar usuario por UID (rector/coordinador de su institución)' })
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @HttpCode(HttpStatus.OK)
-  async deactivateUser(@Param('uid') uid: string) {
-    return this.userService.deactivateUser(uid);
+  async deactivateUser(
+    @Param('uid') uid: string,
+    @Institution() institution: { uid: string },
+  ) {
+    return this.userService.deactivateUserAsAdmin(uid, institution.uid);
   }
 
   @Patch(':uid/reactivate')
-  @ApiOperation({ summary: 'Reactivar usuario (admin)' })
-  @UseGuards(AuthGuard)
-  @Roles('admin')
+  @ApiOperation({ summary: 'Reactivar usuario (rector/coordinador de su institución)' })
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @HttpCode(HttpStatus.OK)
-  async reactivateUser(@Param('uid') uid: string) {
-    return this.userService.reactivateUser(uid);
+  async reactivateUser(
+    @Param('uid') uid: string,
+    @Institution() institution: { uid: string },
+  ) {
+    return this.userService.reactivateUserAsAdmin(uid, institution.uid);
   }
 }

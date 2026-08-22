@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/prisma/prisma.service';
 import type { CreateScheduleUseCase, UpdateScheduleUseCase } from './Schedule.interface';
@@ -6,9 +6,29 @@ import type { CreateScheduleUseCase, UpdateScheduleUseCase } from './Schedule.in
 @Injectable()
 export class ScheduleService {
   constructor(
-    private readonly prisma: PrismaService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
     private readonly config: ConfigService,
   ) {}
+
+  /* =========================
+   * FK GUARD
+   * `groupId` is a direct FK on `Schedule` supplied by the client. The
+   * tenant extension only scopes the top-level call it intercepts, not
+   * nested relations resolved by FK — so an unchecked foreign groupId
+   * would let a `Schedule`/`Classes` row (correctly stamped with the
+   * caller's institutionId) point at another tenant's group. Since
+   * `Groups` is itself scoped, `groups.findUnique` on a foreign id
+   * simply returns null.
+   * ========================= */
+  private async assertGroupInTenant(groupId: string): Promise<void> {
+    const group = await this.prisma.groups.findUnique({
+      where: { uid: groupId },
+      select: { uid: true },
+    });
+    if (!group) {
+      throw new NotFoundException('Group not found');
+    }
+  }
 
   private getSemesterEndDate(): Date {
     const raw = this.config.get<string>('config.semesterEndDate');
@@ -36,11 +56,13 @@ export class ScheduleService {
   }
 
   async create(data: CreateScheduleUseCase) {
-    const { groupId, dayOfWeek, startTime, endTime } = data;
+    const { groupId, dayOfWeek, startTime, endTime, institutionId } = data;
+
+    await this.assertGroupInTenant(groupId);
 
     return this.prisma.$transaction(async (tx) => {
       const schedule = await tx.schedule.create({
-        data: { groupId, dayOfWeek, startTime, endTime },
+        data: { groupId, dayOfWeek, startTime, endTime, institutionId },
         select: { uid: true },
       });
 
@@ -54,6 +76,7 @@ export class ScheduleService {
             date,
             startTime,
             endTime,
+            institutionId,
           })),
         });
       }
@@ -69,7 +92,7 @@ export class ScheduleService {
     });
   }
 
-  async update({ scheduleId, data }: UpdateScheduleUseCase) {
+  async update({ scheduleId, data, institutionId }: UpdateScheduleUseCase) {
     return this.prisma.$transaction(async (tx) => {
       const current = await tx.schedule.findUniqueOrThrow({
         where: { uid: scheduleId },
@@ -114,6 +137,7 @@ export class ScheduleService {
             date,
             startTime,
             endTime,
+            institutionId,
           })),
           skipDuplicates: true,
         });

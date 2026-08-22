@@ -1,10 +1,13 @@
 import {
   Injectable,
+  Inject,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PhotosService } from 'src/modules/photos/Photos.service';
+import { runWithoutTenant } from 'src/tenant/tenant-context';
 import {
   CreateEventUseCase,
   UpdateEventUseCase,
@@ -37,7 +40,7 @@ type LazyCompleteBase = {
 @Injectable()
 export class EventService {
   constructor(
-    private readonly prisma: PrismaService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
     private readonly photosService: PhotosService,
   ) {}
 
@@ -69,6 +72,39 @@ export class EventService {
 
   async createEventUseCase(data: CreateEventUseCase): Promise<{ uid: string }> {
     const { event, groupIds, productIds, coverPhoto } = data;
+
+    // FASE 0️⃣ — Validar que los grupos y obras pertenecen a la institución activa.
+    // GroupEvent/EventProduct son tablas puente sin institutionId propio: si no se
+    // valida acá, groupIds/productIds de otra institución quedarían vinculados
+    // directamente al evento sin pasar por invitación.
+    if (groupIds?.length) {
+      const validGroups = await this.prisma.groups.findMany({
+        where: { uid: { in: groupIds } },
+        select: { uid: true },
+      });
+      if (validGroups.length !== new Set(groupIds).size) {
+        throw new BadRequestException(
+          'Some groups do not exist or do not belong to this institution',
+        );
+      }
+    }
+
+    if (productIds?.length) {
+      const validProducts = await this.prisma.products.findMany({
+        where: {
+          uid: { in: productIds },
+          groupId: { in: groupIds ?? [] },
+          status: 'APPROVED',
+          isActive: true,
+        },
+        select: { uid: true },
+      });
+      if (validProducts.length !== new Set(productIds).size) {
+        throw new BadRequestException(
+          'Some products are not APPROVED or do not belong to the given groups',
+        );
+      }
+    }
 
     // FASE 1️⃣ — Subir foto de portada (fuera de transacción)
     let coverPhotoId: string | null = null;
@@ -145,7 +181,7 @@ export class EventService {
       include: {
         groups: {
           select: {
-            group: { select: { uid: true, name: true, category: true } },
+            group: { select: { uid: true, name: true, categoryId: true } },
           },
         },
         photos: {
@@ -166,166 +202,233 @@ export class EventService {
     return Promise.all(events.map((e) => this.lazyComplete(e)));
   }
 
+  // Público: alimenta la galería sin sesión, ver Event.controller.ts.
   async getUpcoming(options: GetEventsOptions = {}) {
     const { page = 1, limit = 10, eventType } = options;
 
-    return this.prisma.events.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { startDate: 'asc' },
-      where: {
-        isActive: true,
-        status: EventStatus.APPROVED,
-        startDate: { gt: new Date() },
-        ...(eventType !== undefined && { eventType }),
-      },
-      select: {
-        uid: true,
-        name: true,
-        description: true,
-        eventType: true,
-        startDate: true,
-        endDate: true,
-        isVirtual: true,
-        groups: {
-          select: {
-            group: { select: { uid: true, name: true, category: true } },
+    return runWithoutTenant(() =>
+      this.prisma.events.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { startDate: 'asc' },
+        where: {
+          isActive: true,
+          status: EventStatus.APPROVED,
+          startDate: { gt: new Date() },
+          ...(eventType !== undefined && { eventType }),
+        },
+        select: {
+          uid: true,
+          name: true,
+          description: true,
+          eventType: true,
+          startDate: true,
+          endDate: true,
+          isVirtual: true,
+          groups: {
+            select: {
+              group: { select: { uid: true, name: true, categoryId: true } },
+            },
+          },
+          photos: {
+            where: { photoType: EventPhotoType.HERO },
+            select: {
+              photoType: true,
+              photo: { select: { uid: true, url: true } },
+            },
+            take: 1,
           },
         },
-        photos: {
-          where: { photoType: EventPhotoType.HERO },
-          select: {
-            photoType: true,
-            photo: { select: { uid: true, url: true } },
-          },
-          take: 1,
-        },
-      },
-    });
+      }),
+    );
   }
 
+  // Público: alimenta la galería sin sesión, ver Event.controller.ts.
   async getPast(options: GetEventsOptions = {}) {
     const { page = 1, limit = 10, eventType } = options;
 
-    return this.prisma.events.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { startDate: 'desc' },
-      where: {
-        isActive: true,
-        status: EventStatus.COMPLETED,
-        ...(eventType !== undefined && { eventType }),
-      },
-      select: {
-        uid: true,
-        name: true,
-        description: true,
-        eventType: true,
-        startDate: true,
-        endDate: true,
-        groups: {
-          select: {
-            group: { select: { uid: true, name: true, category: true } },
+    return runWithoutTenant(() =>
+      this.prisma.events.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { startDate: 'desc' },
+        where: {
+          isActive: true,
+          status: EventStatus.COMPLETED,
+          ...(eventType !== undefined && { eventType }),
+        },
+        select: {
+          uid: true,
+          name: true,
+          description: true,
+          eventType: true,
+          startDate: true,
+          endDate: true,
+          groups: {
+            select: {
+              group: { select: { uid: true, name: true, categoryId: true } },
+            },
+          },
+          photos: {
+            where: { photoType: EventPhotoType.HERO },
+            select: {
+              photoType: true,
+              photo: { select: { uid: true, url: true } },
+            },
+            take: 1,
           },
         },
-        photos: {
-          where: { photoType: EventPhotoType.HERO },
-          select: {
-            photoType: true,
-            photo: { select: { uid: true, url: true } },
-          },
-          take: 1,
-        },
-      },
-    });
+      }),
+    );
   }
 
   /**
    * Para la página de inicio: id, nombre, fecha y foto HERO
    * de los próximos eventos APPROVED.
+   * Público: alimenta la galería sin sesión, ver Event.controller.ts.
    */
   async getHome(options: GetEventsOptions = {}) {
     const { page = 1, limit = 6 } = options;
 
-    return this.prisma.events.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { startDate: 'asc' },
-      where: {
-        isActive: true,
-        status: EventStatus.APPROVED,
-        startDate: { gt: new Date() },
-      },
-      select: {
-        uid: true,
-        name: true,
-        eventType: true,
-        startDate: true,
-        photos: {
-          where: { photoType: EventPhotoType.HERO },
-          select: {
-            photoType: true,
-            photo: { select: { uid: true, url: true } },
-          },
-          take: 1,
+    return runWithoutTenant(() =>
+      this.prisma.events.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { startDate: 'asc' },
+        where: {
+          isActive: true,
+          status: EventStatus.APPROVED,
+          startDate: { gt: new Date() },
         },
-      },
-    });
+        select: {
+          uid: true,
+          name: true,
+          eventType: true,
+          startDate: true,
+          photos: {
+            where: { photoType: EventPhotoType.HERO },
+            select: {
+              photoType: true,
+              photo: { select: { uid: true, url: true } },
+            },
+            take: 1,
+          },
+        },
+      }),
+    );
   }
 
+  // Público: alimenta la galería sin sesión, ver Event.controller.ts.
+  // El controlador de `get/:uid` no tiene AuthGuard hoy — la ruta ya era
+  // alcanzable por cualquiera antes de la extensión de tenant; envolverla
+  // aquí no amplía el acceso, solo evita que la extensión la bloquee con
+  // 403. (Distinto de envolver una ruta autenticada, que sí sería un
+  // defecto grave: esa ruta exige `AuthGuard`/`TenantGuard`, esta no exige
+  // ninguno de los dos.)
+  //
+  // `invitations` fue removido del `include` (antes exponía el estado de
+  // EventInvitation — status pendiente/aceptada/rechazada por grupo — que
+  // es coordinación interna, no contenido de galería). Se verificó contra
+  // el frontend (UstaGallery) que ningún consumidor de esta respuesta lee
+  // `.invitations`; el único uso de "invitations" en el frontend son clases
+  // CSS en Invitations.tsx, que llama a un endpoint distinto. El resto del
+  // payload (`groups`, `products`, `photos`, `createdBy`) sí se consume
+  // desde EventDetail.tsx/EditEvent.tsx y es contenido de galería (nombre
+  // de grupos expositores, obras, fotos del evento, nombre del organizador
+  // — sin datos de contacto).
   async getById(uid: string) {
-    const event = await this.prisma.events.findUnique({
-      where: { uid },
-      include: {
-        groups: {
-          select: {
-            group: { select: { uid: true, name: true, category: true } },
+    // Envuelve el findUnique Y el update condicional de lazyComplete en un
+    // único runWithoutTenant: lazyComplete dispara su propio
+    // `prisma.events.update` (modelo scoped) cuando el evento está APPROVED
+    // y ya pasó su fecha, y ese update queda fuera del bypass si solo se
+    // envuelve el fetch inicial.
+    return runWithoutTenant(async () => {
+      const event = await this.prisma.events.findUnique({
+        where: { uid },
+        include: {
+          groups: {
+            select: {
+              group: { select: { uid: true, name: true, categoryId: true } },
+            },
           },
-        },
-        products: {
-          select: {
-            product: {
-              select: {
-                uid: true,
-                name: true,
-                description: true,
-                photos: {
-                  where: { isMain: true },
-                  select: {
-                    photo: { select: { uid: true, url: true } },
+          products: {
+            select: {
+              product: {
+                select: {
+                  uid: true,
+                  name: true,
+                  description: true,
+                  photos: {
+                    where: { isMain: true },
+                    select: {
+                      photo: { select: { uid: true, url: true } },
+                    },
+                    take: 1,
                   },
-                  take: 1,
                 },
               },
             },
           },
-        },
-        photos: {
-          select: {
-            photoType: true,
-            photo: { select: { uid: true, url: true } },
+          photos: {
+            select: {
+              photoType: true,
+              photo: { select: { uid: true, url: true } },
+            },
+          },
+          createdBy: {
+            select: { uid: true, name: true, lastName: true },
           },
         },
-        createdBy: {
-          select: { uid: true, name: true, lastName: true },
-        },
-        invitations: {
-          select: {
-            uid: true,
-            status: true,
-            group: { select: { uid: true, name: true } },
-          },
-        },
-      },
+      });
+
+      if (!event) throw new NotFoundException('Event not found');
+
+      // Variable separada para no reasignar `event` y mantener el tipo de Prisma intacto
+      return this.lazyComplete(event);
     });
-
-    if (!event) throw new NotFoundException('Event not found');
-
-    // Variable separada para no reasignar `event` y mantener el tipo de Prisma intacto
-    return this.lazyComplete(event);
   }
 
+  // Público: alimenta la galería sin sesión, ver Event.controller.ts.
+  // `groups: { some: { groupId } }` es una condición anidada sobre GroupEvent/
+  // Groups (modelos scoped) que la extensión de tenant NO reescribe — solo
+  // intercepta la operación de nivel superior (`events.findMany`). Para este
+  // endpoint eso es exactamente lo buscado: un visitante sin sesión debe poder
+  // ver los eventos de cualquier grupo de cualquier institución.
   async getByGroup(groupId: string, options: GetEventsOptions = {}) {
+    const { page = 1, limit = 10 } = options;
+
+    return runWithoutTenant(() =>
+      this.prisma.events.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { startDate: 'asc' },
+        where: {
+          isActive: true,
+          status: { in: [EventStatus.APPROVED, EventStatus.COMPLETED] },
+          groups: { some: { groupId } },
+        },
+        select: {
+          uid: true,
+          name: true,
+          eventType: true,
+          status: true,
+          startDate: true,
+          endDate: true,
+          photos: {
+            where: { photoType: EventPhotoType.HERO },
+            select: {
+              photoType: true,
+              photo: { select: { uid: true, url: true } },
+            },
+            take: 1,
+          },
+        },
+      }),
+    );
+  }
+
+  /** La lectura de `getByGroup` para el dashboard, sin el bypass de tenant. */
+  async getByGroupPrivate(groupId: string, options: GetEventsOptions = {}) {
     const { page = 1, limit = 10 } = options;
 
     return this.prisma.events.findMany({
@@ -583,6 +686,14 @@ export class EventService {
   }
 
   async removePhoto(eventId: string, photoId: string) {
+    // EventPhoto no tiene institutionId propio: se valida el evento primero
+    // (scoped) para no permitir borrar la foto de un evento de otra institución.
+    const event = await this.prisma.events.findUnique({
+      where: { uid: eventId },
+      select: { uid: true },
+    });
+    if (!event) throw new NotFoundException('Event not found');
+
     const eventPhoto = await this.prisma.eventPhoto.findFirst({
       where: { eventId, photoId },
     });
@@ -613,6 +724,19 @@ export class EventService {
       );
     }
 
+    const group = await this.prisma.groups.findUnique({
+      where: { uid: groupId },
+      select: { uid: true, institutionId: true },
+    });
+
+    if (!group) throw new NotFoundException('Group not found');
+
+    if (group.institutionId !== event.institutionId) {
+      throw new ForbiddenException(
+        'Cannot invite a group from a different institution',
+      );
+    }
+
     // Verificar que el grupo no esté ya vinculado directamente
     const alreadyJoined = await this.prisma.groupEvent.findFirst({
       where: { eventId, groupId },
@@ -636,10 +760,22 @@ export class EventService {
    * filtradas por los grupos que él administra.
    */
   async getPendingInvitations(profesorId: string) {
+    // EventInvitation no tiene institutionId propio y el filtro `group: { profesorId }`
+    // es una condición anidada que la extensión de tenant NO reescribe (solo
+    // intercepta la operación de nivel superior). Sin este paso, cualquier
+    // profesorId ajeno a la institución activa filtraría invitaciones de otra
+    // institución. Groups sí está scoped, así que resolver los grupos primero
+    // acota correctamente a la institución activa.
+    const groups = await this.prisma.groups.findMany({
+      where: { profesorId },
+      select: { uid: true },
+    });
+    if (!groups.length) return [];
+
     return this.prisma.eventInvitation.findMany({
       where: {
         status: InvitationStatus.PENDING,
-        group: { profesorId },
+        groupId: { in: groups.map((g) => g.uid) },
       },
       include: {
         event: {
@@ -658,7 +794,7 @@ export class EventService {
             },
           },
         },
-        group: { select: { uid: true, name: true, category: true } },
+        group: { select: { uid: true, name: true, categoryId: true } },
       },
     });
   }
@@ -669,6 +805,15 @@ export class EventService {
     });
 
     if (!invitation) throw new NotFoundException('Invitation not found');
+
+    // EventInvitation no tiene institutionId propio: se valida contra Events
+    // (scoped) para que un invitationId de otra institución no pueda ser
+    // aceptado/rechazado por un usuario de la institución activa.
+    const event = await this.prisma.events.findUnique({
+      where: { uid: invitation.eventId },
+      select: { uid: true },
+    });
+    if (!event) throw new NotFoundException('Invitation not found');
 
     if (invitation.status !== InvitationStatus.PENDING) {
       throw new BadRequestException(
@@ -700,6 +845,15 @@ export class EventService {
     eventId: string,
     groupId: string,
   ): Promise<{ removed: boolean }> {
+    // GroupEvent no tiene institutionId propio: se valida el evento primero
+    // (scoped) para que un eventId de otra institución no pueda usarse para
+    // desvincular un grupo o reabrir ese evento a PENDING.
+    const event = await this.prisma.events.findUnique({
+      where: { uid: eventId },
+      select: { uid: true },
+    });
+    if (!event) throw new NotFoundException('Event not found');
+
     const groupEvent = await this.prisma.groupEvent.findFirst({
       where: { eventId, groupId },
     });
@@ -725,6 +879,15 @@ export class EventService {
     eventId: string,
     groupId: string,
   ): Promise<{ revoked: boolean }> {
+    // EventInvitation no tiene institutionId propio: se valida el evento primero
+    // (scoped) para que un eventId de otra institución no pueda usarse para
+    // revocar una invitación / desvincular un grupo ajenos.
+    const event = await this.prisma.events.findUnique({
+      where: { uid: eventId },
+      select: { uid: true },
+    });
+    if (!event) throw new NotFoundException('Event not found');
+
     const invitation = await this.prisma.eventInvitation.findFirst({
       where: { eventId, groupId },
     });

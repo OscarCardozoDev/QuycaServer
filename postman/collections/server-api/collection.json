@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "quyca-api-tests",
+    "_postman_id": "usta-gallery-api-tests",
     "name": "Quyca API Tests",
-    "description": "Full Newman test suite — Auth, User, Groups, Photos, Products, Styles, Events, Classes, Schedule",
+    "description": "Full Newman test suite — Auth, User, Institutions, Categories, Groups, Photos, Products, Styles, Events, Classes, Schedule",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -31,6 +31,15 @@
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('newUserMail', 'test_' + Date.now() + '@usantoto.edu.co');"
+                ],
+                "type": "text/javascript"
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -148,7 +157,7 @@
           ]
         },
         {
-          "name": "Login - unknown email returns 404",
+          "name": "Login - unknown email returns 401",
           "request": {
             "method": "POST",
             "header": [
@@ -173,7 +182,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 404 on unknown email', () => pm.response.to.have.status(404));"
+                  "pm.test('Status 401 on unknown email', () => pm.response.to.have.status(401));"
                 ],
                 "type": "text/javascript"
               }
@@ -479,7 +488,7 @@
             "url": "{{baseUrl}}/user/professor",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"uid\": \"{{newUserId}}\",\n  \"name\": \"Nuevo\",\n  \"lastName\": \"Profesor\",\n  \"username\": \"nuevo_profesor_api_001\",\n  \"description\": \"Profesor de prueba\",\n  \"gender\": \"M\",\n  \"telNumber\": \"3001234567\"\n}",
+              "raw": "{\n  \"uid\": \"{{newUserId}}\",\n  \"name\": \"Nuevo\",\n  \"lastName\": \"Profesor\",\n  \"username\": \"{{professorUsername}}\",\n  \"description\": \"Profesor de prueba\",\n  \"gender\": \"M\",\n  \"telNumber\": \"3001234567\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -488,6 +497,15 @@
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('professorUsername', 'prof_api_' + Date.now());"
+                ],
+                "type": "text/javascript"
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -740,7 +758,7 @@
           ]
         },
         {
-          "name": "Create Student Profile - 403 for admin",
+          "name": "Create Student Profile - 400 for admin (already has profile)",
           "request": {
             "method": "POST",
             "header": [
@@ -752,7 +770,7 @@
             "url": "{{baseUrl}}/user/create",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"X\",\n  \"lastName\": \"Y\",\n  \"username\": \"xy_001\",\n  \"gender\": \"M\",\n  \"telNumber\": \"3000000002\",\n  \"roleId\": \"{{studentId}}\",\n  \"roleData\": {}\n}",
+              "raw": "{\n  \"name\": \"X\",\n  \"lastName\": \"Y\",\n  \"username\": \"xy_001\",\n  \"gender\": \"M\",\n  \"telNumber\": \"3000000002\",\n  \"roleId\": \"00000000-0000-0000-0000-000000000010\",\n  \"roleData\": {}\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -765,7 +783,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403 — admin cannot create student profile', () => pm.response.to.have.status(403));"
+                  "pm.test('Status 400 — admin already has profile', () => pm.expect(pm.response.code).to.be.oneOf([400, 409]));"
                 ],
                 "type": "text/javascript"
               }
@@ -1014,10 +1032,91 @@
       ]
     },
     {
-      "name": "Groups",
+      "name": "Institutions",
       "item": [
         {
-          "name": "🔐 Login as Admin",
+          "name": "Create Institution (public)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/institutions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Institución Test API\",\n  \"slug\": \"{{institutionSlug}}\",\n  \"type\": \"EDUCATIONAL\",\n  \"planSlug\": \"academia\",\n  \"representativeName\": \"Rector\",\n  \"representativeLastName\": \"Test\",\n  \"email\": \"{{rectorMail}}\",\n  \"password\": \"{{rectorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var ts = Date.now();",
+                  "pm.environment.set('institutionSlug', 'test-inst-' + ts);",
+                  "pm.environment.set('rectorMail', 'rector_' + ts + '@quyca.com');",
+                  "pm.environment.set('rectorPassword', 'RectorTest@123!');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Has uid', () => pm.expect(json.uid).to.be.a('string'));",
+                  "pm.environment.set('institutionId', json.uid);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Institution - duplicate slug returns 409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/institutions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dup\",\n  \"slug\": \"{{institutionSlug}}\",\n  \"type\": \"EDUCATIONAL\",\n  \"planSlug\": \"academia\",\n  \"representativeName\": \"X\",\n  \"representativeLastName\": \"Y\",\n  \"email\": \"dup@test.com\",\n  \"password\": \"Test@1234!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409 on duplicate slug', () => pm.response.to.have.status(409));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "🔐 Login as Rector",
           "request": {
             "method": "POST",
             "header": [
@@ -1029,7 +1128,553 @@
             "url": "{{baseUrl}}/auth/login",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"mail\": \"{{adminMail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "raw": "{\n  \"mail\": \"{{rectorMail}}\",\n  \"password\": \"{{rectorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Rector login 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Institution by Slug (auth)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/institutions/{{institutionSlug}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('slug matches', () => pm.expect(pm.response.json().slug).to.equal(pm.environment.get('institutionSlug')));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Institution (rector)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/institutions/{{institutionId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Institución Test Actualizada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has uid', () => pm.expect(pm.response.json().uid).to.be.a('string'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Invitation (rector → professor)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/institutions/{{institutionId}}/invitations",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"toEmail\": \"{{professorMail}}\",\n  \"targetRole\": \"institutional\",\n  \"expiresInDays\": 7\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Has token', () => pm.expect(json.token).to.be.a('string'));",
+                  "pm.environment.set('invitationToken', json.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Invitation by Token (rector)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/invitations/{{invitationToken}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has token', () => pm.expect(pm.response.json().token).to.be.a('string'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "🔐 Login as Professor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mail\": \"{{professorMail}}\",\n  \"password\": \"{{professorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login OK', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Respond to Invitation - Accept (professor)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/invitations/{{invitationToken}}/respond",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accept\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Status ACCEPTED', () => pm.expect(json.status).to.equal('ACCEPTED'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Respond to Invitation - already responded returns 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/invitations/{{invitationToken}}/respond",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accept\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 on double respond', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "🔐 Login as Rector (again)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mail\": \"{{rectorMail}}\",\n  \"password\": \"{{rectorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Rector login 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Institution Invitations (rector)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/institutions/{{institutionId}}/invitations"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('Has ≥1 invitation', () => pm.expect(pm.response.json().length).to.be.at.least(1));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get Active Categories (public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/categories"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const arr = pm.response.json();",
+                  "pm.test('Returns array', () => pm.expect(arr).to.be.an('array'));",
+                  "pm.test('Has seeded categories', () => pm.expect(arr.length).to.be.at.least(1));",
+                  "if (arr.length > 0) pm.environment.set('categoryId', arr[0].uid);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "🔐 Login as Rector (categories)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mail\": \"{{rectorMail}}\",\n  \"password\": \"{{rectorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Rector login 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Content Request - CATEGORY (rector)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/content-requests",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"CATEGORY\",\n  \"requestedName\": \"Fotografía\",\n  \"justification\": \"Queremos agregar fotografía como nueva categoría\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Has uid', () => pm.expect(json.uid).to.be.a('string'));",
+                  "pm.environment.set('contentRequestId', json.uid);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get My Content Requests (rector)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/content-requests/mine"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+                  "pm.test('Has ≥1 request', () => pm.expect(pm.response.json().length).to.be.at.least(1));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "🔐 Login as Professor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mail\": \"{{professorMail}}\",\n  \"password\": \"{{professorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login OK', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Content Request - 403 for institutional role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/content-requests",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"CATEGORY\",\n  \"requestedName\": \"No Permitido\",\n  \"justification\": \"Test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 for institutional role', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "🔐 Login as Rector (restore)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mail\": \"{{rectorMail}}\",\n  \"password\": \"{{rectorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Rector login 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Groups",
+      "item": [
+        {
+          "name": "🔐 Login as Rector",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mail\": \"{{rectorMail}}\",\n  \"password\": \"{{rectorPassword}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1057,12 +1702,16 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
               }
             ],
             "url": "{{baseUrl}}/groups/create",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Grupo Test 2026\",\n  \"profesorId\": \"{{newProfessorId}}\",\n  \"users\": []\n}",
+              "raw": "{\n  \"name\": \"Grupo Test 2026\",\n  \"profesorId\": \"{{newProfessorId}}\",\n  \"institutionId\": \"{{institutionId}}\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"users\": []\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1089,7 +1738,12 @@
           "name": "Get All Groups",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
             "url": "{{baseUrl}}/groups/get?page=1&limit=10"
           },
           "event": [
@@ -1099,6 +1753,39 @@
                 "exec": [
                   "pm.test('Status 200', () => pm.response.to.have.status(200));",
                   "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "🔐 Login as Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mail\": \"{{adminMail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login OK', () => pm.response.to.have.status(201));"
                 ],
                 "type": "text/javascript"
               }
@@ -1456,19 +2143,23 @@
           ]
         },
         {
-          "name": "Create Group - 403 for professor",
+          "name": "Create Group - 403 for professor (institutional role, not rector)",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
               }
             ],
             "url": "{{baseUrl}}/groups/create",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"No Permitido\",\n  \"profesorId\": \"{{newProfessorId}}\",\n  \"users\": []\n}",
+              "raw": "{\n  \"name\": \"No Permitido\",\n  \"profesorId\": \"{{newProfessorId}}\",\n  \"institutionId\": \"{{institutionId}}\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"users\": []\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1481,7 +2172,7 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                  "pm.test('Status 403 — institutional role cannot create groups', () => pm.response.to.have.status(403));"
                 ],
                 "type": "text/javascript"
               }
@@ -1614,7 +2305,7 @@
           ]
         },
         {
-          "name": "Create Group (downstream)",
+          "name": "🔐 Login as Rector",
           "request": {
             "method": "POST",
             "header": [
@@ -1623,10 +2314,47 @@
                 "value": "application/json"
               }
             ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mail\": \"{{rectorMail}}\",\n  \"password\": \"{{rectorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login OK', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Group (downstream)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
             "url": "{{baseUrl}}/groups/create",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Grupo Downstream 2026\",\n  \"profesorId\": \"{{newProfessorId}}\",\n  \"users\": [\n    \"{{studentId}}\"\n  ]\n}",
+              "raw": "{\n  \"name\": \"Grupo Downstream 2026\",\n  \"profesorId\": \"{{newProfessorId}}\",\n  \"institutionId\": \"{{institutionId}}\",\n  \"categoryId\": \"{{categoryId}}\",\n  \"users\": [\n    \"{{studentId}}\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2214,7 +2942,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/styles/all/ARTES"
+            "url": "{{baseUrl}}/styles/all/{{categoryId}}"
           },
           "event": [
             {
@@ -2275,7 +3003,7 @@
             "url": "{{baseUrl}}/styles/create",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Impresionismo Test\",\n  \"description\": \"Estilo de prueba\",\n  \"groupId\": \"{{groupId}}\",\n  \"category\": \"ARTES\"\n}",
+              "raw": "{\n  \"name\": \"Impresionismo Test\",\n  \"description\": \"Estilo de prueba\",\n  \"groupId\": \"{{groupId}}\",\n  \"categoryId\": \"{{categoryId}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2971,7 +3699,7 @@
             "url": "{{baseUrl}}/classes/create",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"groupId\": \"{{groupId}}\",\n  \"date\": \"2026-05-05\",\n  \"startTime\": \"08:00\",\n  \"endTime\": \"10:00\",\n  \"topic\": \"Introducción al color\"\n}",
+              "raw": "{\n  \"groupId\": \"{{groupId}}\",\n  \"date\": \"2026-08-07\",\n  \"startTime\": \"08:00\",\n  \"endTime\": \"10:00\",\n  \"topic\": \"Introducción al color\"\n}",
               "options": {
                 "raw": {
                   "language": "json"

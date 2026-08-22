@@ -5,10 +5,6 @@ import { IsOptional } from 'class-validator';
  * PARAMS / OPTIONS
  * ========================= */
 
-export interface ProductParams {
-  uid: string;
-}
-
 export enum ProductStatus {
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
@@ -52,6 +48,7 @@ export interface CreateProductUseCase {
     folder: string;
     isMain?: boolean;
   }[];
+  institutionId: string;
 }
 
 export interface UpdateProductImageUseCase {

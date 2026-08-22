@@ -1,9 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsArray } from 'class-validator';
+import { IsString, IsOptional, IsArray, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class GroupParamsDto {
   @ApiProperty({ example: 'uuid-del-grupo' })
+  @IsString()
   uid: string;
 }
 
@@ -24,9 +25,14 @@ export class CreateGroupDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ example: 'uuid-del-profesor' })
+  @ApiPropertyOptional({ example: 'uuid-del-profesor' })
+  @IsOptional()
   @IsString()
-  profesorId: string;
+  profesorId?: string;
+
+  @ApiProperty({ example: 'uuid-de-categoria' })
+  @IsString()
+  categoryId: string;
 
   @ApiPropertyOptional({
     type: [String],
@@ -36,18 +42,45 @@ export class CreateGroupDto {
   @IsOptional()
   @IsArray()
   users?: string[];
+
+  @ApiPropertyOptional({ example: 'Colectivo de fotografía analógica' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  description?: string;
+
+  @ApiPropertyOptional({ example: 'Traer materiales propios. Asistencia mínima del 80%.' })
+  @IsOptional()
+  @IsString()
+  rules?: string;
+
+  @ApiPropertyOptional({ example: 'uuid-de-la-foto' })
+  @IsOptional()
+  @IsString()
+  coverPhotoId?: string;
 }
 
 export class UpdateGroupDto {
-  @ApiPropertyOptional({ example: 'Grupo B 2025' })
+  @ApiPropertyOptional({ example: 'Artes y Fotografía' })
   @IsOptional()
   @IsString()
   name?: string;
 
-  @ApiPropertyOptional({ example: 'uuid-del-profesor' })
+  @ApiPropertyOptional({ example: 'Colectivo de fotografía analógica' })
   @IsOptional()
   @IsString()
-  profesorId?: string;
+  @MaxLength(500)
+  description?: string;
+
+  @ApiPropertyOptional({ example: 'Traer materiales propios.' })
+  @IsOptional()
+  @IsString()
+  rules?: string;
+
+  @ApiPropertyOptional({ example: 'uuid-de-la-foto' })
+  @IsOptional()
+  @IsString()
+  coverPhotoId?: string;
 }
 
 export class AddStudentDto {

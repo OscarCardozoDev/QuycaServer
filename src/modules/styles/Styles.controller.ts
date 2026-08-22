@@ -13,9 +13,12 @@ import {
 import { ApiTags, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { StylesService } from './Styles.service';
 import { CreateStyleDto, UpdateStyleDto } from './Styles.dto';
-import { AuthGuard } from 'src/middleware/jwt.guard';
-import { Roles } from 'src/decorators/roles.decorator';
-import { Category } from './Styles.interface';
+import { AuthGuard } from 'src/guards/jwt.guard';
+import { TenantGuard } from 'src/tenant/tenant.guard';
+import { ContextRoleGuard } from 'src/guards/context-role.guard';
+import { RequireContextRole } from 'src/decorators/context-role.decorator';
+import { Institution } from 'src/decorators/institution.decorator';
+import type { ActiveInstitution } from 'src/interface/jwtPayload';
 
 @ApiTags('styles')
 @Controller('styles')
@@ -29,16 +32,27 @@ export class StylesController {
     return this.stylesService.getAll();
   }
 
-  @Get('all/:category')
+  // Contraparte scopeada de /styles/all: misma lista, filtrada por la
+  // institución del usuario. La galería pública usa /styles/all; el dashboard
+  // usa esta, para no ofrecerle a un artista los estilos de otra institución.
+  @Get('mine')
+  @UseGuards(AuthGuard, TenantGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Obtener estilos por grupo' })
+  @ApiOperation({ summary: 'Obtener los estilos de la institución activa' })
+  async getMyStyles() {
+    return this.stylesService.getMine();
+  }
+
+  @Get('all/:categoryId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Obtener estilos por categoría' })
   @ApiParam({
-    name: 'category',
-    enum: ['ARTES', 'TEATRO', 'DANZAS', 'MUSICA', 'CANTO'],
-    enumName: 'Category',
+    name: 'categoryId',
+    type: 'string',
+    description: 'UUID de la categoría',
   })
-  async getAllByGroup(@Param('category') category: Category) {
-    return this.stylesService.getAllByGroup(category);
+  async getAllByGroup(@Param('categoryId') categoryId: string) {
+    return this.stylesService.getAllByGroup(categoryId);
   }
 
   @Get('get/:uid')
@@ -49,17 +63,23 @@ export class StylesController {
   }
 
   @Post('create')
-  @UseGuards(AuthGuard)
-  @Roles('admin', 'professor')
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator', 'institutional')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Crear estilo' })
-  async createStyle(@Body() body: CreateStyleDto) {
-    return this.stylesService.create(body);
+  async createStyle(
+    @Body() body: CreateStyleDto,
+    @Institution() institution: ActiveInstitution,
+  ) {
+    return this.stylesService.create({
+      ...body,
+      institutionId: institution.uid,
+    });
   }
 
   @Put('update/:uid')
-  @UseGuards(AuthGuard)
-  @Roles('admin', 'professor')
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator', 'institutional')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Actualizar estilo' })
   async updateStyle(@Param('uid') uid: string, @Body() body: UpdateStyleDto) {
@@ -67,8 +87,8 @@ export class StylesController {
   }
 
   @Delete('delete/:uid')
-  @UseGuards(AuthGuard)
-  @Roles('admin')
+  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Eliminar estilo' })
   async deleteStyle(@Param('uid') uid: string) {

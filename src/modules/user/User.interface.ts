@@ -30,6 +30,10 @@ export interface UserWithRelations extends User {
   photo?: { uid: string; url?: string } | null;
   role?: { uid: string; name?: string; slug?: string } | null;
   groups?: { group: { uid: string; name?: string } }[] | null;
+  // Solo lo devuelve getActiveUsers, acotado a la institución consultada: es
+  // el rol del usuario EN esa institución, y es lo único que distingue a un
+  // profesor invitado de un artista autodidacta.
+  userInstitutions?: { contextRole: string; joinedAt: Date }[] | null;
 }
 
 export interface CreateStudentUseCase {
@@ -41,33 +45,9 @@ export interface CreateStudentUseCase {
     description?: string;
     gender: string;
     telNumber: string;
-    roleId: string;
     roleData: unknown;
   };
   photo?: { base64: string; name: string; folder: string };
-}
-
-export interface CreateProfessorUseCase {
-  uid: string;   // Credentials UID del profesor (viene del body, no del JWT del admin)
-  user: {
-    name: string;
-    lastName: string;
-    username: string;
-    description?: string;
-    gender: string;
-    telNumber: string;
-  };
-  photo?: { base64: string; name: string; folder: string };
-}
-
-export interface UpdateUserUseCase {
-  name?: string;
-  lastName?: string;
-  username?: string;
-  description?: string;
-  gender?: string;
-  telNumber?: string;
-  userTypeId?: string;
 }
 
 export interface UserUidResult {

@@ -16,6 +16,7 @@ const mockPrisma = {
   },
   usersGroups: { findFirst: jest.fn() },
   attendance: { create: jest.fn(), findMany: jest.fn() },
+  groups: { findUnique: jest.fn() },
 };
 
 // Local-time constructor avoids UTC-offset shifting the date to the wrong day
@@ -44,6 +45,82 @@ describe('ClassesService', () => {
 
   afterEach(() => {
     jest.useRealTimers();
+  });
+
+  // ─── create (FK guard — groupId must belong to the active tenant) ───────────
+  //
+  // `groupId` is a direct FK on `Classes`, not filtered by the tenant
+  // extension on nested reads. `groups.findUnique` IS scoped, so a foreign
+  // groupId resolves to null and must block the write before any Classes
+  // row (which would otherwise be correctly stamped with the caller's own
+  // institutionId, but point at a foreign group) is created.
+
+  describe('create', () => {
+    const params = {
+      groupId: 'group-1',
+      date: new Date(2026, 3, 24, 0, 0, 0),
+      startTime: '10:00',
+      endTime: '11:00',
+      institutionId: 'inst-1',
+    };
+
+    it('throws NotFoundException for a groupId outside the active tenant and writes nothing', async () => {
+      mockPrisma.groups.findUnique.mockResolvedValue(null); // extension scoped it out
+
+      await expect(service.create(params)).rejects.toThrow(NotFoundException);
+      expect(mockPrisma.classes.create).not.toHaveBeenCalled();
+    });
+
+    it('creates the class when the group belongs to the active tenant', async () => {
+      mockPrisma.groups.findUnique.mockResolvedValue({ uid: 'group-1' });
+      mockPrisma.classes.create.mockResolvedValue({ uid: 'class-new' });
+
+      const result = await service.create(params);
+
+      expect(result).toEqual({ uid: 'class-new' });
+      expect(mockPrisma.classes.create).toHaveBeenCalledWith({
+        data: {
+          groupId: 'group-1',
+          date: params.date,
+          startTime: '10:00',
+          endTime: '11:00',
+          topic: undefined,
+          scheduleId: null,
+          institutionId: 'inst-1',
+        },
+        select: { uid: true },
+      });
+    });
+  });
+
+  // ─── getByGroup (read-side guard) ────────────────────────────────────────────
+  //
+  // The tenant extension only rewrites the top-level `where` of the call it
+  // intercepts — it does NOT scope the nested `group: {...}` relation that
+  // `getByGroup` selects. Without the explicit `groups.findUnique` check, a
+  // foreign groupId planted on a Classes row (see the `create` guard above)
+  // would leak that foreign group's name/category/professor through the
+  // nested select. A foreign groupId must return an empty list instead.
+
+  describe('getByGroup', () => {
+    it('returns nothing for a groupId outside the active tenant, without leaking the nested relation', async () => {
+      mockPrisma.groups.findUnique.mockResolvedValue(null); // extension scoped it out
+
+      const result = await service.getByGroup('foreign-group');
+
+      expect(result).toEqual([]);
+      expect(mockPrisma.classes.findMany).not.toHaveBeenCalled();
+    });
+
+    it('returns the classes when the group belongs to the active tenant', async () => {
+      mockPrisma.groups.findUnique.mockResolvedValue({ uid: 'group-1' });
+      mockPrisma.classes.findMany.mockResolvedValue([CLASS_TODAY]);
+
+      const result = await service.getByGroup('group-1');
+
+      expect(result).toEqual([CLASS_TODAY]);
+      expect(mockPrisma.classes.findMany).toHaveBeenCalled();
+    });
   });
 
   // ─── getCurrentClass ────────────────────────────────────────────────────────
@@ -106,7 +183,7 @@ describe('ClassesService', () => {
   // ─── attend ─────────────────────────────────────────────────────────────────
 
   describe('attend', () => {
-    const params = { classId: 'class-1', userId: 'user-1' };
+    const params = { classId: 'class-1', userId: 'user-1', institutionId: 'inst-1' };
 
     it('throws NotFoundException when class does not exist', async () => {
       mockPrisma.classes.findUnique.mockResolvedValue(null);
@@ -163,7 +240,7 @@ describe('ClassesService', () => {
 
       expect(result).toEqual({ success: true });
       expect(mockPrisma.attendance.create).toHaveBeenCalledWith({
-        data: { classId: 'class-1', userId: 'user-1' },
+        data: { classId: 'class-1', userId: 'user-1', institutionId: 'inst-1' },
       });
     });
   });

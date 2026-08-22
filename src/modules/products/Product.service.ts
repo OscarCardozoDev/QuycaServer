@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Decimal } from '@prisma/client/runtime/client';
 import {
@@ -11,19 +17,99 @@ import {
 import { PhotosService } from 'src/modules/photos/Photos.service';
 import { photoManagement } from 'src/utils/photosManagement';
 import { v4 as uuidv4 } from 'uuid';
+import { runWithoutTenant } from 'src/tenant/tenant-context';
 
 @Injectable()
 export class ProductService {
   constructor(
-    private readonly prisma: PrismaService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
     private readonly photosService: PhotosService,
   ) {}
+
+  /* =========================
+   * BRIDGE-TABLE GUARDS
+   * `UserProduct` y `ProductStyle` no tienen `institutionId` propio (son
+   * tablas puente) y la extensión de tenant no las filtra. Un userId o
+   * styleId que llegue del cliente podría pertenecer a otra institución;
+   * se valida explícitamente antes de escribir la relación.
+   * ========================= */
+  private async assertActiveMembers(userIds: string[], institutionId: string) {
+    const unique = [...new Set(userIds)];
+    if (!unique.length) return;
+
+    const members = await this.prisma.userInstitution.findMany({
+      where: { userId: { in: unique }, institutionId, isActive: true },
+      select: { userId: true },
+    });
+
+    const memberIds = new Set(members.map((m) => m.userId));
+    const invalid = unique.filter((id) => !memberIds.has(id));
+
+    if (invalid.length) {
+      throw new ForbiddenException(
+        `User(s) not an active member of this institution: ${invalid.join(', ')}`,
+      );
+    }
+  }
+
+  private async assertStylesBelongToTenant(styleIds: string[]) {
+    const unique = [...new Set(styleIds)];
+    if (!unique.length) return;
+
+    // `styles.findMany` está auto-scoped por la extensión de tenant: un
+    // styleId de otra institución simplemente no aparece en `found`.
+    const found = await this.prisma.styles.findMany({
+      where: { uid: { in: unique } },
+      select: { uid: true },
+    });
+
+    if (found.length !== unique.length) {
+      throw new BadRequestException(
+        'Some styles do not exist or do not belong to this institution',
+      );
+    }
+  }
+
+  /* =========================
+   * FK GUARD
+   * `groupId` is a direct FK on `Products` supplied by the client. The
+   * tenant extension only scopes the top-level call it intercepts, not
+   * nested relations resolved by FK — an unchecked foreign groupId would
+   * let a `Products` row (correctly stamped with the caller's own
+   * institutionId) point at another tenant's group. `groups.findUnique`
+   * is itself scoped, so a foreign id simply comes back null.
+   * ========================= */
+  private async assertGroupInTenant(groupId: string): Promise<void> {
+    const group = await this.prisma.groups.findUnique({
+      where: { uid: groupId },
+      select: { uid: true },
+    });
+    if (!group) {
+      throw new NotFoundException('Group not found');
+    }
+  }
 
   /* =========================
    * CREATE
    * ========================= */
   async createProductUseCase(data: CreateProductUseCase) {
-    const { product, styles, images, authors } = data;
+    const { product, styles, images, authors, institutionId } = data;
+
+    // FASE 0️⃣ — Validar que el grupo, los autores y los estilos pertenecen
+    // a la institución activa antes de escribir Products y las tablas
+    // puente UserProduct/ProductStyle.
+    await this.assertGroupInTenant(product.groupId);
+
+    if (authors?.length) {
+      await this.assertActiveMembers(
+        authors.map((author) => author.userId),
+        institutionId,
+      );
+    }
+
+    if (styles?.length) {
+      await this.assertStylesBelongToTenant(styles);
+    }
 
     /**
      * FASE 1️⃣ — Crear imágenes (fuera de transacción)
@@ -65,6 +151,7 @@ export class ProductService {
       ...product,
       price:
         product.price !== undefined ? new Decimal(product.price) : undefined,
+      institutionId,
     };
 
     /**
@@ -125,102 +212,111 @@ export class ProductService {
   /* =========================
    * READ
    * ========================= */
+  // Público: alimenta la galería sin sesión, ver Product.controller.ts.
   async getAll(options: GetProductsOptions = {}) {
     const { page = 1, limit = 10, styleId } = options;
 
-    return this.prisma.products.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
-      where: { styles: { some: { styleId } } },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        authors: {
-          select: {
-            isAuthor: true,
-            user: {
-              select: {
-                name: true,
-                lastName: true,
+    return runWithoutTenant(() =>
+      this.prisma.products.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        where: { styles: { some: { styleId } } },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          authors: {
+            select: {
+              isAuthor: true,
+              user: {
+                select: {
+                  name: true,
+                  lastName: true,
+                },
+              },
+            },
+          },
+          photos: {
+            select: {
+              isMain: true,
+              photo: {
+                select: {
+                  uid: true,
+                  name: true,
+                  url: true,
+                },
               },
             },
           },
         },
-        photos: {
-          select: {
-            isMain: true,
-            photo: {
-              select: {
-                uid: true,
-                name: true,
-                url: true,
-              },
-            },
-          },
-        },
-      },
-    });
+      }),
+    );
   }
 
+  // Público: alimenta la galería sin sesión, ver Product.controller.ts.
   async getGalleryHome(options: GetProductsOptions = {}) {
     const { page = 1, limit = 10, styleId } = options;
 
-    return this.prisma.products.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-      where: {
-        isActive: true,
-        status: 'APPROVED',
-        styles: { some: { styleId } },
-      },
-      select: {
-        uid: true,
-        name: true,
-        photos: {
-          where: { isMain: true },
-          select: {
-            photo: {
-              select: {
-                uid: true,
-                name: true,
-                url: true,
+    return runWithoutTenant(() =>
+      this.prisma.products.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        where: {
+          isActive: true,
+          status: 'APPROVED',
+          styles: { some: { styleId } },
+        },
+        select: {
+          uid: true,
+          name: true,
+          photos: {
+            where: { isMain: true },
+            select: {
+              photo: {
+                select: {
+                  uid: true,
+                  name: true,
+                  url: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      }),
+    );
   }
 
+  // Público: alimenta la galería sin sesión, ver Product.controller.ts.
   async getById(uid: string) {
-    const product = await this.prisma.products.findUnique({
-      where: { uid },
-      include: {
-        authors: {
-          select: {
-            isAuthor: true,
-            userId: true,
-          },
-        },
-        photos: {
-          select: {
-            photo: {
-              select: {
-                uid: true,
-                name: true,
-                url: true,
-              },
+    const product = await runWithoutTenant(() =>
+      this.prisma.products.findUnique({
+        where: { uid },
+        include: {
+          authors: {
+            select: {
+              isAuthor: true,
+              userId: true,
             },
-            isMain: true,
+          },
+          photos: {
+            select: {
+              photo: {
+                select: {
+                  uid: true,
+                  name: true,
+                  url: true,
+                },
+              },
+              isMain: true,
+            },
+          },
+          styles: {
+            select: {
+              styleId: true,
+            },
           },
         },
-        styles: {
-          select: {
-            styleId: true,
-          },
-        },
-      },
-    });
+      }),
+    );
 
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -229,7 +325,52 @@ export class ProductService {
     return product;
   }
 
+  // Público: alimenta la galería sin sesión, ver Product.controller.ts.
   async getAllByGroup(groupId: string, options: GetProductsOptions = {}) {
+    const { page = 1, limit = 10 } = options;
+
+    return runWithoutTenant(() =>
+      this.prisma.products.findMany({
+        where: { groupId },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          photos: {
+            select: {
+              photo: {
+                select: {
+                  uid: true,
+                  name: true,
+                  url: true,
+                },
+              },
+              isMain: true,
+            },
+          },
+          authors: {
+            select: {
+              isAuthor: true,
+              userId: true,
+            },
+          },
+        },
+      }),
+    );
+  }
+
+  /**
+   * La misma lectura que `getAllByGroup`, para el dashboard.
+   *
+   * La diferencia es TODA la diferencia: sin `runWithoutTenant()`, la
+   * extensión inyecta el institutionId y un groupId de otra institución
+   * devuelve vacío. La pública existe para la galería, que no tiene tenant
+   * resuelto — ver el spec 2026-08-12-pantalla-del-grupo-design § 5.
+   */
+  async getAllByGroupPrivate(
+    groupId: string,
+    options: GetProductsOptions = {},
+  ) {
     const { page = 1, limit = 10 } = options;
 
     return this.prisma.products.findMany({
@@ -260,39 +401,42 @@ export class ProductService {
     });
   }
 
+  // Público: alimenta la galería sin sesión, ver Product.controller.ts.
   async getAllByAuthor(authorId: string, options: GetProductsOptions = {}) {
     const { page = 1, limit = 10 } = options;
 
-    return this.prisma.products.findMany({
-      where: {
-        authors: {
-          some: { userId: authorId },
+    return runWithoutTenant(() =>
+      this.prisma.products.findMany({
+        where: {
+          authors: {
+            some: { userId: authorId },
+          },
         },
-      },
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        photos: {
-          where: { isMain: true },
-          select: {
-            photo: {
-              select: {
-                uid: true,
-                name: true,
-                url: true,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          photos: {
+            where: { isMain: true },
+            select: {
+              photo: {
+                select: {
+                  uid: true,
+                  name: true,
+                  url: true,
+                },
               },
             },
           },
-        },
-        authors: {
-          select: {
-            isAuthor: true,
-            userId: true,
+          authors: {
+            select: {
+              isAuthor: true,
+              userId: true,
+            },
           },
         },
-      },
-    });
+      }),
+    );
   }
 
   /* =========================
@@ -318,6 +462,12 @@ export class ProductService {
     });
 
     if (!product) throw new NotFoundException('Product not found');
+
+    // Misma validación que en create: `styles` alimenta la tabla puente
+    // ProductStyle, que no tiene institutionId propio.
+    if (styles?.length) {
+      await this.assertStylesBelongToTenant(styles);
+    }
 
     /**
      * FASE 1️⃣ — Guardar archivos nuevos en disco (fuera de transacción)

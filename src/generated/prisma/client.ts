@@ -142,3 +142,59 @@ export type Classes = Prisma.ClassesModel
  * 
  */
 export type Attendance = Prisma.AttendanceModel
+/**
+ * Model SubscriptionPlan
+ * 
+ */
+export type SubscriptionPlan = Prisma.SubscriptionPlanModel
+/**
+ * Model Institution
+ * 
+ */
+export type Institution = Prisma.InstitutionModel
+/**
+ * Model UserInstitution
+ * 
+ */
+export type UserInstitution = Prisma.UserInstitutionModel
+/**
+ * Model GroupCategory
+ * 
+ */
+export type GroupCategory = Prisma.GroupCategoryModel
+/**
+ * Model InstitutionInvitation
+ * 
+ */
+export type InstitutionInvitation = Prisma.InstitutionInvitationModel
+/**
+ * Model ContentRequest
+ * 
+ */
+export type ContentRequest = Prisma.ContentRequestModel
+/**
+ * Model Lessons
+ * 
+ */
+export type Lessons = Prisma.LessonsModel
+/**
+ * Model Chapters
+ * 
+ */
+export type Chapters = Prisma.ChaptersModel
+/**
+ * Model ChapterPhoto
+ * Tabla puente. Las imágenes del vlog dentro de un capítulo.
+ */
+export type ChapterPhoto = Prisma.ChapterPhotoModel
+/**
+ * Model LessonProgress
+ * Avance del estudiante. Una fila = un capítulo terminado.
+ * 
+ * NO lleva institutionId y NO entra en SCOPED_MODELS, y es la única excepción
+ * deliberada del módulo: un usuario avanza en lecciones GLOBALES de otras
+ * instituciones, así que etiquetar su progreso con la institución activa del
+ * momento sería un dato falso. Se filtra SIEMPRE por userId explícito, igual
+ * que una tabla puente.
+ */
+export type LessonProgress = Prisma.LessonProgressModel
