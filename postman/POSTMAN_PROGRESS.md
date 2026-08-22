@@ -237,3 +237,142 @@ Run tests: `bun run test:api` (requires server on port 3000).
 
 > **Bugs fixed:**
 > - `Create Schedule`: asserted `json.dayOfWeek` and `json.startTime` but service uses `select: { uid: true }` → returns `{ uid }` only. Removed those assertions.
+
+---
+
+## Lessons + Chapters ✅ Complete
+
+40 requests, **40/40 en verde** contra el stack aislado (2026-08-22). Los 20 endpoints de `LessonController` y los 7 de `ChapterController`.
+
+El autor es el **rector**: `@RequireContextRole('rector','coordinator','institutional')` lo deja
+crear, y además es quien revisa. Eso permite caminar el ciclo entero sin depender del flujo de
+invitación de un docente a la institución que Institutions crea en cada corrida.
+
+Depende de `groupId` e `institutionSlug`, así que el folder va **después de Groups**.
+
+| Endpoint | Test case | Status |
+|---|---|---|
+| POST /lessons/create | rector → 201, nace en DRAFT, isPublic false | ✅ |
+| POST /lessons/create | sin título → 400 | ✅ |
+| POST /lessons/create | **sin `X-Institution-Slug` → 400** | ✅ |
+| POST /lessons/create | estudiante → 403/400 | ✅ |
+| GET /lessons/get/:uid | → 200, misma lección | ✅ |
+| GET /lessons/get/:uid | uid inexistente → 404 | ✅ |
+| GET /lessons/get | rector → 200, array | ✅ |
+| GET /lessons/mine | → 200, incluye la creada | ✅ |
+| POST /lessons/:id/chapters | ×3 → 201, sequence 1, 2, 3 | ✅ |
+| GET /lessons/:id/chapters | → 200, secuencia contigua, trae `completed` | ✅ |
+| GET /lessons/:id/chapters/:uid | → 200, `prevUid`/`nextUid` del backend | ✅ |
+| GET /lessons/:otra/chapters/:uid | **→ 404, el capítulo tiene que ser de ESA lección** | ✅ |
+| PATCH .../chapters/reorder | → 200, reescribe 1..N | ✅ |
+| DELETE .../chapters/:uid | → 200 y **recompacta** a 1,2 | ✅ |
+| POST /lessons/:id/submit | → PENDING | ✅ |
+| PATCH /lessons/:id/review | rechazar → REJECTED + feedback | ✅ |
+| POST /lessons/:id/submit | tras rechazo → PENDING | ✅ |
+| PATCH /lessons/:id/review | aprobar → APPROVED | ✅ |
+| PUT /lessons/update/:uid | **⚠ editar una APPROVED → PENDING, isPublic false, globalStatus null** | ✅ |
+| PUT .../chapters/:uid | **⚠ editar un capítulo también la devuelve a la cola** | ✅ |
+| POST /lessons/:id/submit-global | → globalStatus PENDING | ✅ |
+| GET /lessons/admin | super_admin, **sin header de institución** → 200 | ✅ |
+| GET /lessons/admin/:uid | **⚠ lee una lección que todavía NO es pública** | ✅ |
+| GET /lessons/admin/:uid/chapters | → 200, array | ✅ |
+| PATCH /lessons/admin/:uid/review | aprobar → globalStatus APPROVED **e isPublic true** | ✅ |
+| GET /lessons/catalog | estudiante, sin tenant → 200, contiene la lección | ✅ |
+| POST /lessons/:id/unpublish | → isPublic false | ✅ |
+| DELETE /lessons/delete/:uid | → 200, y el GET siguiente da 404 | ✅ |
+
+> **Los tres casos marcados ⚠ son la razón de que esta suite exista.** Jest ya los cubre con mocks
+> (`Lesson.review-reset.spec.ts`, `Lesson.admin-read.spec.ts`), pero acá se ejercitan con el header
+> `X-Institution-Slug` real, la cookie HttpOnly real y el orden real de los guards. Si el reseteo a
+> revisión falla, hay contenido sin revisar visible en **todas** las instituciones, porque `isPublic`
+> es la condición que autoriza la lectura cross-tenant del catálogo.
+
+> El primer capítulo manda a propósito un `contentMd` con un separador `---` y un bloque de código
+> con `/* */`: sin la exclusión de `contentmd` en `EXCLUDED_FIELDS` del `SqlInjectionGuard`, eso
+> devuelve 403 sobre contenido legítimo.
+
+---
+
+## Deuda conocida de esta colección
+
+- **`docker-compose.test.yml` no aísla nada.** Los comentarios dicen "puerto diferente" y "3001",
+  pero mapea `3000:3000` y `5432:5432` — **los mismos puertos que dev**. Levantarlo choca con el
+  stack de desarrollo. Hasta que se corrija, `bun run test:api` escribe en la base de desarrollo.
+- **`POST /user/professor` ya no existe** y la colección le pegaba tres veces. Reemplazado por
+  `POST /user/create`, que toma el uid del JWT: ahora el usuario nuevo se loguea y crea su propio
+  perfil. Sigue publicando `createdUserId` y `newProfessorId`, de los que dependen Groups, Products
+  y Events.
+- El viejo caso *"403 for professor"* probaba un guard de admin que se eliminó. La regla que sí rige
+  hoy es que el endpoint exige sesión, y eso es lo que se prueba ahora (`401 sin sesión`).
+
+---
+
+## Cómo correr la suite aislada (2026-08-22)
+
+```bash
+# 1. Stack de test, en su PROPIO proyecto de Compose
+docker-compose -f docker-compose.test.yml up -d     # backend 3001, db 5433
+
+# 2. Migrar y sembrar
+docker exec backend_test sh -c "cd /app && bun run prisma:migrate:prod"
+docker exec backend_test sh -c "cd /app && bun run prisma:seed:static"
+
+# 3. Las dos cuentas que la semilla NO crea (ver abajo)
+curl -X POST http://localhost:3001/auth/register -H "Content-Type: application/json" \
+  -d '{"mail":"professor@gmail.com","password":"qweasdRF123"}'
+curl -X POST http://localhost:3001/auth/register -H "Content-Type: application/json" \
+  -d '{"mail":"student@gmail.com","password":"Student@1234!"}'
+
+# 4. Correr
+npx newman run ./postman/collections/server-api/collection.json \
+  --environment ./postman/environments/testing.env.json \
+  --env-var baseUrl=http://localhost:3001
+```
+
+> `bun run test:api` sigue apuntando a **3000**, o sea a la base de desarrollo. Para el stack
+> aislado hay que pasar `--env-var baseUrl=http://localhost:3001`, como arriba.
+
+---
+
+## Estado real de la corrida — 2026-08-22, stack aislado, base limpia
+
+**188 requests · 310 aserciones · 133 fallando.**
+
+| Carpeta | Fallas | Primera falla (todo lo demás es cascada) |
+|---|---|---|
+| **Lessons** | **0** | — |
+| Photos | 3 | |
+| Auth | 3 | `Login (professor)` espera `hasProfile`/`hasGroup`; el usuario recién registrado no tiene perfil |
+| Institutions | 8 | `Create Invitation` → 400 |
+| User | 15 | `Get All Active Users (admin)` → 400: pide `X-Institution-Slug` y User corre **antes** que Institutions, así que `institutionSlug` está vacío |
+| Products | 15 | `Create Product (professor)` → 400 |
+| Classes | 15 | `Create Class (professor)` → 400 |
+| Schedule | 13 | `Create Schedule (professor)` → 400 |
+| Styles | 9 | `Create Style (professor)` → 400 |
+| Events | 25 | `Get Upcoming Events (public)` → no devuelve array |
+| Groups | 27 | `Create Group` → 403 |
+
+**Ninguna de esas 133 es de Lessons.** Son deuda anterior: la colección se escribió contra una base
+de desarrollo poblada a mano y nunca se volvió a correr desde cero. Los tres patrones son:
+
+1. **Fixtures que la semilla no crea.** `professor@gmail.com` y `student@gmail.com` no salen de
+   `seed.static.ts` — solo sale `admin@gmail.com`. Sin ellos, `Login (professor)` da 401 y se cae
+   media colección. Lo correcto sería que la colección los registre en el folder de Auth.
+2. **Orden de carpetas.** `User` usa `{{institutionSlug}}`, que recién lo publica `Institutions`.
+   En una base limpia, User corre con el slug vacío y da 400.
+3. **Contratos que cambiaron.** Ya corregidos: `POST /user/professor` (eliminado) y `planSlug` en
+   `POST /institutions` (el plan pasó a ser un paso aparte del onboarding). Quedan más del mismo
+   tipo en Groups, Products, Styles, Classes y Schedule.
+
+---
+
+## Hallazgo: la baja de una lección no la esconde de la lectura directa
+
+`deactivateLesson` hace `isActive: false`, y todos los **listados** filtran `isActive: true`. Pero
+`GET /lessons/get/:uid` pasa por `findInTenant`, que es un `findUnique({ where: { uid } })` **sin
+filtrar `isActive`**: quien ya tenga el uid y esté en el mismo tenant sigue leyendo una lección dada
+de baja.
+
+No es fuga cross-tenant. Pero tampoco es lo que "eliminar" sugiere. El caso de la suite asserta la
+garantía que **sí** rige —que sale de los listados— y deja el resto anotado acá en vez de fingir que
+la lectura directa da 404.

@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "usta-gallery-api-tests",
     "name": "Quyca API Tests",
-    "description": "Full Newman test suite — Auth, User, Institutions, Categories, Groups, Photos, Products, Styles, Events, Classes, Schedule",
+    "description": "Full Newman test suite — Auth, User, Institutions, Categories, Groups, Photos, Products, Styles, Events, Classes, Schedule, Lessons",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -443,7 +443,7 @@
       "name": "User",
       "item": [
         {
-          "name": "🔐 Login as Admin",
+          "name": "🔐 Login as New User",
           "request": {
             "method": "POST",
             "header": [
@@ -455,7 +455,7 @@
             "url": "{{baseUrl}}/auth/login",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"mail\": \"{{adminMail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "raw": "{\n  \"mail\": \"{{newUserMail}}\",\n  \"password\": \"{{newUserPassword}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -476,7 +476,7 @@
           ]
         },
         {
-          "name": "Create Professor Profile (admin)",
+          "name": "Create Own Profile (new user)",
           "request": {
             "method": "POST",
             "header": [
@@ -485,10 +485,10 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{baseUrl}}/user/professor",
+            "url": "{{baseUrl}}/user/create",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"uid\": \"{{newUserId}}\",\n  \"name\": \"Nuevo\",\n  \"lastName\": \"Profesor\",\n  \"username\": \"{{professorUsername}}\",\n  \"description\": \"Profesor de prueba\",\n  \"gender\": \"M\",\n  \"telNumber\": \"3001234567\"\n}",
+              "raw": "{\n  \"name\": \"Nuevo\",\n  \"lastName\": \"Profesor\",\n  \"username\": \"{{professorUsername}}\",\n  \"description\": \"Profesor de prueba\",\n  \"gender\": \"M\",\n  \"telNumber\": \"3001234567\",\n  \"roleData\": {\n    \"career\": \"Artes\",\n    \"semester\": \"1\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -515,6 +515,72 @@
                   "pm.test('Has uid', () => pm.expect(json.uid).to.be.a('string'));",
                   "pm.environment.set('createdUserId', json.uid);",
                   "pm.environment.set('newProfessorId', json.uid);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Own Profile - segunda vez devuelve 400/409",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/user/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nuevo\",\n  \"lastName\": \"Profesor\",\n  \"username\": \"dupe_prof_api_001\",\n  \"gender\": \"M\",\n  \"telNumber\": \"3000000001\",\n  \"roleData\": {\n    \"career\": \"Artes\",\n    \"semester\": \"1\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Ya tiene perfil', () => pm.expect(pm.response.code).to.be.oneOf([400, 409]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "🔐 Login as Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mail\": \"{{adminMail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login OK', () => pm.response.to.have.status(201));"
                 ],
                 "type": "text/javascript"
               }
@@ -725,39 +791,6 @@
           ]
         },
         {
-          "name": "Create Professor Profile - 409 on duplicate uid (admin)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/user/professor",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"uid\": \"{{newUserId}}\",\n  \"name\": \"Dupe\",\n  \"lastName\": \"Prof\",\n  \"username\": \"dupe_prof_api_001\",\n  \"gender\": \"M\",\n  \"telNumber\": \"3000000001\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 409 on duplicate uid', () => pm.response.to.have.status(409));"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
           "name": "Create Student Profile - 400 for admin (already has profile)",
           "request": {
             "method": "POST",
@@ -791,6 +824,58 @@
           ]
         },
         {
+          "name": "Logout antes del caso sin sesión",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/auth/logout"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Profile - 401 sin sesión",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/user/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"X\",\n  \"lastName\": \"Y\",\n  \"username\": \"xy_002\",\n  \"gender\": \"M\",\n  \"telNumber\": \"3000000003\",\n  \"roleData\": {\n    \"career\": \"Artes\",\n    \"semester\": \"1\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
           "name": "🔐 Login as Professor",
           "request": {
             "method": "POST",
@@ -817,39 +902,6 @@
               "script": {
                 "exec": [
                   "pm.test('Login OK', () => pm.response.to.have.status(201));"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
-        },
-        {
-          "name": "Create Professor Profile - 403 for professor",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{baseUrl}}/user/professor",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"uid\": \"{{newUserId}}\",\n  \"name\": \"X\",\n  \"lastName\": \"Y\",\n  \"username\": \"xy_002\",\n  \"gender\": \"M\",\n  \"telNumber\": \"3000000003\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
                 ],
                 "type": "text/javascript"
               }
@@ -1047,7 +1099,7 @@
             "url": "{{baseUrl}}/institutions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Institución Test API\",\n  \"slug\": \"{{institutionSlug}}\",\n  \"type\": \"EDUCATIONAL\",\n  \"planSlug\": \"academia\",\n  \"representativeName\": \"Rector\",\n  \"representativeLastName\": \"Test\",\n  \"email\": \"{{rectorMail}}\",\n  \"password\": \"{{rectorPassword}}\"\n}",
+              "raw": "{\n  \"name\": \"Institución Test API\",\n  \"slug\": \"{{institutionSlug}}\",\n  \"type\": \"EDUCATIONAL\",\n  \"representativeName\": \"Rector\",\n  \"representativeLastName\": \"Test\",\n  \"email\": \"{{rectorMail}}\",\n  \"password\": \"{{rectorPassword}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1095,7 +1147,7 @@
             "url": "{{baseUrl}}/institutions",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Dup\",\n  \"slug\": \"{{institutionSlug}}\",\n  \"type\": \"EDUCATIONAL\",\n  \"planSlug\": \"academia\",\n  \"representativeName\": \"X\",\n  \"representativeLastName\": \"Y\",\n  \"email\": \"dup@test.com\",\n  \"password\": \"Test@1234!\"\n}",
+              "raw": "{\n  \"name\": \"Dup\",\n  \"slug\": \"{{institutionSlug}}\",\n  \"type\": \"EDUCATIONAL\",\n  \"representativeName\": \"X\",\n  \"representativeLastName\": \"Y\",\n  \"email\": \"dup@test.com\",\n  \"password\": \"Test@1234!\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3699,7 +3751,7 @@
             "url": "{{baseUrl}}/classes/create",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"groupId\": \"{{groupId}}\",\n  \"date\": \"2026-08-07\",\n  \"startTime\": \"08:00\",\n  \"endTime\": \"10:00\",\n  \"topic\": \"Introducción al color\"\n}",
+              "raw": "{\n  \"groupId\": \"{{groupId}}\",\n  \"date\": \"2026-08-23\",\n  \"startTime\": \"08:00\",\n  \"endTime\": \"10:00\",\n  \"topic\": \"Introducción al color\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4239,6 +4291,1242 @@
               "script": {
                 "exec": [
                   "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lessons",
+      "item": [
+        {
+          "name": "🔐 Login as Rector",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mail\": \"{{rectorMail}}\",\n  \"password\": \"{{rectorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login OK', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Lesson (rector)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Básico Guitarra API\",\n  \"summary\": \"Lección creada por la suite de Newman.\",\n  \"categoryId\": \"{{categoryId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Nace en DRAFT', () => pm.expect(json.institutionStatus).to.eql('DRAFT'));",
+                  "pm.test('No es pública', () => pm.expect(json.isPublic).to.eql(false));",
+                  "pm.environment.set('lessonId', json.uid);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Lesson - sin título devuelve 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"summary\": \"Sin título\",\n  \"categoryId\": \"{{categoryId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Lesson - sin header de institución devuelve 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Sin tenant\",\n  \"categoryId\": \"{{categoryId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 sin X-Institution-Slug', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Lesson by uid",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/get/{{lessonId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Es la misma lección', () => pm.expect(pm.response.json().uid).to.eql(pm.environment.get('lessonId')));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Lesson - uid inexistente devuelve 404",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/get/00000000-0000-4000-8000-000000000000"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Institution Queue (rector)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/get"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Devuelve array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get My Lessons",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/mine"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Incluye la recién creada', () => {",
+                  "  const ids = pm.response.json().map(l => l.uid);",
+                  "  pm.expect(ids).to.include(pm.environment.get('lessonId'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Chapter 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/chapters",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Partes de la guitarra\",\n  \"contentMd\": \"# Partes\\n\\n---\\n\\nLa caja, el mástil y el clavijero.\\n\\n```js\\n/* comentario */\\n```\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Secuencia 1', () => pm.expect(json.sequence).to.eql(1));",
+                  "pm.environment.set('chapterId', json.uid);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Chapter 2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/chapters",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Las cuerdas\",\n  \"contentMd\": \"Seis cuerdas, de la sexta a la primera.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Secuencia 2', () => pm.expect(json.sequence).to.eql(2));",
+                  "pm.environment.set('chapter2Id', json.uid);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Chapter 3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/chapters",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Los acordes\",\n  \"contentMd\": \"Un acorde son tres notas o más.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('Secuencia 3', () => pm.expect(json.sequence).to.eql(3));",
+                  "pm.environment.set('chapter3Id', json.uid);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Chapters - secuencia 1..N contigua",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/chapters"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const arr = pm.response.json();",
+                  "pm.test('Son 3', () => pm.expect(arr).to.have.lengthOf(3));",
+                  "pm.test('Secuencia 1,2,3 sin huecos', () => {",
+                  "  pm.expect(arr.map(c => c.sequence)).to.eql([1, 2, 3]);",
+                  "});",
+                  "pm.test('Trae el progreso en el índice', () => {",
+                  "  pm.expect(arr[0]).to.have.property('completed');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Chapter - trae prevUid/nextUid del backend",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/chapters/{{chapter2Id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('El del medio tiene anterior y siguiente', () => {",
+                  "  pm.expect(json.prevUid).to.be.a('string');",
+                  "  pm.expect(json.nextUid).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Chapter - de otra lección devuelve 404",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/00000000-0000-4000-8000-000000000000/chapters/{{chapterId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404 — el capítulo tiene que ser de ESA lección', () => pm.response.to.have.status(404));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reorder Chapters",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/chapters/reorder",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uids\": [\n    \"{{chapter3Id}}\",\n    \"{{chapterId}}\",\n    \"{{chapter2Id}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Chapters - el reorder quedó aplicado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/chapters"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const arr = pm.response.json();",
+                  "pm.test('Reescribe 1..N en transacción', () => {",
+                  "  pm.expect(arr.map(c => c.sequence)).to.eql([1, 2, 3]);",
+                  "});",
+                  "pm.test('El que se mandó primero quedó primero', () => {",
+                  "  pm.expect(arr[0].uid).to.eql(pm.environment.get('chapter3Id'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Chapter 3 - recompacta",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/chapters/{{chapter3Id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Chapters - quedan 2, sin huecos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/chapters"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const arr = pm.response.json();",
+                  "pm.test('Quedan 2', () => pm.expect(arr).to.have.lengthOf(2));",
+                  "pm.test('Renumerados a 1,2', () => pm.expect(arr.map(c => c.sequence)).to.eql([1, 2]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit for Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/submit"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Pasa a PENDING', () => pm.expect(pm.response.json().institutionStatus).to.eql('PENDING'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Review - rechazar con motivo",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/review",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approve\": false,\n  \"feedback\": \"Faltan ejemplos en el capítulo 2.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Queda REJECTED', () => pm.expect(json.institutionStatus).to.eql('REJECTED'));",
+                  "pm.test('Guarda el motivo', () => pm.expect(json.institutionFeedback).to.be.a('string'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit again after rejection",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/submit"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Vuelve a PENDING', () => pm.expect(pm.response.json().institutionStatus).to.eql('PENDING'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Review - aprobar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/review",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approve\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Queda APPROVED', () => pm.expect(pm.response.json().institutionStatus).to.eql('APPROVED'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "⚠ Editar la lección aprobada la devuelve a la cola",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/update/{{lessonId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Básico Guitarra API (corregido)\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('APPROVED -> PENDING', () => pm.expect(json.institutionStatus).to.eql('PENDING'));",
+                  "pm.test('Sale del catálogo', () => pm.expect(json.isPublic).to.eql(false));",
+                  "pm.test('Se limpia el veredicto global', () => pm.expect(json.globalStatus).to.eql(null));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Re-aprobar tras la edición",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/review",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approve\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Vuelve a APPROVED', () => pm.expect(pm.response.json().institutionStatus).to.eql('APPROVED'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "⚠ Editar un capítulo también la devuelve a la cola",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/chapters/{{chapterId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Partes de la guitarra (corregido)\",\n  \"contentMd\": \"Texto corregido.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "⚠ ...comprobado en la lección",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/get/{{lessonId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.test('Tocar un capítulo invalida la aprobación', () => pm.expect(json.institutionStatus).to.eql('PENDING'));",
+                  "pm.test('Y la saca del catálogo', () => pm.expect(json.isPublic).to.eql(false));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Re-aprobar tras editar el capítulo",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/review",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approve\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Vuelve a APPROVED', () => pm.expect(pm.response.json().institutionStatus).to.eql('APPROVED'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit Global (rector)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/submit-global"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('globalStatus PENDING', () => pm.expect(pm.response.json().globalStatus).to.eql('PENDING'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "🔐 Login as Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mail\": \"{{adminMail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login OK', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin Queue - cross-tenant, sin header de institución",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/lessons/admin"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Devuelve array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "⚠ El revisor lee una lección que todavía NO es pública",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/lessons/admin/{{lessonId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Todavía no es pública', () => pm.expect(json.isPublic).to.eql(false));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin lee los capítulos de esa lección",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/lessons/admin/{{lessonId}}/chapters"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Devuelve array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin Review - aprobar al catálogo",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/admin/{{lessonId}}/review",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approve\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('globalStatus APPROVED', () => pm.expect(json.globalStatus).to.eql('APPROVED'));",
+                  "pm.test('Aprobar global enciende isPublic', () => pm.expect(json.isPublic).to.eql(true));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "🔐 Login as Student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mail\": \"{{studentMail}}\",\n  \"password\": \"{{studentPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login OK', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Catálogo Quyca - visible para el estudiante, sin tenant",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/lessons/catalog"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const ids = pm.response.json().map(l => l.uid);",
+                  "pm.test('Contiene la lección publicada', () => pm.expect(ids).to.include(pm.environment.get('lessonId')));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Lesson - 403 para el estudiante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"No debería poder\",\n  \"categoryId\": \"{{categoryId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 o 400 (no es miembro de esa institución)', () => {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400, 403]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "🔐 Login as Rector",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mail\": \"{{rectorMail}}\",\n  \"password\": \"{{rectorPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login OK', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unpublish - la retira del catálogo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/{{lessonId}}/unpublish"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Deja de ser pública', () => pm.expect(pm.response.json().isPublic).to.eql(false));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Lesson",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/delete/{{lessonId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tras la baja, desaparece de los listados",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Institution-Slug",
+                "value": "{{institutionSlug}}"
+              }
+            ],
+            "url": "{{baseUrl}}/lessons/mine"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Ya no aparece en /lessons/mine', () => {",
+                  "  const ids = pm.response.json().map(l => l.uid);",
+                  "  pm.expect(ids).to.not.include(pm.environment.get('lessonId'));",
+                  "});"
                 ],
                 "type": "text/javascript"
               }
