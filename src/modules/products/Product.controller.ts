@@ -17,6 +17,7 @@ import { TenantGuard } from 'src/tenant/tenant.guard';
 import { ContextRoleGuard } from 'src/guards/context-role.guard';
 import { RequireContextRole } from 'src/decorators/context-role.decorator';
 import { Institution } from 'src/decorators/institution.decorator';
+import { CurrentUser } from 'src/decorators/currentUser';
 import type { ActiveInstitution } from 'src/interface/jwtPayload';
 import { ProductService } from './Product.service';
 import {
@@ -93,6 +94,19 @@ export class ProductController {
     @Query() query: GetProductsDto,
   ) {
     return this.productsService.getAllByGroupPrivate(groupId, query);
+  }
+
+  // No lleva ':uid' en el path, así que no hay riesgo de que una ruta con
+  // parámetro la capture primero — pero va declarada antes de 'getAuthor/:uid'
+  // y 'get/:uid' de todas formas, por si alguna migra a un prefijo compartido.
+  @Get('mine')
+  @UseGuards(AuthGuard, TenantGuard)
+  @ApiOperation({ summary: 'Mis obras, en todos los estados' })
+  async getMine(
+    @CurrentUser('uid') uid: string,
+    @Query() query: GetProductsDto,
+  ) {
+    return this.productsService.getMine(uid, query);
   }
 
   @Get('getAuthor/:uid')

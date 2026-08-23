@@ -401,7 +401,10 @@ export class ProductService {
     });
   }
 
-  // Público: alimenta la galería sin sesión, ver Product.controller.ts.
+  // Público: alimenta el portafolio del autor sin sesión, ver
+  // Product.controller.ts. La galería pública SOLO muestra obras APPROVED +
+  // isActive de grupos activos — sin este where se publicaban PENDING/
+  // REJECTED con el feedback del docente adentro (bug de privacidad).
   async getAllByAuthor(authorId: string, options: GetProductsOptions = {}) {
     const { page = 1, limit = 10 } = options;
 
@@ -411,10 +414,13 @@ export class ProductService {
           authors: {
             some: { userId: authorId },
           },
+          status: 'APPROVED',
+          isActive: true,
+          group: { isActive: true },
         },
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { madeAt: 'desc' },
         include: {
           photos: {
             where: { isMain: true },
@@ -434,9 +440,67 @@ export class ProductService {
               userId: true,
             },
           },
+          styles: {
+            select: {
+              style: {
+                select: { name: true },
+              },
+            },
+          },
+          group: {
+            select: { uid: true, name: true },
+          },
         },
       }),
     );
+  }
+
+  /**
+   * Bandeja de trabajo del propio usuario: todos los estados (PENDING,
+   * REJECTED, APPROVED), acotada a la institución activa.
+   *
+   * Sin `runWithoutTenant()` a propósito — `Products` está en SCOPED_MODELS,
+   * así que la extensión de tenant inyecta el institutionId sola. Distinta de
+   * `getAllByAuthor` (pública, solo APPROVED, cualquier uid de la URL): ver
+   * obsidian/Modulos/Products.md § "Dos rutas por groupId, no una", mismo
+   * patrón aplicado acá.
+   */
+  async getMine(userId: string, options: GetProductsOptions = {}) {
+    const { page = 1, limit = 10 } = options;
+
+    return this.prisma.products.findMany({
+      where: {
+        authors: { some: { userId } },
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        photos: {
+          select: {
+            isMain: true,
+            photo: {
+              select: {
+                uid: true,
+                name: true,
+                url: true,
+              },
+            },
+          },
+        },
+        authors: {
+          select: {
+            isAuthor: true,
+            userId: true,
+          },
+        },
+        styles: {
+          select: {
+            styleId: true,
+          },
+        },
+      },
+    });
   }
 
   /* =========================
