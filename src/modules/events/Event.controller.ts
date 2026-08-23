@@ -108,6 +108,12 @@ export class EventController {
     return this.eventService.getByGroup(groupId, query);
   }
 
+  @Get('author/:uid')
+  @ApiOperation({ summary: 'Eventos en los que participó un autor' })
+  async getByAuthor(@Param('uid', new ParseUUIDPipe()) authorId: string) {
+    return this.eventService.getByAuthor(authorId);
+  }
+
   @Get('group/:uid')
   @UseGuards(AuthGuard, TenantGuard)
   @ApiOperation({

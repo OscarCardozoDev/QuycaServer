@@ -427,6 +427,65 @@ export class EventService {
     );
   }
 
+  // Público: alimenta el portafolio del artista sin sesión, ver Event.controller.ts.
+  // "Participó" = tiene una obra propia expuesta (EventProduct → Products →
+  // UserProduct.userId). Deliberadamente NO se usa EventInvitation ACCEPTED del
+  // grupo: eso certifica que el grupo participó, no la persona (ver plan
+  // 2026-08-22-portafolio-del-artista.md, Tarea 3).
+  //
+  // El `where`/`select` anidado sobre `products.product.authors` es una condición
+  // sobre EventProduct/Products/UserProduct que la extensión de tenant NO reescribe
+  // (solo intercepta `events.findMany` de nivel superior). Acá es lo buscado: es un
+  // endpoint público y cross-tenant a propósito, por eso va envuelto en
+  // runWithoutTenant().
+  // Nota: sin anotación explícita de retorno a propósito — `eventType` viene
+  // tipado por el enum generado de Prisma (src/generated/prisma), que no es
+  // asignable de forma nominal al `EventType` de Event.interface.ts aunque
+  // comparten los mismos valores de string. `AuthorEvent` (Event.interface.ts)
+  // documenta la forma para el frontend/OpenAPI sin forzar ese choque de tipos.
+  async getByAuthor(authorId: string) {
+    const events = await runWithoutTenant(() =>
+      this.prisma.events.findMany({
+        where: {
+          isActive: true,
+          status: { in: [EventStatus.APPROVED, EventStatus.COMPLETED] },
+          products: {
+            some: { product: { authors: { some: { userId: authorId } } } },
+          },
+        },
+        orderBy: { startDate: 'desc' },
+        select: {
+          uid: true,
+          name: true,
+          eventType: true,
+          startDate: true,
+          endDate: true,
+          isVirtual: true,
+          locationUrl: true,
+          // Solo las obras DEL AUTOR, no todas las del evento.
+          products: {
+            where: { product: { authors: { some: { userId: authorId } } } },
+            select: { product: { select: { uid: true, name: true } } },
+          },
+        },
+      }),
+    );
+
+    // worksCount cuenta las obras del autor (el select ya viene filtrado arriba),
+    // no todas las del evento — un `_count` acá contaría las ajenas también.
+    return events.map((e) => ({
+      uid: e.uid,
+      name: e.name,
+      eventType: e.eventType,
+      startDate: e.startDate,
+      endDate: e.endDate,
+      isVirtual: e.isVirtual,
+      locationUrl: e.locationUrl,
+      worksCount: e.products.length,
+      works: e.products.map((p) => p.product),
+    }));
+  }
+
   /** La lectura de `getByGroup` para el dashboard, sin el bypass de tenant. */
   async getByGroupPrivate(groupId: string, options: GetEventsOptions = {}) {
     const { page = 1, limit = 10 } = options;
