@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { Prisma } from 'src/generated/prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PhotosService } from 'src/modules/photos/Photos.service';
+import { runWithoutTenant } from 'src/tenant/tenant-context';
 import {
   validateRoleData,
   sanitizeRoleData,
@@ -109,22 +110,57 @@ export class UserService {
     return user;
   }
 
+  /**
+   * Perfil público del autor — GET /user/author/:uid, sin guards.
+   *
+   * `Groups` es un modelo scoped. `Users` no lo es, así que este `findUnique`
+   * nunca pasaría por la extensión de tenant de por sí — pero la relación
+   * anidada hacia `Groups` sí es del tipo de dato que la extensión filtra en
+   * las consultas directas. La extensión NO intercepta relaciones anidadas
+   * (ver obsidian/errors/multitenant/2026-08-07-la-extension-no-filtra-
+   * relaciones-anidadas.md), así que esto funcionaría igual sin el bypass.
+   * Envolvemos en runWithoutTenant() de todos modos: es la forma explícita de
+   * decir "este dato es público a propósito", en vez de apoyarnos en un
+   * agujero de la extensión que se cierra el día que entre RLS.
+   */
   async getInfoAuthor(uid: string): Promise<AuthorInfo> {
-    const user = await this.prismaService.users.findUnique({
-      where: { uid },
-      select: {
-        uid: true,
-        name: true,
-        lastName: true,
-        username: true,
-        description: true,
-        photoId: true,
-        photo: { select: { uid: true, url: true } },
-      },
-    });
+    const user = await runWithoutTenant(() =>
+      this.prismaService.users.findUnique({
+        where: { uid },
+        select: {
+          uid: true,
+          name: true,
+          lastName: true,
+          username: true,
+          description: true,
+          photoId: true,
+          photo: { select: { uid: true, url: true } },
+          // Puente hacia Groups. Solo lo público de un grupo cerrado: nombre,
+          // portada, descripción, categoría e institución. NUNCA `users` ni
+          // `_count.users` acá — quién está adentro de un grupo no se publica.
+          groups: {
+            where: { group: { isActive: true } },
+            select: {
+              group: {
+                select: {
+                  uid: true,
+                  name: true,
+                  description: true,
+                  coverPhoto: { select: { url: true } },
+                  groupCategory: { select: { name: true, slug: true } },
+                  institution: { select: { name: true, slug: true } },
+                },
+              },
+            },
+          },
+        },
+      }),
+    );
 
     if (!user) throw new NotFoundException(`User with uid ${uid} not found`);
-    return user;
+
+    const { groups, ...rest } = user;
+    return { ...rest, groups: groups.map((ug) => ug.group) };
   }
 
   async createStudentUseCase(

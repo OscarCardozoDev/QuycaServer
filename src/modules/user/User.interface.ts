@@ -23,6 +23,17 @@ export interface AuthorInfo {
   description?: string | null;
   photoId?: string | null;
   photo?: { uid: string; url?: string } | null;
+  // Grupos del autor, aplanados desde el puente UsersGroups. Solo lo público
+  // de un grupo cerrado — nunca la lista de estudiantes. Ver
+  // UserService.getInfoAuthor.
+  groups: {
+    uid: string;
+    name: string;
+    description: string | null;
+    coverPhoto: { url: string } | null;
+    groupCategory: { name: string; slug: string } | null;
+    institution: { name: string; slug: string };
+  }[];
 }
 
 export interface UserWithRelations extends User {
