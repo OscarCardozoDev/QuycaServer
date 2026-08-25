@@ -614,4 +614,152 @@ export class GroupService {
       return { groupId };
     });
   }
+  /* =========================
+   * PANEL DE CONTROL
+   * ========================= */
+
+  /**
+   * Ficha y contadores del grupo activo, para `/dashboard/panel-control`.
+   *
+   * La pantalla existía desde antes y llamaba a este endpoint y al de miembros,
+   * pero ninguno de los dos existía en el backend: 404 para los seis roles.
+   * Ver obsidian/Raw/Specs/2026-08-23-matriz-de-permisos-design.md §3.12.
+   *
+   * `Products` y `Events` son scoped, así que el `groupBy` ya sale filtrado por
+   * `institutionId` --`groupBy` está en WHERE_OPERATIONS de la extensión--. El
+   * `groupId` acota a un grupo que `assertCanViewGroup` ya validó.
+   */
+  async getGroupStats(groupId: string, uid: string, contextRole: string) {
+    const group = await this.prisma.groups.findUnique({
+      where: { uid: groupId },
+      select: {
+        uid: true,
+        name: true,
+        groupCategory: { select: { name: true } },
+        profesor: { select: { uid: true, name: true, lastName: true, username: true } },
+      },
+    });
+
+    if (!group) throw new NotFoundException('Group not found');
+
+    await this.assertCanViewGroup(groupId, uid, contextRole);
+
+    const [students, products, events] = await Promise.all([
+      this.prisma.usersGroups.count({ where: this.studentsWhere(groupId) }),
+      this.prisma.products.groupBy({
+        by: ['status'],
+        where: { groupId },
+        _count: { _all: true },
+      }),
+      this.prisma.events.groupBy({
+        by: ['status'],
+        where: { groups: { some: { groupId } } },
+        _count: { _all: true },
+      }),
+    ]);
+
+    const tally = (rows: { status: string; _count: { _all: number } }[]) =>
+      rows.reduce<Record<string, number>>(
+        (acc, row) => ({ ...acc, [row.status]: row._count._all }),
+        {},
+      );
+    const p = tally(products);
+    const e = tally(events);
+    const total = (counts: Record<string, number>) =>
+      Object.values(counts).reduce((a, b) => a + b, 0);
+
+    return {
+      uid: group.uid,
+      name: group.name,
+      category: group.groupCategory?.name ?? '',
+      profesor: {
+        uid: group.profesor?.uid ?? '',
+        name: fullName(group.profesor),
+        username: group.profesor?.username ?? '',
+      },
+      students: { total: students },
+      products: {
+        total: total(p),
+        approved: p.APPROVED ?? 0,
+        pending: p.PENDING ?? 0,
+        rejected: p.REJECTED ?? 0,
+      },
+      events: {
+        total: total(e),
+        approved: e.APPROVED ?? 0,
+        pending: e.PENDING ?? 0,
+        cancelled: e.CANCELLED ?? 0,
+        completed: e.COMPLETED ?? 0,
+      },
+    };
+  }
+
+  /**
+   * Estudiantes del grupo, paginados. `total` tiene que contarse con el MISMO
+   * `where` que la página: la pantalla calcula sus botones con
+   * `Math.ceil(total / limit)` y si los dos filtros difieren la última página
+   * queda vacía.
+   */
+  async getGroupMembers(
+    groupId: string,
+    uid: string,
+    contextRole: string,
+    options: GetGroupsOptions = {},
+  ) {
+    const { page = 1, limit = 10 } = options;
+
+    const group = await this.prisma.groups.findUnique({
+      where: { uid: groupId },
+      select: { uid: true },
+    });
+
+    if (!group) throw new NotFoundException('Group not found');
+
+    await this.assertCanViewGroup(groupId, uid, contextRole);
+
+    const where = this.studentsWhere(groupId);
+
+    const [rows, total] = await Promise.all([
+      this.prisma.usersGroups.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'asc' },
+        select: {
+          user: { select: { uid: true, name: true, lastName: true, username: true } },
+        },
+      }),
+      this.prisma.usersGroups.count({ where }),
+    ]);
+
+    return {
+      data: rows.map((row) => ({
+        uid: row.user.uid,
+        name: fullName(row.user),
+        username: row.user.username,
+      })),
+      total,
+      page,
+      limit,
+    };
+  }
+
+  /**
+   * El mismo filtro que `getAllStudentsByGroup`: solo los miembros con
+   * `userType = user`, no el docente a cargo. `UsersGroups` es tabla puente sin
+   * `institutionId`, así que no pasa por la extensión — alcanza porque el
+   * `groupId` ya se validó contra `Groups`, que sí es scoped.
+   */
+  private studentsWhere(groupId: string) {
+    return {
+      groupId,
+      user: { userTypeId: this.configService.get<string>('config.roles.user') },
+    };
+  }
+}
+
+/** `name` + `lastName` en un solo string, que es lo que muestra la pantalla. */
+function fullName(user: { name: string; lastName: string | null } | null): string {
+  if (!user) return '';
+  return [user.name, user.lastName].filter(Boolean).join(' ');
 }

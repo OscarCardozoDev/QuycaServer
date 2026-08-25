@@ -176,9 +176,11 @@ export class ProductController {
   async update(
     @Param() params: ProductParamsDto,
     @Body() body: UpdateProductDto,
+    @CurrentUser('uid') userId: string,
   ) {
     return this.productsService.updateProductUseCase({
       productId: params.uid,
+      userId,
       data: {
         name: body.name,
         description: body.description,

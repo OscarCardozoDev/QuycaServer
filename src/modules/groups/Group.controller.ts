@@ -148,6 +148,42 @@ export class GroupController {
     });
   }
 
+  // ─── PANEL DE CONTROL ─────────────────────────────────────────────────────
+  // Las dos rutas que `/dashboard/panel-control` llamaba desde siempre y que no
+  // existían: la pantalla daba 404 para los seis roles.
+  // Ver obsidian/Raw/Specs/2026-08-23-matriz-de-permisos-design.md §3.12.
+  //
+  // Van con dos segmentos y sufijo literal, así que no compiten con 'get/:uid'
+  // ni con 'student/get/:groupId'. Sin ContextRoleGuard a propósito: quien
+  // decide es `assertCanViewGroup`, el segundo eje de aislamiento --gestión, o
+  // miembro del grupo-- y responde 404, no 403.
+
+  @Get(':groupId/stats')
+  @ApiOperation({ summary: 'Ficha y contadores del grupo, para el panel de control' })
+  async getStats(
+    @Param('groupId') groupId: string,
+    @CurrentUser('uid') uid: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.groupService.getGroupStats(groupId, uid, req.contextRole || '');
+  }
+
+  @Get(':groupId/members')
+  @ApiOperation({ summary: 'Estudiantes del grupo, paginados' })
+  async getMembers(
+    @Param('groupId') groupId: string,
+    @Query() query: GetGroupsDto,
+    @CurrentUser('uid') uid: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.groupService.getGroupMembers(
+      groupId,
+      uid,
+      req.contextRole || '',
+      query,
+    );
+  }
+
   @Get('student/get/:groupId')
   @ApiOperation({ summary: 'Obtener estudiantes de un grupo' })
   async getAllStudents(

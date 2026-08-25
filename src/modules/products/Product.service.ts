@@ -507,10 +507,20 @@ export class ProductService {
    * UPDATE
    * ========================= */
   async updateProductUseCase(data: UpdateProductUseCase) {
-    const { productId, data: updateData, images, styles } = data;
+    const { productId, userId, data: updateData, images, styles } = data;
 
-    const product = await this.prisma.products.findUnique({
-      where: { uid: productId },
+    // El chequeo de autoría vive en el `where`, no en un `if` posterior: así no
+    // hay forma de leer la obra ajena antes de rechazarla, y la respuesta es la
+    // misma --404-- para "no existe" y para "no es tuya". Un 403 acá confirma
+    // que la obra existe, que es el mismo criterio de `assertCanViewGroup`.
+    //
+    // Antes era un `findUnique` por uid a secas: la extensión de tenant impedía
+    // cruzar instituciones, pero dentro de una cualquier rol con permiso de
+    // edición podía sobrescribir la obra de otra persona.
+    // `findFirst` y no `findUnique` porque `findUnique` no acepta filtros de
+    // relación. Aprobar y rechazar siguen por su propio endpoint, con su rol.
+    const product = await this.prisma.products.findFirst({
+      where: { uid: productId, authors: { some: { userId } } },
       include: {
         photos: {
           select: {

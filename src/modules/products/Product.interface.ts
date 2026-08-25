@@ -62,6 +62,8 @@ export interface UpdateProductImageUseCase {
 
 export interface UpdateProductUseCase {
   productId: string;
+  /** Quién edita: la obra tiene que ser suya. Ver `updateProductUseCase`. */
+  userId: string;
   data: {
     name?: string;
     description?: string;

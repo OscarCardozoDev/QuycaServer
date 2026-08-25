@@ -77,7 +77,14 @@ export class UserController {
     return this.userService.getInfoAuthor(uid);
   }
 
+  // `AuthGuard` agregado el 2026-08-25: devolvía el usuario completo a
+  // cualquiera que conociera el UUID, sin sesión. El portafolio público sale de
+  // `GET /user/author/:uid`, que sí es anónimo a propósito y devuelve solo lo
+  // que se muestra de un artista. Alcanza con exigir sesión: un usuario puede
+  // pedir el perfil de otro (miembros del grupo, autores de una obra).
+  // Ver obsidian/Raw/Specs/2026-08-23-matriz-de-permisos-design.md §3.11.
   @Get(':uid')
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Obtener usuario por UID' })
   @HttpCode(HttpStatus.OK)
   async getUser(@Param('uid') uid: string) {
