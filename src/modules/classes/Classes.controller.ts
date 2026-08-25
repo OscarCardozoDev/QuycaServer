@@ -53,7 +53,14 @@ export class ClassesController {
 
   @Post('attend')
   @UseGuards(ContextRoleGuard)
-  @RequireContextRole('student')
+  // `self-taught` e `independent` se agregaron el 2026-08-25: los dos se suman
+  // a un grupo por su cuenta desde /explore-groups, así que también asisten a
+  // sus clases. `institutional` queda afuera a propósito: el docente toma la
+  // asistencia, no la marca.
+  // La membresía la sigue verificando el servicio (usersGroups), así que el rol
+  // no es lo único que separa a una persona de la clase de otro grupo.
+  // Ver obsidian/Raw/Specs/2026-08-23-matriz-de-permisos-design.md §3.5.
+  @RequireContextRole('student', 'self-taught', 'independent')
   @ApiOperation({ summary: 'Registrar asistencia del estudiante autenticado' })
   async attend(
     @CurrentUser('uid') userId: string,

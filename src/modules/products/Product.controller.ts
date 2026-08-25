@@ -38,7 +38,12 @@ export class ProductController {
 
   @Post('create')
   @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
-  @RequireContextRole('student', 'institutional')
+  // `self-taught` e `independent` se agregaron el 2026-08-25: los dos roles sin
+  // institución no aparecían en un solo @RequireContextRole de la API, así que
+  // el artista que se registra solo --la persona para la que existe Quyca-- no
+  // podía subir obra. Quien aprende produce.
+  // Ver obsidian/Raw/Specs/2026-08-23-matriz-de-permisos-design.md §3.13.
+  @RequireContextRole('student', 'institutional', 'self-taught', 'independent')
   @ApiOperation({ summary: 'Crear una obra' })
   async create(
     @Body() body: CreateProductDto,
@@ -130,7 +135,11 @@ export class ProductController {
 
   @Put('approveMany')
   @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
-  @RequireContextRole('institutional')
+  // `rector` y `coordinator` se agregaron el 2026-08-25: el sidebar ya les
+  // mostraba /review-art y recibían 403 al aprobar. La institución tiene que
+  // poder auditar las obras que se suben bajo su nombre.
+  // Ver obsidian/Raw/Specs/2026-08-23-matriz-de-permisos-design.md §3.1.
+  @RequireContextRole('institutional', 'rector', 'coordinator')
   @ApiOperation({ summary: 'Aprobar varias obras seleccionadas a la vez' })
   approveManyProducts(@Body() dto: ApproveManyDto) {
     return this.productsService.approveMany(dto.productIds);
@@ -138,7 +147,11 @@ export class ProductController {
 
   @Patch('status/:uid')
   @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
-  @RequireContextRole('institutional')
+  // `rector` y `coordinator` se agregaron el 2026-08-25: el sidebar ya les
+  // mostraba /review-art y recibían 403 al aprobar. La institución tiene que
+  // poder auditar las obras que se suben bajo su nombre.
+  // Ver obsidian/Raw/Specs/2026-08-23-matriz-de-permisos-design.md §3.1.
+  @RequireContextRole('institutional', 'rector', 'coordinator')
   @ApiOperation({ summary: 'Aprobar o negar una obra individual' })
   updateProductStatus(
     @Param('uid', new ParseUUIDPipe()) uid: string,
@@ -153,7 +166,12 @@ export class ProductController {
 
   @Put('update/:uid')
   @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
-  @RequireContextRole('student', 'institutional')
+  // `self-taught` e `independent` se agregaron el 2026-08-25: los dos roles sin
+  // institución no aparecían en un solo @RequireContextRole de la API, así que
+  // el artista que se registra solo --la persona para la que existe Quyca-- no
+  // podía subir obra. Quien aprende produce.
+  // Ver obsidian/Raw/Specs/2026-08-23-matriz-de-permisos-design.md §3.13.
+  @RequireContextRole('student', 'institutional', 'self-taught', 'independent')
   @ApiOperation({ summary: 'Actualizar una obra' })
   async update(
     @Param() params: ProductParamsDto,
