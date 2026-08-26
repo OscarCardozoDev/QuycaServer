@@ -47,7 +47,11 @@ describe('ProductService — la lectura privada por grupo no lleva bypass', () =
     );
   });
 
-  it('el método público sigue existiendo y no se tocó', () => {
-    expect(typeof service.getAllByGroup).toBe('function');
+  // Antes acá se afirmaba que la lectura pública `getAllByGroup` seguía viva.
+  // Se borró el 2026-08-24: era el mismo `where: { groupId }` con
+  // `runWithoutTenant()` y sin guards en el controller, o sea las obras PENDING
+  // y REJECTED de cualquier grupo servidas sin sesión.
+  it('ya no existe una lectura de grupo que saltee el tenant', () => {
+    expect((service as any).getAllByGroup).toBeUndefined();
   });
 });

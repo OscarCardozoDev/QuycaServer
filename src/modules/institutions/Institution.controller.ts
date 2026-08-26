@@ -1,5 +1,5 @@
 import {
-  Controller, Post, Get, Patch, Body, Param, UseGuards, Req, ForbiddenException,
+  Controller, Post, Get, Patch, Delete, Body, Param, UseGuards, Req, ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { InstitutionService } from './Institution.service';
@@ -42,6 +42,16 @@ export class InstitutionController {
     @Institution() institution: ActiveInstitution,
   ) {
     return this.institutionService.update(institution.uid, dto);
+  }
+
+  @Delete('institutions/:id/membership')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Salir de una institución (el propio usuario)' })
+  async leave(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+    // Sin TenantGuard a propósito: se sale de una institución cualquiera de las
+    // propias, no necesariamente de la activa. Quién sale lo dice el JWT, así
+    // que el `:id` sólo elige la membresía, nunca autoriza.
+    return this.institutionService.leaveInstitution(req.user.uid, id);
   }
 
   @Patch('institutions/:id/plan')

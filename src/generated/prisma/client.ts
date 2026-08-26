@@ -79,7 +79,20 @@ export type UsersGroups = Prisma.UsersGroupsModel
 export type Products = Prisma.ProductsModel
 /**
  * Model Styles
+ * Catálogo de estilos de la plataforma, igual que `GroupCategory`: **no tiene
+ * tenant**. No está en SCOPED_MODELS, no lleva `institutionId` y solo lo
+ * escribe `super_admin`.
  * 
+ * Antes colgaba de un grupo (`groupId`) Y de una institución, así que el mismo
+ * catálogo existía repetido una vez por grupo de artes: tres filas "Acuarela",
+ * una por institución. La galería pública tenía que colapsarlas por nombre
+ * para no mostrar el filtro triplicado, y el filtro tenía que buscar por
+ * nombre en vez de por uid para no esconder las obras de las otras.
+ * Ver obsidian/errors/products/2026-08-24-la-galeria-vacia-por-un-undefined.md
+ * 
+ * Un estilo pertenece a una categoría y a nada más. El nombre puede repetirse
+ * **entre** categorías —"Contemporáneo" existe en Danzas y en Música— pero no
+ * dentro de una: eso es lo que fija `@@unique([name, categoryId])`.
  */
 export type Styles = Prisma.StylesModel
 /**

@@ -11,6 +11,7 @@ import {
   CreateInstitutionUseCase, CreateInvitationUseCase, RespondInvitationUseCase,
 } from './Institution.interface';
 import { toPlanFeatures } from './plan-features';
+import { PLATFORM_SLUG } from 'src/modules/groups/Group.service';
 
 /** Plan por defecto de toda institución nueva. El rector lo cambia después. */
 const DEFAULT_PLAN_SLUG = 'empirico';
@@ -423,6 +424,70 @@ export class InstitutionService {
     await this.prismaService.institution.update({
       where: { uid: institutionId },
       data: { subscriptionPlanId: plan.uid, planChosenAt: new Date() },
+    });
+
+    return { uid: institutionId };
+  }
+
+  /**
+   * El usuario se va de una institución por decisión propia.
+   *
+   * No es lo mismo que `deactivateUser`: ahí un rector da de baja a otro, acá
+   * cada quien se da de baja a sí mismo. Por eso el endpoint no lleva
+   * TenantGuard — se puede salir de una institución que no es la activa — y el
+   * `userId` sale del JWT, nunca del body.
+   *
+   * `UserInstitution` es un modelo bootstrap: no pasa por la extensión de
+   * tenant, así que todos los filtros de acá son explícitos y obligatorios.
+   *
+   * Baja lógica (`isActive: false` + `leftAt`), no borrado: la membresía es la
+   * historia de por dónde pasó una persona, y `@@unique([userId,
+   * institutionId])` haría que un reingreso chocara con la fila vieja.
+   */
+  async leaveInstitution(
+    userId: string,
+    institutionId: string,
+  ): Promise<{ uid: string }> {
+    const membership = await this.prismaService.userInstitution.findUnique({
+      where: { userId_institutionId: { userId, institutionId } },
+      include: { institution: { select: { slug: true } } },
+    });
+
+    if (!membership || !membership.isActive) {
+      throw new NotFoundException('No sos miembro activo de esta institución');
+    }
+
+    // quyca-platform es donde vive el artista independiente cuando no
+    // pertenece a ninguna otra: salir de ahí deja la cuenta sin ningún lugar
+    // donde publicar, y el onboarding la volvería a crear en el próximo login.
+    if (membership.institution.slug === PLATFORM_SLUG) {
+      throw new ConflictException(
+        'No podés salir de Quyca: es tu espacio propio dentro de la plataforma',
+      );
+    }
+
+    // Una institución sin rector queda huérfana: nadie puede invitar, cambiar
+    // el plan ni editar sus datos. El último rector tiene que traspasar el rol
+    // antes de irse.
+    if (membership.contextRole === 'rector') {
+      const otherRectors = await this.prismaService.userInstitution.count({
+        where: {
+          institutionId,
+          contextRole: 'rector',
+          isActive: true,
+          userId: { not: userId },
+        },
+      });
+      if (otherRectors === 0) {
+        throw new ConflictException(
+          'Sos el único rector: nombrá a otro antes de salir de la institución',
+        );
+      }
+    }
+
+    await this.prismaService.userInstitution.update({
+      where: { userId_institutionId: { userId, institutionId } },
+      data: { isActive: false, leftAt: new Date() },
     });
 
     return { uid: institutionId };

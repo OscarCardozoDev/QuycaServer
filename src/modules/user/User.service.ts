@@ -99,8 +99,15 @@ export class UserService {
       select: {
         ...USER_SELECT,
         userInstitutions: {
+          // `isActive: true` no es opcional: de acá sale `user.institutions` de
+          // la sesión, que alimenta el selector de institución y el header
+          // `X-Institution-Slug`. Sin el filtro, quien sale de una institución
+          // —o a quien dan de baja— la sigue viendo en el selector y al
+          // elegirla el TenantGuard le devuelve 403 sin explicación.
+          where: { isActive: true },
           select: {
             contextRole: true,
+            joinedAt: true,
             institution: { select: { uid: true, slug: true, name: true } },
           },
         },
@@ -320,16 +327,6 @@ export class UserService {
     return this.applyUserUpdate(uid, userData);
   }
 
-  /** Administrative: uid is an arbitrary target. institutionId is required. */
-  async updateUserAsAdmin(
-    uid: string,
-    userData: UpdateUserDto,
-    institutionId: string,
-  ): Promise<UserUidResult> {
-    await this.assertMemberOfInstitution(uid, institutionId);
-    return this.applyUserUpdate(uid, userData);
-  }
-
   // ─── updateUserPhoto: self-service vs. administrative ─────────────────
   private async applyUserPhotoUpdate(
     uid: string,
@@ -366,16 +363,6 @@ export class UserService {
     uid: string,
     photo: { base64: string; name: string; folder: string },
   ): Promise<UserUidResult> {
-    return this.applyUserPhotoUpdate(uid, photo);
-  }
-
-  /** Administrative: uid is an arbitrary target. institutionId is required. */
-  async updateUserPhotoAsAdmin(
-    uid: string,
-    photo: { base64: string; name: string; folder: string },
-    institutionId: string,
-  ): Promise<UserUidResult> {
-    await this.assertMemberOfInstitution(uid, institutionId);
     return this.applyUserPhotoUpdate(uid, photo);
   }
 

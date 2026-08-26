@@ -36,4 +36,38 @@ describe('ProductService — lecturas públicas', () => {
     });
     expect(store.bypass).toBe(false);
   });
+
+  // El bug que originó estos tests: la galería sin filtro no mostraba NINGUNA
+  // obra aprobada que no tuviera estilos cargados, porque el `some` quedaba
+  // igual en el where con `styleId` undefined.
+  const whereDe = (mock: jest.Mock) => mock.mock.calls[0][0].where;
+
+  it('sin styleId no filtra por estilo', async () => {
+    await service.getGalleryHome();
+
+    const where = whereDe(prismaMock.products.findMany);
+    expect(where).toEqual({ isActive: true, status: 'APPROVED' });
+    expect(where.styles).toBeUndefined();
+  });
+
+  it('con styleId filtra por ese estilo, sin perder aprobada + activa', async () => {
+    await service.getGalleryHome({ styleId: 'style-1' });
+
+    // Por uid y no por nombre: desde que el catálogo es de plataforma, un
+    // estilo existe una sola vez y no hay copias que reconciliar.
+    expect(whereDe(prismaMock.products.findMany)).toEqual({
+      isActive: true,
+      status: 'APPROVED',
+      styles: { some: { styleId: 'style-1' } },
+    });
+  });
+
+  it('getAll tampoco publica obras sin aprobar', async () => {
+    await service.getAll();
+
+    expect(whereDe(prismaMock.products.findMany)).toEqual({
+      isActive: true,
+      status: 'APPROVED',
+    });
+  });
 });

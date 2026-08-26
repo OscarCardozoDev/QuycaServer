@@ -13,7 +13,9 @@ export const SCOPED_MODELS = new Set<string>([
   'Groups',
   'Events',
   'Products',
-  'Styles',
+  // 'Styles' salió el 2026-08-24: dejó de tener `institutionId`. Es un catálogo
+  // de plataforma por categoría, como GroupCategory — compartido por todas las
+  // instituciones y escrito solo por super_admin.
   'Classes',
   'Schedule',
   'Attendance',

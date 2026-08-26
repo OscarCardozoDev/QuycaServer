@@ -1,59 +1,85 @@
-import { tenantStorage } from 'src/tenant/tenant-context';
 import { StylesService } from './Styles.service';
 
 /**
- * Lo único que separa `getMine` de `getAll` es el `runWithoutTenant`, y esa
- * diferencia no se ve leyendo las dos firmas: devuelven la misma forma. Estos
- * tests la fijan, para que nadie "unifique" los dos métodos sin darse cuenta
- * de que uno alimenta la vitrina pública y el otro el dashboard.
+ * `Styles` es un catálogo de plataforma desde el 2026-08-24: salió de
+ * `SCOPED_MODELS` y perdió `groupId` e `institutionId`. Estos tests fijan las
+ * dos consecuencias que no se ven leyendo las firmas:
+ *
+ * 1. Ninguna lectura usa `runWithoutTenant()`. Antes hacía falta para que la
+ *    galería pública viera los estilos de todas las instituciones; hoy no hay
+ *    extensión de tenant que esquivar, y volver a meter el bypass sería
+ *    apagar un filtro que ya no existe.
+ * 2. Ninguna lectura filtra ni deduplica por nombre. Mientras el catálogo
+ *    colgaba del grupo existía repetido una vez por grupo de artes y
+ *    `getAll` tenía que colapsarlo con `distinct: ['name']`. La migración
+ *    `20260824190000_styles_catalogo_por_categoria` borró las copias, y el
+ *    único filtro que queda es la categoría.
  */
-describe('StylesService — alcance de las lecturas de lista', () => {
+describe('StylesService — lecturas del catálogo', () => {
   let service: StylesService;
   let prismaMock: any;
-  let seenBypass: boolean | undefined;
 
   beforeEach(() => {
-    seenBypass = undefined;
     prismaMock = {
       styles: {
-        // Emula PrismaPromise: lazy, no ejecuta hasta el await.
-        findMany: jest.fn(() => ({
-          then(onFulfilled: (v: unknown[]) => unknown) {
-            seenBypass = tenantStorage.getStore()?.bypass;
-            return Promise.resolve([]).then(onFulfilled);
-          },
-        })),
+        findMany: jest.fn().mockResolvedValue([]),
+        findUnique: jest.fn().mockResolvedValue({ uid: 's1' }),
       },
     };
     service = new StylesService(prismaMock as any);
   });
 
-  it('getAll ejecuta con bypass activo — es la galería pública', async () => {
-    await tenantStorage.run({ institutionId: null, bypass: false }, async () => {
-      await service.getAll();
-    });
-    expect(seenBypass).toBe(true);
+  const argsDe = (mock: jest.Mock) => mock.mock.calls[0][0];
+
+  it('getAll devuelve el catálogo activo ordenado, sin distinct por nombre', async () => {
+    await service.getAll();
+
+    const args = argsDe(prismaMock.styles.findMany);
+    expect(args.where).toEqual({ isActive: true });
+    expect(args.orderBy).toEqual({ name: 'asc' });
+    // El nombre puede repetirse ENTRE categorías: "Contemporáneo" en Danzas y
+    // en Música son dos estilos distintos y los dos tienen que aparecer.
+    expect(args.distinct).toBeUndefined();
   });
 
-  it('getAllByGroup ejecuta con bypass activo — también es pública', async () => {
-    await tenantStorage.run({ institutionId: null, bypass: false }, async () => {
-      await service.getAllByGroup('cat-1');
+  it('getAllByCategory filtra por categoría y por activo', async () => {
+    await service.getAllByCategory('cat-1');
+
+    expect(argsDe(prismaMock.styles.findMany).where).toEqual({
+      categoryId: 'cat-1',
+      isActive: true,
     });
-    expect(seenBypass).toBe(true);
   });
 
-  it('getMine NO activa el bypass: queda a merced del filtro de tenant', async () => {
-    await tenantStorage.run({ institutionId: 'inst-a', bypass: false }, async () => {
-      await service.getMine();
-    });
-    expect(seenBypass).toBe(false);
+  it('ninguna lectura pide institución ni grupo', async () => {
+    await service.getAll();
+    await service.getAllByCategory('cat-1');
+
+    for (const call of prismaMock.styles.findMany.mock.calls) {
+      const where = call[0].where ?? {};
+      expect(where).not.toHaveProperty('institutionId');
+      expect(where).not.toHaveProperty('groupId');
+      expect(call[0].select).not.toHaveProperty('groupId');
+      expect(call[0].select).not.toHaveProperty('institutionId');
+    }
   });
 
-  it('getAll no deja el bypass activo en el store externo', async () => {
-    const store = { institutionId: null as string | null, bypass: false };
-    await tenantStorage.run(store, async () => {
-      await service.getAll();
+  it('crear un estilo solo necesita nombre, descripción y categoría', async () => {
+    prismaMock.styles.create = jest.fn().mockResolvedValue({ uid: 's9' });
+
+    await service.create({
+      name: 'Acuarela',
+      description: 'Pigmentos diluidos en agua.',
+      categoryId: 'cat-1',
     });
-    expect(store.bypass).toBe(false);
+
+    expect(prismaMock.styles.create).toHaveBeenCalledWith({
+      data: {
+        name: 'Acuarela',
+        description: 'Pigmentos diluidos en agua.',
+        categoryId: 'cat-1',
+      },
+      select: { uid: true },
+    });
   });
 });

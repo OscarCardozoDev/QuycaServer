@@ -102,18 +102,13 @@ export class UserController {
     return this.userService.updateOwnUser(user.uid, body);
   }
 
-  @Put(':uid')
-  @ApiOperation({ summary: 'Actualizar usuario por UID (rector/coordinador de su institución)' })
-  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
-  @RequireContextRole('rector', 'coordinator')
-  @HttpCode(HttpStatus.OK)
-  async updateUser(
-    @Param('uid') uid: string,
-    @Body() body: UpdateUserDto,
-    @Institution() institution: { uid: string },
-  ) {
-    return this.userService.updateUserAsAdmin(uid, body, institution.uid);
-  }
+  // `PUT /user/:uid` y `PATCH /user/:uid/photo` (rector/coordinador editando a
+  // otro) se eliminaron el 2026-08-24: el nombre, la foto, el usuario y la nota
+  // son identidad de la persona, no datos administrativos de la institución.
+  // Los edita su dueño desde /dashboard/profile y nadie más — tampoco un
+  // super_admin. Lo único que la institución decide sobre un miembro es el
+  // estado de su membresía, y para eso siguen `:uid/deactivate` y
+  // `:uid/reactivate`. Ver obsidian/Modulos/Users.md § Permisos.
 
   @Patch('photo')
   @ApiOperation({ summary: 'Actualizar foto del usuario actual' })
@@ -124,19 +119,6 @@ export class UserController {
     @Body() body: UpdateUserPhotoDto,
   ) {
     return this.userService.updateOwnUserPhoto(user.uid, body);
-  }
-
-  @Patch(':uid/photo')
-  @ApiOperation({ summary: 'Actualizar foto de usuario por UID (rector/coordinador de su institución)' })
-  @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
-  @RequireContextRole('rector', 'coordinator')
-  @HttpCode(HttpStatus.OK)
-  async updateUserPhoto(
-    @Param('uid') uid: string,
-    @Body() body: UpdateUserPhotoDto,
-    @Institution() institution: { uid: string },
-  ) {
-    return this.userService.updateUserPhotoAsAdmin(uid, body, institution.uid);
   }
 
   @Patch('deactivate')

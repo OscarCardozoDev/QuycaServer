@@ -10,10 +10,6 @@ export class CreateStyleDto {
   @IsString()
   description: string;
 
-  @ApiProperty({ example: 'uuid-del-grupo' })
-  @IsString()
-  groupId: string;
-
   @ApiProperty({ example: 'uuid-de-la-categoria' })
   @IsString()
   categoryId: string;

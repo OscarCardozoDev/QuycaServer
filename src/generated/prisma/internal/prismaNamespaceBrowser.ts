@@ -219,8 +219,6 @@ export const StylesScalarFieldEnum = {
   description: 'description',
   isActive: 'isActive',
   categoryId: 'categoryId',
-  groupId: 'groupId',
-  institutionId: 'institutionId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

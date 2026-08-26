@@ -89,37 +89,6 @@ describe('UserService — institution-scoped admin actions', () => {
     jest.clearAllMocks();
   });
 
-  describe('updateUserAsAdmin', () => {
-    it('throws NotFoundException and issues no update when the target uid is not an active member of the active institution', async () => {
-      mockPrisma.userInstitution.findFirst.mockResolvedValue(null);
-
-      await expect(
-        service.updateUserAsAdmin('other-uid', { name: 'Hacked' }, 'inst-active'),
-      ).rejects.toThrow(NotFoundException);
-
-      expect(mockPrisma.userInstitution.findFirst).toHaveBeenCalledWith({
-        where: { userId: 'other-uid', institutionId: 'inst-active', isActive: true },
-      });
-      expect(mockPrisma.users.findUnique).not.toHaveBeenCalled();
-      expect(mockPrisma.users.update).not.toHaveBeenCalled();
-    });
-
-    it('proceeds when the target uid IS an active member of the active institution', async () => {
-      mockPrisma.userInstitution.findFirst.mockResolvedValue({ uid: 'ui1' });
-      mockPrisma.users.findUnique.mockResolvedValue({ uid: 'u1' });
-      mockPrisma.users.update.mockResolvedValue({ uid: 'u1' });
-
-      const result = await service.updateUserAsAdmin('u1', { name: 'Juan' }, 'inst-active');
-
-      expect(result).toEqual({ uid: 'u1' });
-      expect(mockPrisma.users.update).toHaveBeenCalledWith({
-        where: { uid: 'u1' },
-        data: { name: 'Juan' },
-        select: { uid: true },
-      });
-    });
-  });
-
   describe('updateOwnUser', () => {
     it('drops userTypeId even if present on the payload — cannot be used to change platform-level type', async () => {
       mockPrisma.users.findUnique.mockResolvedValue({ uid: 'u1' });
@@ -139,27 +108,6 @@ describe('UserService — institution-scoped admin actions', () => {
         data: { name: 'Juan' },
         select: { uid: true },
       });
-    });
-  });
-
-  describe('updateUserPhotoAsAdmin', () => {
-    it('throws NotFoundException and issues no update when the target uid is not an active member of the active institution', async () => {
-      mockPrisma.userInstitution.findFirst.mockResolvedValue(null);
-
-      await expect(
-        service.updateUserPhotoAsAdmin(
-          'other-uid',
-          { base64: 'b64', name: 'img.jpg', folder: 'users' },
-          'inst-active',
-        ),
-      ).rejects.toThrow(NotFoundException);
-
-      expect(mockPrisma.userInstitution.findFirst).toHaveBeenCalledWith({
-        where: { userId: 'other-uid', institutionId: 'inst-active', isActive: true },
-      });
-      expect(mockPrisma.users.findUnique).not.toHaveBeenCalled();
-      expect(mockPhotos.createPhotoUseCase).not.toHaveBeenCalled();
-      expect(mockPrisma.users.update).not.toHaveBeenCalled();
     });
   });
 

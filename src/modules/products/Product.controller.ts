@@ -80,14 +80,14 @@ export class ProductController {
     return this.productsService.getGalleryHome(query);
   }
 
-  @Get('getGroup/:uid')
-  @ApiOperation({ summary: 'Obtener obras por grupo' })
-  async getAllByGroup(
-    @Param('uid') groupId: string,
-    @Query() query: GetProductsDto,
-  ) {
-    return this.productsService.getAllByGroup(groupId, query);
-  }
+  // `GET /products/getGroup/:uid` se eliminó el 2026-08-24. Era público, sin
+  // guards y sin filtro de estado: con solo tener el uid de un grupo devolvía
+  // sus obras PENDING y REJECTED, feedback del docente incluido. La única
+  // pantalla que lo usaba (ReviewArtWorks) necesita justamente ver las
+  // pendientes, así que pasó a `GET /products/group/:uid`, que pide sesión y
+  // membresía. Lo público del grupo son sus obras aprobadas, y eso ya lo
+  // sirven la galería y el portafolio del autor.
+  // Ver obsidian/errors/products/2026-08-24-la-galeria-vacia-por-un-undefined.md
 
   @Get('group/:uid')
   @UseGuards(AuthGuard, TenantGuard)

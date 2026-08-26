@@ -52,20 +52,30 @@ export class ProductService {
     }
   }
 
-  private async assertStylesBelongToTenant(styleIds: string[]) {
+  /**
+   * Los estilos de una obra tienen que ser de la categoría de su grupo.
+   *
+   * Reemplaza a `assertStylesBelongToTenant`, que ya no tiene sentido: `Styles`
+   * salió de `SCOPED_MODELS` el 2026-08-24 y es un catálogo de plataforma, así
+   * que *todos* los estilos son de todas las instituciones. Lo que sí sigue
+   * siendo un error es etiquetar un óleo con un estilo de Música: la regla que
+   * queda es la categoría, no el tenant.
+   */
+  private async assertStylesMatchCategory(
+    styleIds: string[],
+    categoryId: string,
+  ) {
     const unique = [...new Set(styleIds)];
     if (!unique.length) return;
 
-    // `styles.findMany` está auto-scoped por la extensión de tenant: un
-    // styleId de otra institución simplemente no aparece en `found`.
     const found = await this.prisma.styles.findMany({
-      where: { uid: { in: unique } },
+      where: { uid: { in: unique }, categoryId, isActive: true },
       select: { uid: true },
     });
 
     if (found.length !== unique.length) {
       throw new BadRequestException(
-        'Some styles do not exist or do not belong to this institution',
+        'Some styles do not exist or belong to another category',
       );
     }
   }
@@ -79,14 +89,16 @@ export class ProductService {
    * institutionId) point at another tenant's group. `groups.findUnique`
    * is itself scoped, so a foreign id simply comes back null.
    * ========================= */
-  private async assertGroupInTenant(groupId: string): Promise<void> {
+  /** Devuelve la categoría del grupo, que es contra la que se validan los estilos. */
+  private async assertGroupInTenant(groupId: string): Promise<string> {
     const group = await this.prisma.groups.findUnique({
       where: { uid: groupId },
-      select: { uid: true },
+      select: { uid: true, categoryId: true },
     });
     if (!group) {
       throw new NotFoundException('Group not found');
     }
+    return group.categoryId;
   }
 
   /* =========================
@@ -95,10 +107,10 @@ export class ProductService {
   async createProductUseCase(data: CreateProductUseCase) {
     const { product, styles, images, authors, institutionId } = data;
 
-    // FASE 0️⃣ — Validar que el grupo, los autores y los estilos pertenecen
-    // a la institución activa antes de escribir Products y las tablas
-    // puente UserProduct/ProductStyle.
-    await this.assertGroupInTenant(product.groupId);
+    // FASE 0️⃣ — Validar que el grupo y los autores pertenecen a la institución
+    // activa, y que los estilos son de la categoría del grupo, antes de
+    // escribir Products y las tablas puente UserProduct/ProductStyle.
+    const categoryId = await this.assertGroupInTenant(product.groupId);
 
     if (authors?.length) {
       await this.assertActiveMembers(
@@ -108,7 +120,7 @@ export class ProductService {
     }
 
     if (styles?.length) {
-      await this.assertStylesBelongToTenant(styles);
+      await this.assertStylesMatchCategory(styles, categoryId);
     }
 
     /**
@@ -212,15 +224,31 @@ export class ProductService {
   /* =========================
    * READ
    * ========================= */
+
   // Público: alimenta la galería sin sesión, ver Product.controller.ts.
   async getAll(options: GetProductsOptions = {}) {
     const { page = 1, limit = 10, styleId } = options;
+
+    // Mismas dos reglas que la galería: solo obras aprobadas y activas (sin
+    // esto se publicaban PENDING y REJECTED con el feedback del docente
+    // adentro), y el estilo solo si lo pidieron —escrito `some: { styleId }` a
+    // secas, un `styleId` undefined se colapsa a `some: {}`, que filtra por
+    // "tener algún estilo".
+    // Por uid y no por nombre: desde la migración
+    // `20260824190000_styles_catalogo_por_categoria` un estilo existe UNA sola
+    // vez en toda la plataforma, así que el uid que manda la galería es el
+    // único que hay. Mientras el catálogo estuvo repetido por grupo hubo que
+    // resolver el nombre primero, y ese rodeo ya no hace falta.
 
     return runWithoutTenant(() =>
       this.prisma.products.findMany({
         skip: (page - 1) * limit,
         take: limit,
-        where: { styles: { some: { styleId } } },
+        where: {
+          isActive: true,
+          status: 'APPROVED',
+          ...(styleId ? { styles: { some: { styleId } } } : {}),
+        },
         orderBy: { createdAt: 'desc' },
         include: {
           authors: {
@@ -255,6 +283,17 @@ export class ProductService {
   async getGalleryHome(options: GetProductsOptions = {}) {
     const { page = 1, limit = 10, styleId } = options;
 
+    // El filtro por estilo solo existe si el usuario eligió uno. Escrito como
+    // `styles: { some: { styleId } }` a secas, con `styleId` undefined Prisma
+    // lo colapsa a `some: {}` — que NO es "sin filtro" sino "que tenga al
+    // menos un estilo". La galería sin filtro escondía entonces toda obra
+    // aprobada sin estilos cargados.
+    // Por uid y no por nombre: desde la migración
+    // `20260824190000_styles_catalogo_por_categoria` un estilo existe UNA sola
+    // vez en toda la plataforma, así que el uid que manda la galería es el
+    // único que hay. Mientras el catálogo estuvo repetido por grupo hubo que
+    // resolver el nombre primero, y ese rodeo ya no hace falta.
+
     return runWithoutTenant(() =>
       this.prisma.products.findMany({
         skip: (page - 1) * limit,
@@ -263,7 +302,7 @@ export class ProductService {
         where: {
           isActive: true,
           status: 'APPROVED',
-          styles: { some: { styleId } },
+          ...(styleId ? { styles: { some: { styleId } } } : {}),
         },
         select: {
           uid: true,
@@ -325,42 +364,13 @@ export class ProductService {
     return product;
   }
 
-  // Público: alimenta la galería sin sesión, ver Product.controller.ts.
-  async getAllByGroup(groupId: string, options: GetProductsOptions = {}) {
-    const { page = 1, limit = 10 } = options;
-
-    return runWithoutTenant(() =>
-      this.prisma.products.findMany({
-        where: { groupId },
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          photos: {
-            select: {
-              photo: {
-                select: {
-                  uid: true,
-                  name: true,
-                  url: true,
-                },
-              },
-              isMain: true,
-            },
-          },
-          authors: {
-            select: {
-              isAuthor: true,
-              userId: true,
-            },
-          },
-        },
-      }),
-    );
-  }
-
   /**
-   * La misma lectura que `getAllByGroup`, para el dashboard.
+   * Las obras de un grupo, en todos sus estados, para el dashboard.
+   *
+   * Reemplazó a la lectura pública `getAllByGroup`, borrada el 2026-08-24: era
+   * el mismo `where: { groupId }` pero envuelto en `runWithoutTenant()` y sin
+   * guards en el controller, así que publicaba las obras PENDING y REJECTED de
+   * cualquier grupo a quien tuviera el uid.
    *
    * La diferencia es TODA la diferencia: sin `runWithoutTenant()`, la
    * extensión inyecta el institutionId y un groupId de otra institución
@@ -537,10 +547,13 @@ export class ProductService {
 
     if (!product) throw new NotFoundException('Product not found');
 
-    // Misma validación que en create: `styles` alimenta la tabla puente
-    // ProductStyle, que no tiene institutionId propio.
+    // Misma validación que en create: los estilos tienen que ser de la
+    // categoría del grupo de la obra.
     if (styles?.length) {
-      await this.assertStylesBelongToTenant(styles);
+      await this.assertStylesMatchCategory(
+        styles,
+        await this.assertGroupInTenant(product.groupId),
+      );
     }
 
     /**

@@ -112,13 +112,15 @@ async function createFixtures(institutionId: string, label: string): Promise<Fix
     select: { uid: true },
   });
 
+  // `Styles` dejó de ser scoped el 2026-08-24: es un catálogo de plataforma
+  // por categoría, sin `groupId` ni `institutionId`. Se sigue creando uno por
+  // fixture para comprobar justamente lo contrario que antes — que AMBAS
+  // instituciones lo ven.
   const style = await raw.styles.create({
     data: {
-      name: `Estilo ${label} ${SUFFIX}`,
+      name: `Estilo ${label} ${SUFFIX}`.slice(0, 30),
       description: 'desc',
       categoryId,
-      groupId: group.uid,
-      institutionId,
     },
     select: { uid: true },
   });
@@ -240,6 +242,7 @@ beforeAll(async () => {
 afterAll(async () => {
   const ids = [instA, instB].filter(Boolean);
   const userIds = [fxA?.userId, fxB?.userId].filter(Boolean) as string[];
+  const styleIds = [fxA?.styleId, fxB?.styleId].filter(Boolean) as string[];
 
   // Orden FK-safe: hijos antes que padres. Cada paso se intenta
   // independientemente — un fallo en un paso no debe saltarse el resto,
@@ -255,7 +258,8 @@ afterAll(async () => {
     ['classes', () => raw.classes.deleteMany({ where: { institutionId: { in: ids } } })],
     ['schedule', () => raw.schedule.deleteMany({ where: { institutionId: { in: ids } } })],
     ['events', () => raw.events.deleteMany({ where: { institutionId: { in: ids } } })],
-    ['styles', () => raw.styles.deleteMany({ where: { institutionId: { in: ids } } })],
+    // Ya no cuelga de la institución: se borra por uid.
+    ['styles', () => raw.styles.deleteMany({ where: { uid: { in: styleIds } } })],
     ['products', () => raw.products.deleteMany({ where: { institutionId: { in: ids } } })],
     ['groups', () => raw.groups.deleteMany({ where: { institutionId: { in: ids } } })],
     ['users', () => raw.users.deleteMany({ where: { uid: { in: userIds } } })],
@@ -302,7 +306,6 @@ function scopedCase(
 const SCOPED_MODEL_CASES = [
   scopedCase('Groups', prisma.groups, () => fxA.groupId, () => fxB.groupId),
   scopedCase('Products', prisma.products, () => fxA.productId, () => fxB.productId),
-  scopedCase('Styles', prisma.styles, () => fxA.styleId, () => fxB.styleId),
   scopedCase('Events', prisma.events, () => fxA.eventId, () => fxB.eventId),
   scopedCase('Schedule', prisma.schedule, () => fxA.scheduleId, () => fxB.scheduleId),
   scopedCase('Classes', prisma.classes, () => fxA.classId, () => fxB.classId),

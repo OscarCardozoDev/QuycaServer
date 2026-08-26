@@ -8,10 +8,12 @@ import {
 } from './tenant.extension';
 
 describe('SCOPED_MODELS', () => {
-  it('incluye los 10 modelos scoped', () => {
+  // `Styles` salió el 2026-08-24: perdió `institutionId` y pasó a ser catálogo
+  // de plataforma por categoría, como GroupCategory.
+  it('incluye los 9 modelos scoped', () => {
     expect([...SCOPED_MODELS].sort()).toEqual([
       'Attendance', 'Chapters', 'Classes', 'ContentRequest', 'Events',
-      'Groups', 'Lessons', 'Products', 'Schedule', 'Styles',
+      'Groups', 'Lessons', 'Products', 'Schedule',
     ]);
   });
 
