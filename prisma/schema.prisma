@@ -231,6 +231,12 @@ model Products {
   price        Decimal?      @db.Decimal(10,2)
   isSold       Boolean       @default(false)
   madeAt       DateTime
+
+  // Audio de la obra, para la categoria `musica`. Nullable: en una pintura va null.
+  // Guarda la ruta publica que devuelve photoManagement con AUDIO_ROOT
+  // (`/audio/<carpeta>/<uuid>.mp3`), no el archivo. MVP = una cancion por obra;
+  // los albumes con varias pistas estan en obsidian/Tareas/Musica-Lo-que-falta.
+  audioUrl     String?       @db.VarChar(500)
   
   groupId      String        @db.Uuid
   group        Groups        @relation(fields: [groupId], references: [uid])

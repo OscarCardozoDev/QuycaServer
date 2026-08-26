@@ -27,8 +27,12 @@ async function bootstrap() {
   });
 
   app.use(cookieParser());
-  app.use(bodyParser.json({ limit: '6mb' }));
-  app.use(bodyParser.urlencoded({ limit: '6mb', extended: true }));
+  // 20mb y no 6mb desde la pagina de musica: un mp3 de 4:30 a 160 kbps pesa
+  // 5,4 MB y en base64 son 7,2 MB, mas la portada en el mismo body. El costo es
+  // que cada request se materializa entera en memoria; se acepta hasta que la
+  // subida pase a multipart. Ver obsidian/Tareas/Musica-Lo-que-falta.
+  app.use(bodyParser.json({ limit: '20mb' }));
+  app.use(bodyParser.urlencoded({ limit: '20mb', extended: true }));
 
   app.useGlobalPipes(
     new ValidationPipe({

@@ -44,6 +44,7 @@ export type ProductsMinAggregateOutputType = {
   price: runtime.Decimal | null
   isSold: boolean | null
   madeAt: Date | null
+  audioUrl: string | null
   groupId: string | null
   institutionId: string | null
   createdAt: Date | null
@@ -60,6 +61,7 @@ export type ProductsMaxAggregateOutputType = {
   price: runtime.Decimal | null
   isSold: boolean | null
   madeAt: Date | null
+  audioUrl: string | null
   groupId: string | null
   institutionId: string | null
   createdAt: Date | null
@@ -76,6 +78,7 @@ export type ProductsCountAggregateOutputType = {
   price: number
   isSold: number
   madeAt: number
+  audioUrl: number
   groupId: number
   institutionId: number
   createdAt: number
@@ -102,6 +105,7 @@ export type ProductsMinAggregateInputType = {
   price?: true
   isSold?: true
   madeAt?: true
+  audioUrl?: true
   groupId?: true
   institutionId?: true
   createdAt?: true
@@ -118,6 +122,7 @@ export type ProductsMaxAggregateInputType = {
   price?: true
   isSold?: true
   madeAt?: true
+  audioUrl?: true
   groupId?: true
   institutionId?: true
   createdAt?: true
@@ -134,6 +139,7 @@ export type ProductsCountAggregateInputType = {
   price?: true
   isSold?: true
   madeAt?: true
+  audioUrl?: true
   groupId?: true
   institutionId?: true
   createdAt?: true
@@ -237,6 +243,7 @@ export type ProductsGroupByOutputType = {
   price: runtime.Decimal | null
   isSold: boolean
   madeAt: Date
+  audioUrl: string | null
   groupId: string
   institutionId: string
   createdAt: Date
@@ -276,6 +283,7 @@ export type ProductsWhereInput = {
   price?: Prisma.DecimalNullableFilter<"Products"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFilter<"Products"> | boolean
   madeAt?: Prisma.DateTimeFilter<"Products"> | Date | string
+  audioUrl?: Prisma.StringNullableFilter<"Products"> | string | null
   groupId?: Prisma.UuidFilter<"Products"> | string
   institutionId?: Prisma.UuidFilter<"Products"> | string
   createdAt?: Prisma.DateTimeFilter<"Products"> | Date | string
@@ -298,6 +306,7 @@ export type ProductsOrderByWithRelationInput = {
   price?: Prisma.SortOrderInput | Prisma.SortOrder
   isSold?: Prisma.SortOrder
   madeAt?: Prisma.SortOrder
+  audioUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   groupId?: Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -323,6 +332,7 @@ export type ProductsWhereUniqueInput = Prisma.AtLeast<{
   price?: Prisma.DecimalNullableFilter<"Products"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFilter<"Products"> | boolean
   madeAt?: Prisma.DateTimeFilter<"Products"> | Date | string
+  audioUrl?: Prisma.StringNullableFilter<"Products"> | string | null
   groupId?: Prisma.UuidFilter<"Products"> | string
   institutionId?: Prisma.UuidFilter<"Products"> | string
   createdAt?: Prisma.DateTimeFilter<"Products"> | Date | string
@@ -345,6 +355,7 @@ export type ProductsOrderByWithAggregationInput = {
   price?: Prisma.SortOrderInput | Prisma.SortOrder
   isSold?: Prisma.SortOrder
   madeAt?: Prisma.SortOrder
+  audioUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   groupId?: Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -369,6 +380,7 @@ export type ProductsScalarWhereWithAggregatesInput = {
   price?: Prisma.DecimalNullableWithAggregatesFilter<"Products"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolWithAggregatesFilter<"Products"> | boolean
   madeAt?: Prisma.DateTimeWithAggregatesFilter<"Products"> | Date | string
+  audioUrl?: Prisma.StringNullableWithAggregatesFilter<"Products"> | string | null
   groupId?: Prisma.UuidWithAggregatesFilter<"Products"> | string
   institutionId?: Prisma.UuidWithAggregatesFilter<"Products"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Products"> | Date | string
@@ -385,6 +397,7 @@ export type ProductsCreateInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   group: Prisma.GroupsCreateNestedOneWithoutProductsInput
@@ -405,6 +418,7 @@ export type ProductsUncheckedCreateInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   groupId: string
   institutionId: string
   createdAt?: Date | string
@@ -425,6 +439,7 @@ export type ProductsUpdateInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   group?: Prisma.GroupsUpdateOneRequiredWithoutProductsNestedInput
@@ -445,6 +460,7 @@ export type ProductsUncheckedUpdateInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -465,6 +481,7 @@ export type ProductsCreateManyInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   groupId: string
   institutionId: string
   createdAt?: Date | string
@@ -481,6 +498,7 @@ export type ProductsUpdateManyMutationInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -495,6 +513,7 @@ export type ProductsUncheckedUpdateManyInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -521,6 +540,7 @@ export type ProductsCountOrderByAggregateInput = {
   price?: Prisma.SortOrder
   isSold?: Prisma.SortOrder
   madeAt?: Prisma.SortOrder
+  audioUrl?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -541,6 +561,7 @@ export type ProductsMaxOrderByAggregateInput = {
   price?: Prisma.SortOrder
   isSold?: Prisma.SortOrder
   madeAt?: Prisma.SortOrder
+  audioUrl?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -557,6 +578,7 @@ export type ProductsMinOrderByAggregateInput = {
   price?: Prisma.SortOrder
   isSold?: Prisma.SortOrder
   madeAt?: Prisma.SortOrder
+  audioUrl?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
   institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -734,6 +756,7 @@ export type ProductsCreateWithoutGroupInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   institution: Prisma.InstitutionCreateNestedOneWithoutProductsInput
@@ -753,6 +776,7 @@ export type ProductsUncheckedCreateWithoutGroupInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -801,6 +825,7 @@ export type ProductsScalarWhereInput = {
   price?: Prisma.DecimalNullableFilter<"Products"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFilter<"Products"> | boolean
   madeAt?: Prisma.DateTimeFilter<"Products"> | Date | string
+  audioUrl?: Prisma.StringNullableFilter<"Products"> | string | null
   groupId?: Prisma.UuidFilter<"Products"> | string
   institutionId?: Prisma.UuidFilter<"Products"> | string
   createdAt?: Prisma.DateTimeFilter<"Products"> | Date | string
@@ -817,6 +842,7 @@ export type ProductsCreateWithoutStylesInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   group: Prisma.GroupsCreateNestedOneWithoutProductsInput
@@ -836,6 +862,7 @@ export type ProductsUncheckedCreateWithoutStylesInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   groupId: string
   institutionId: string
   createdAt?: Date | string
@@ -871,6 +898,7 @@ export type ProductsUpdateWithoutStylesInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   group?: Prisma.GroupsUpdateOneRequiredWithoutProductsNestedInput
@@ -890,6 +918,7 @@ export type ProductsUncheckedUpdateWithoutStylesInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -909,6 +938,7 @@ export type ProductsCreateWithoutPhotosInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   group: Prisma.GroupsCreateNestedOneWithoutProductsInput
@@ -928,6 +958,7 @@ export type ProductsUncheckedCreateWithoutPhotosInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   groupId: string
   institutionId: string
   createdAt?: Date | string
@@ -963,6 +994,7 @@ export type ProductsUpdateWithoutPhotosInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   group?: Prisma.GroupsUpdateOneRequiredWithoutProductsNestedInput
@@ -982,6 +1014,7 @@ export type ProductsUncheckedUpdateWithoutPhotosInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1001,6 +1034,7 @@ export type ProductsCreateWithoutEventsInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   group: Prisma.GroupsCreateNestedOneWithoutProductsInput
@@ -1020,6 +1054,7 @@ export type ProductsUncheckedCreateWithoutEventsInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   groupId: string
   institutionId: string
   createdAt?: Date | string
@@ -1055,6 +1090,7 @@ export type ProductsUpdateWithoutEventsInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   group?: Prisma.GroupsUpdateOneRequiredWithoutProductsNestedInput
@@ -1074,6 +1110,7 @@ export type ProductsUncheckedUpdateWithoutEventsInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1093,6 +1130,7 @@ export type ProductsCreateWithoutAuthorsInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   group: Prisma.GroupsCreateNestedOneWithoutProductsInput
@@ -1112,6 +1150,7 @@ export type ProductsUncheckedCreateWithoutAuthorsInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   groupId: string
   institutionId: string
   createdAt?: Date | string
@@ -1147,6 +1186,7 @@ export type ProductsUpdateWithoutAuthorsInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   group?: Prisma.GroupsUpdateOneRequiredWithoutProductsNestedInput
@@ -1166,6 +1206,7 @@ export type ProductsUncheckedUpdateWithoutAuthorsInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1185,6 +1226,7 @@ export type ProductsCreateWithoutInstitutionInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   group: Prisma.GroupsCreateNestedOneWithoutProductsInput
@@ -1204,6 +1246,7 @@ export type ProductsUncheckedCreateWithoutInstitutionInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   groupId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1249,6 +1292,7 @@ export type ProductsCreateManyGroupInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1264,6 +1308,7 @@ export type ProductsUpdateWithoutGroupInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   institution?: Prisma.InstitutionUpdateOneRequiredWithoutProductsNestedInput
@@ -1283,6 +1328,7 @@ export type ProductsUncheckedUpdateWithoutGroupInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1302,6 +1348,7 @@ export type ProductsUncheckedUpdateManyWithoutGroupInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1317,6 +1364,7 @@ export type ProductsCreateManyInstitutionInput = {
   price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: boolean
   madeAt: Date | string
+  audioUrl?: string | null
   groupId: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1332,6 +1380,7 @@ export type ProductsUpdateWithoutInstitutionInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   group?: Prisma.GroupsUpdateOneRequiredWithoutProductsNestedInput
@@ -1351,6 +1400,7 @@ export type ProductsUncheckedUpdateWithoutInstitutionInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1370,6 +1420,7 @@ export type ProductsUncheckedUpdateManyWithoutInstitutionInput = {
   price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   isSold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   madeAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  audioUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1443,6 +1494,7 @@ export type ProductsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   price?: boolean
   isSold?: boolean
   madeAt?: boolean
+  audioUrl?: boolean
   groupId?: boolean
   institutionId?: boolean
   createdAt?: boolean
@@ -1466,6 +1518,7 @@ export type ProductsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   price?: boolean
   isSold?: boolean
   madeAt?: boolean
+  audioUrl?: boolean
   groupId?: boolean
   institutionId?: boolean
   createdAt?: boolean
@@ -1484,6 +1537,7 @@ export type ProductsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   price?: boolean
   isSold?: boolean
   madeAt?: boolean
+  audioUrl?: boolean
   groupId?: boolean
   institutionId?: boolean
   createdAt?: boolean
@@ -1502,13 +1556,14 @@ export type ProductsSelectScalar = {
   price?: boolean
   isSold?: boolean
   madeAt?: boolean
+  audioUrl?: boolean
   groupId?: boolean
   institutionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ProductsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "name" | "description" | "status" | "feedback" | "isActive" | "price" | "isSold" | "madeAt" | "groupId" | "institutionId" | "createdAt" | "updatedAt", ExtArgs["result"]["products"]>
+export type ProductsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "name" | "description" | "status" | "feedback" | "isActive" | "price" | "isSold" | "madeAt" | "audioUrl" | "groupId" | "institutionId" | "createdAt" | "updatedAt", ExtArgs["result"]["products"]>
 export type ProductsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   group?: boolean | Prisma.GroupsDefaultArgs<ExtArgs>
   institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
@@ -1547,6 +1602,7 @@ export type $ProductsPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     price: runtime.Decimal | null
     isSold: boolean
     madeAt: Date
+    audioUrl: string | null
     groupId: string
     institutionId: string
     createdAt: Date
@@ -1989,6 +2045,7 @@ export interface ProductsFieldRefs {
   readonly price: Prisma.FieldRef<"Products", 'Decimal'>
   readonly isSold: Prisma.FieldRef<"Products", 'Boolean'>
   readonly madeAt: Prisma.FieldRef<"Products", 'DateTime'>
+  readonly audioUrl: Prisma.FieldRef<"Products", 'String'>
   readonly groupId: Prisma.FieldRef<"Products", 'String'>
   readonly institutionId: Prisma.FieldRef<"Products", 'String'>
   readonly createdAt: Prisma.FieldRef<"Products", 'DateTime'>

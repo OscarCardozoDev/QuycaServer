@@ -70,4 +70,55 @@ describe('ProductService — lecturas públicas', () => {
       status: 'APPROVED',
     });
   });
+
+  // ── Filtro por categoria: la vitrina de musica (`/music`) ──────────────────
+
+  const selectDe = (mock: jest.Mock) => mock.mock.calls[0][0].select;
+
+  describe('getGalleryHome — categorySlug', () => {
+    it('sin categorySlug no manda la clave group en el where', async () => {
+      await service.getGalleryHome();
+
+      expect(whereDe(prismaMock.products.findMany)).not.toHaveProperty('group');
+    });
+
+    it('con categorySlug filtra por la categoria del grupo', async () => {
+      await service.getGalleryHome({ categorySlug: 'musica' });
+
+      expect(whereDe(prismaMock.products.findMany)).toEqual({
+        isActive: true,
+        status: 'APPROVED',
+        group: { groupCategory: { slug: 'musica' } },
+      });
+    });
+
+    it('categorySlug y styleId conviven sin pisarse', async () => {
+      await service.getGalleryHome({
+        categorySlug: 'musica',
+        styleId: 'style-1',
+      });
+
+      expect(whereDe(prismaMock.products.findMany)).toEqual({
+        isActive: true,
+        status: 'APPROVED',
+        styles: { some: { styleId: 'style-1' } },
+        group: { groupCategory: { slug: 'musica' } },
+      });
+    });
+
+    it('devuelve audioUrl, que es lo que hace sonar la pagina', async () => {
+      await service.getGalleryHome({ categorySlug: 'musica' });
+
+      expect(selectDe(prismaMock.products.findMany).audioUrl).toBe(true);
+    });
+
+    it('no filtra por estado de aprobacion menos estricto al filtrar por categoria', async () => {
+      await service.getGalleryHome({ categorySlug: 'musica' });
+
+      expect(whereDe(prismaMock.products.findMany)).toMatchObject({
+        isActive: true,
+        status: 'APPROVED',
+      });
+    });
+  });
 });

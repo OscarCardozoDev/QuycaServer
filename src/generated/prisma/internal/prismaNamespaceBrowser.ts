@@ -204,6 +204,7 @@ export const ProductsScalarFieldEnum = {
   price: 'price',
   isSold: 'isSold',
   madeAt: 'madeAt',
+  audioUrl: 'audioUrl',
   groupId: 'groupId',
   institutionId: 'institutionId',
   createdAt: 'createdAt',

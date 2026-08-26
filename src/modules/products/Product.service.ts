@@ -15,7 +15,11 @@ import {
   ProductStatus,
 } from './Product.interface';
 import { PhotosService } from 'src/modules/photos/Photos.service';
-import { photoManagement } from 'src/utils/photosManagement';
+import { photoManagement, AUDIO_ROOT } from 'src/utils/photosManagement';
+import {
+  decodeAudioBase64,
+  buildAudioFileName,
+} from 'src/utils/audioDecoder';
 import { v4 as uuidv4 } from 'uuid';
 import { runWithoutTenant } from 'src/tenant/tenant-context';
 
@@ -104,8 +108,28 @@ export class ProductService {
   /* =========================
    * CREATE
    * ========================= */
+  /**
+   * Valida y guarda el audio, y devuelve la ruta publica que va a `audioUrl`.
+   *
+   * Escribe FUERA de la transaccion, igual que las imagenes: si la transaccion
+   * despues falla, el archivo queda huerfano en disco. Es la misma deuda que ya
+   * tienen las fotos, anotada en obsidian/Tareas/Musica-Lo-que-falta.
+   */
+  private async saveAudio(base64: string): Promise<string> {
+    const { buffer, extension } = decodeAudioBase64(base64);
+
+    const result = await photoManagement.save({
+      fileBuffer: buffer,
+      fileName: buildAudioFileName(extension),
+      folderPath: 'products',
+      root: AUDIO_ROOT,
+    });
+
+    return result.url;
+  }
+
   async createProductUseCase(data: CreateProductUseCase) {
-    const { product, styles, images, authors, institutionId } = data;
+    const { product, styles, images, authors, audio, institutionId } = data;
 
     // FASE 0️⃣ — Validar que el grupo y los autores pertenecen a la institución
     // activa, y que los estilos son de la categoría del grupo, antes de
@@ -158,11 +182,19 @@ export class ProductService {
       }
     };
 
+    /**
+     * Audio: se valida y escribe antes de la transaccion porque `audioUrl` es
+     * una columna del propio producto, no una tabla puente. Un data-URL invalido
+     * corta aca con 400, sin haber creado nada.
+     */
+    const audioUrl = audio ? await this.saveAudio(audio.base64) : undefined;
+
     /* Convertir price a Decimal */
     const parsedProduct = {
       ...product,
       price:
         product.price !== undefined ? new Decimal(product.price) : undefined,
+      audioUrl,
       institutionId,
     };
 
@@ -281,7 +313,7 @@ export class ProductService {
 
   // Público: alimenta la galería sin sesión, ver Product.controller.ts.
   async getGalleryHome(options: GetProductsOptions = {}) {
-    const { page = 1, limit = 10, styleId } = options;
+    const { page = 1, limit = 10, styleId, categorySlug } = options;
 
     // El filtro por estilo solo existe si el usuario eligió uno. Escrito como
     // `styles: { some: { styleId } }` a secas, con `styleId` undefined Prisma
@@ -303,10 +335,19 @@ export class ProductService {
           isActive: true,
           status: 'APPROVED',
           ...(styleId ? { styles: { some: { styleId } } } : {}),
+          // Filtro por disciplina, para las vitrinas por categoria (`/music`).
+          // Con spread condicional por la misma disciplina que el estilo: un
+          // filtro opcional nunca deja pasar `undefined` hacia adentro.
+          ...(categorySlug
+            ? { group: { groupCategory: { slug: categorySlug } } }
+            : {}),
         },
         select: {
           uid: true,
           name: true,
+          madeAt: true,
+          // null en toda obra que no sea de la categoria `musica`.
+          audioUrl: true,
           photos: {
             where: { isMain: true },
             select: {
@@ -318,6 +359,18 @@ export class ProductService {
                 },
               },
             },
+          },
+          // Autor y estilo son datos publicos: el portafolio `/artist/:uid` ya
+          // los expone. No agregar aca nada que no lo sea --precio de reserva,
+          // feedback del docente--: esta consulta es cross-tenant.
+          authors: {
+            select: {
+              isAuthor: true,
+              user: { select: { uid: true, name: true, lastName: true } },
+            },
+          },
+          styles: {
+            select: { style: { select: { uid: true, name: true } } },
           },
         },
       }),
@@ -517,7 +570,7 @@ export class ProductService {
    * UPDATE
    * ========================= */
   async updateProductUseCase(data: UpdateProductUseCase) {
-    const { productId, userId, data: updateData, images, styles } = data;
+    const { productId, userId, data: updateData, images, styles, audio } = data;
 
     // El chequeo de autoría vive en el `where`, no en un `if` posterior: así no
     // hay forma de leer la obra ajena antes de rechazarla, y la respuesta es la
@@ -599,12 +652,17 @@ export class ProductService {
     }
 
     /* Convierte el precio de number a Decimal si está definido */
+    // Sin `audio` en el body, `audioUrl` queda undefined y Prisma no toca la
+    // columna: editar el titulo de una cancion no le borra el audio.
+    const audioUrl = audio ? await this.saveAudio(audio.base64) : undefined;
+
     const parsedData = {
       ...updateData,
       price:
         updateData.price !== undefined
           ? new Decimal(updateData.price)
           : undefined,
+      audioUrl,
     };
 
     /**

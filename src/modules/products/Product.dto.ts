@@ -42,6 +42,25 @@ export class ProductImageDto {
   isMain?: boolean;
 }
 
+/**
+ * Audio de la obra, para la categoria `musica`.
+ *
+ * No lleva `folder` como ProductImageDto: el audio vive siempre en
+ * `public/audio/products` (AUDIO_ROOT), y el nombre del archivo lo genera el
+ * servidor con buildAudioFileName(). `name` es solo el nombre original, para
+ * mostrarlo en el formulario; el backend lo descarta.
+ */
+export class ProductAudioDto {
+  @ApiProperty({ example: 'data:audio/mpeg;base64,SUQzBAAA...' })
+  @IsString()
+  base64: string;
+
+  @ApiPropertyOptional({ example: 'cancion.mp3' })
+  @IsOptional()
+  @IsString()
+  name?: string;
+}
+
 export class ProductParamsDto {
   @ApiProperty({ example: 'b4fa2024-0da5-49a9-bc29-2417515e118c' })
   @IsString()
@@ -63,6 +82,12 @@ export class GetProductsDto {
   @IsOptional()
   @IsString()
   styleId?: string;
+
+  /** Slug de GroupCategory: `artes`, `teatro`, `danzas`, `musica`, `canto`. */
+  @ApiPropertyOptional({ example: 'musica' })
+  @IsOptional()
+  @IsString()
+  categorySlug?: string;
 }
 
 export class CreateProductDto {
@@ -110,6 +135,12 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @Type(() => ProductImageDto)
   images?: ProductImageDto[];
+
+  @ApiPropertyOptional({ type: ProductAudioDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ProductAudioDto)
+  audio?: ProductAudioDto;
 }
 
 // ─── Actualizar status de UNA obra (aprobar o negar) ─────────────────────────
@@ -221,4 +252,10 @@ export class UpdateProductDto {
   @ValidateNested({ each: true })
   @Type(() => UpdateProductImageDto)
   images?: UpdateProductImageDto[];
+
+  @ApiPropertyOptional({ type: ProductAudioDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ProductAudioDto)
+  audio?: ProductAudioDto;
 }

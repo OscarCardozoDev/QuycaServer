@@ -61,6 +61,7 @@ export class ProductController {
       authors: body.authors,
       styles: body.styles,
       images: body.images,
+      audio: body.audio,
       institutionId: institution.uid,
     });
   }
@@ -191,6 +192,7 @@ export class ProductController {
       authors: body.authors,
       styles: body.styles,
       images: body.images,
+      audio: body.audio,
     });
   }
 }

@@ -2,15 +2,38 @@ import { promises as fs } from 'fs';
 import * as path from 'path';
 
 /**
- * Carpeta raíz de imágenes públicas
- * Coincide con ServeStaticModule
+ * Raíz de los archivos públicos: `public/`.
+ * Cada media root cuelga de acá y tiene su propio `ServeStaticModule` en `app.module.ts`.
  */
-const IMAGES_ROOT = path.join(process.cwd(), 'public', 'images');
+const PUBLIC_ROOT = path.join(process.cwd(), 'public');
+
+/**
+ * Un destino de archivos: la carpeta dentro de `public/` y el prefijo con el que
+ * se sirve. Los dos tienen que coincidir con su `ServeStaticModule.forRoot`.
+ */
+export interface MediaRoot {
+  dir: string;
+  urlPrefix: string;
+}
+
+/** Imágenes — el destino histórico y el default de todas las funciones. */
+export const IMAGES_ROOT: MediaRoot = { dir: 'images', urlPrefix: '/images' };
+
+/**
+ * Audio — agregado para la página de música (MVP 2026-08-25).
+ *
+ * Va en su propia carpeta y no en `public/images/audio/`, que habría costado cero
+ * líneas: la URL que sale de acá **se persiste** en `Products.audioUrl`, así que
+ * un prefijo equivocado se arregla después con una migración de datos y no con un
+ * renombre. Ver `docs/superpowers/plans/2026-08-25-pagina-musica.md` §2.2.
+ */
+export const AUDIO_ROOT: MediaRoot = { dir: 'audio', urlPrefix: '/audio' };
 
 export interface SavePhotoParams {
   fileBuffer: Buffer;
   fileName: string;
   folderPath?: string; // ej: "productos/artes"
+  root?: MediaRoot;
 }
 
 export interface EditPhotoParams {
@@ -28,30 +51,36 @@ export interface GetPhotoResult {
 }
 
 /**
- * Resuelve una ruta física dentro de public/images
+ * Resuelve una ruta física dentro de public/<root.dir>
  */
-function resolveFolder(folderPath = ''): string {
-  return path.join(IMAGES_ROOT, folderPath);
+function resolveFolder(folderPath = '', root: MediaRoot = IMAGES_ROOT): string {
+  return path.join(PUBLIC_ROOT, root.dir, folderPath);
 }
 
 /**
  * Convierte ruta relativa en URL pública
  */
-function buildPublicUrl(folderPath = '', fileName: string): string {
+function buildPublicUrl(
+  folderPath = '',
+  fileName: string,
+  root: MediaRoot = IMAGES_ROOT,
+): string {
   const cleanPath = folderPath.replace(/\\/g, '/');
-  return `/images/${cleanPath}/${fileName}`.replace(/\/+/g, '/');
+  return `${root.urlPrefix}/${cleanPath}/${fileName}`.replace(/\/+/g, '/');
 }
 
 export const photoManagement = {
   /**
-   * Guarda una foto en public/images/(path)
+   * Guarda un archivo en public/<root.dir>/(path).
+   * Sin `root` escribe en `public/images`, que es el comportamiento de siempre.
    */
   async save({
     fileBuffer,
     fileName,
     folderPath = '',
+    root = IMAGES_ROOT,
   }: SavePhotoParams): Promise<PhotoResult> {
-    const targetDir = resolveFolder(folderPath);
+    const targetDir = resolveFolder(folderPath, root);
     const filePath = path.join(targetDir, fileName);
 
     await fs.mkdir(targetDir, { recursive: true });
@@ -59,7 +88,7 @@ export const photoManagement = {
 
     return {
       name: fileName,
-      url: buildPublicUrl(folderPath, fileName),
+      url: buildPublicUrl(folderPath, fileName, root),
     };
   },
 
@@ -76,11 +105,15 @@ export const photoManagement = {
   },
 
   /**
-   * Obtiene una foto y la devuelve en base64 (solo si la necesitas)
+   * Obtiene un archivo y lo devuelve en base64 (solo si lo necesitas)
    */
-  async get(fileName: string, folderPath = ''): Promise<GetPhotoResult | null> {
+  async get(
+    fileName: string,
+    folderPath = '',
+    root: MediaRoot = IMAGES_ROOT,
+  ): Promise<GetPhotoResult | null> {
     try {
-      const filePath = path.join(resolveFolder(folderPath), fileName);
+      const filePath = path.join(resolveFolder(folderPath, root), fileName);
       const buffer = await fs.readFile(filePath);
 
       return {
@@ -92,10 +125,14 @@ export const photoManagement = {
   },
 
   /**
-   * Elimina una foto
+   * Elimina un archivo
    */
-  async remove(fileName: string, folderPath = ''): Promise<void> {
-    const filePath = path.join(resolveFolder(folderPath), fileName);
+  async remove(
+    fileName: string,
+    folderPath = '',
+    root: MediaRoot = IMAGES_ROOT,
+  ): Promise<void> {
+    const filePath = path.join(resolveFolder(folderPath, root), fileName);
     await fs.unlink(filePath);
   },
 };

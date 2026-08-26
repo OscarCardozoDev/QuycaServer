@@ -32,6 +32,14 @@ import configurationApp from 'config/configuration-app';
       serveRoot: '/images',
       serveStaticOptions: { index: false },
     }),
+    // Audio de la pagina de musica. Carpeta y prefijo tienen que coincidir con
+    // AUDIO_ROOT en src/utils/photosManagement.ts: esa URL se persiste en
+    // Products.audioUrl, cambiarla despues cuesta una migracion de datos.
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'public', 'audio'),
+      serveRoot: '/audio',
+      serveStaticOptions: { index: false },
+    }),
     AuthModule,
     UserModule,
     PhotosModule,
