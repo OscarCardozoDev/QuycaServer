@@ -24,6 +24,40 @@ INSERT INTO "Styles" ("uid", "name", "description", "categoryId", "updatedAt")
 SELECT gen_random_uuid(), c.name, c.description, gc.uid, NOW()
 FROM (VALUES
 
+INSERT INTO "Roles" ("uid", "name", "slug", "updatedAt") VALUES
+  (rolePregrad,  'Estudiante Pregrado', 'pregrado',    NOW()),
+  (rolePosgrado, 'Estudiante Posgrado', 'posgrado',    NOW()),
+  (roleFuncion,  'Funcionario',         'funcionario', NOW()),
+  (roleEgresado, 'Egresado',            'egresado',    NOW()),
+  (roleParticu,  'Profesor Particular', 'particular',  NOW());
+
+INSERT INTO "Credentials" ("uid", "mail", "password", "isEmailVerified", "updatedAt") VALUES 
+  ('40693052-0e35-4d3b-9366-3fe1ecc9ac3d', 'admin@usantoto.edu.co',     '$2a$12$q4NtQXiEuQ/CZbW6.krvLuNOgsaue7ZgUjzYMqYx602ZiymJkZJbS', true, NOW()),
+  ('568c79c2-7bb8-4d1a-98d3-8d23205a6814', 'professor@usantoto.edu.co', '$2a$12$YncP2ZJ11hGu.8WnhZ.7aeUDMb/gOZi65BFSNneB4nYfYKLInHDHG', true, NOW());
+
+INSERT INTO "Users" ("uid", "name", "lastName", "username", "description", "gender", "telNumber", "isActive", "userTypeId", "roleId", "roleData", "updatedAt") VALUES
+  (
+    '40693052-0e35-4d3b-9366-3fe1ecc9ac3d',
+    'Admin', 'USTA Gallery', 'admin.usta',
+    'Administrador principal de la plataforma USTA Gallery. Gestiona usuarios, grupos y contenido de la galería.',
+    'O', '0000000000', true,
+    '77d188f7-b42e-4401-b6a2-bc8630e4700e',
+    NULL, NULL, NOW()
+  ),
+  (
+    '568c79c2-7bb8-4d1a-98d3-8d23205a6814',
+    'Profesor', 'USTA Gallery', 'professor.usta',
+    'Docente coordinador del grupo de artes de la Universidad Santo Tomás sede Tunja. Gestiona obras y eventos del grupo.',
+    'O', '0000000000', true,
+    '0d85160a-c5fc-43af-a6d1-566ff6b5a6ec',
+    roleParticu, '{}', NOW()
+  );
+
+INSERT INTO "Groups" ("uid", "name", "category", "profesorId", "updatedAt") VALUES 
+  ('2c4707a0-541d-4fc1-a4e9-b4f830114332', 'Grupo de artes y fotografía', 'ARTES', '568c79c2-7bb8-4d1a-98d3-8d23205a6814', NOW());
+
+INSERT INTO "Styles" ("uid", "name", "description", "category", "groupId", "updatedAt") VALUES
+ 
   -- PINTURA
   ('Óleo en Lienzo', 'Técnica pictórica que utiliza pigmentos aglutinados en aceite aplicados sobre lienzo tensado, permitiendo veladuras, mezclas ricas y una amplia gama tonal con gran durabilidad.'),
   ('Óleo en Madera', 'Pintura al óleo ejecutada sobre tabla de madera preparada con gesso, soporte tradicional del Renacimiento que otorga firmeza y permite acabados de alta precisión y detalle.'),
@@ -78,11 +112,9 @@ FROM (VALUES
   ('Land Art', 'Práctica que interviene paisajes naturales usando tierra, rocas, ramas u otros elementos del entorno como material escultórico; la obra existe en el territorio y se documenta mediante fotografía o video.'),
 
   -- FOTOGRAFÍA Y DIGITAL
-  ('Fotografía Artística', 'Disciplina que utiliza la cámara y la luz como herramientas creativas, explorando composición, encuadre y edición para construir imágenes con intención estética y narrativa visual.'),
-  ('Fotografía Análoga', 'Proceso fotográfico que registra imágenes en película sensible a la luz y las revela mediante baño químico en cuarto oscuro; el grano, el contraste y los virajes dan a cada imagen un carácter único e irrepetible.'),
-  ('Ilustración Digital', 'Creación de imágenes mediante software de dibujo y tableta gráfica; replica técnicas tradicionales como acuarela o óleo en entorno digital, ofreciendo capas, deshacido ilimitado y paleta infinita.'),
-  ('Arte Generativo', 'Disciplina que emplea algoritmos, código y sistemas computacionales para producir obras visuales; el artista diseña las reglas del proceso y el sistema genera formas, patrones o composiciones autónomamente.')
-) AS c(name, description)
-CROSS JOIN "GroupCategory" gc
-WHERE gc.slug = 'artes'
-ON CONFLICT ("name", "categoryId") DO NOTHING;
+  (gen_random_uuid(), 'Fotografía Artística',   'Disciplina que utiliza la cámara y la luz como herramientas creativas, explorando composición, encuadre y edición para construir imágenes con intención estética y narrativa visual.',                                 'ARTES', artesId, NOW()),
+  (gen_random_uuid(), 'Fotografía Análoga',     'Proceso fotográfico que registra imágenes en película sensible a la luz y las revela mediante baño químico en cuarto oscuro; el grano, el contraste y los virajes dan a cada imagen un carácter único e irrepetible.', 'ARTES', artesId, NOW()),
+  (gen_random_uuid(), 'Ilustración Digital',    'Creación de imágenes mediante software de dibujo y tableta gráfica; replica técnicas tradicionales como acuarela o óleo en entorno digital, ofreciendo capas, deshacido ilimitado y paleta infinita.',                'ARTES', artesId, NOW()),
+  (gen_random_uuid(), 'Arte Generativo',        'Disciplina que emplea algoritmos, código y sistemas computacionales para producir obras visuales; el artista diseña las reglas del proceso y el sistema genera formas, patrones o composiciones autónomamente.',       'ARTES', artesId, NOW());
+ 
+END $$;
