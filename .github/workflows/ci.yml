@@ -40,7 +40,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/quyca_test
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
 
