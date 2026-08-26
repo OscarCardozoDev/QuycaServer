@@ -38,6 +38,7 @@ export type EventsMinAggregateOutputType = {
   streamingUrl: string | null
   isActive: boolean | null
   createdById: string | null
+  institutionId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +57,7 @@ export type EventsMaxAggregateOutputType = {
   streamingUrl: string | null
   isActive: boolean | null
   createdById: string | null
+  institutionId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -74,6 +76,7 @@ export type EventsCountAggregateOutputType = {
   streamingUrl: number
   isActive: number
   createdById: number
+  institutionId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -94,6 +97,7 @@ export type EventsMinAggregateInputType = {
   streamingUrl?: true
   isActive?: true
   createdById?: true
+  institutionId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -112,6 +116,7 @@ export type EventsMaxAggregateInputType = {
   streamingUrl?: true
   isActive?: true
   createdById?: true
+  institutionId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -130,6 +135,7 @@ export type EventsCountAggregateInputType = {
   streamingUrl?: true
   isActive?: true
   createdById?: true
+  institutionId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -221,6 +227,7 @@ export type EventsGroupByOutputType = {
   streamingUrl: string | null
   isActive: boolean
   createdById: string
+  institutionId: string
   createdAt: Date
   updatedAt: Date
   _count: EventsCountAggregateOutputType | null
@@ -260,9 +267,11 @@ export type EventsWhereInput = {
   streamingUrl?: Prisma.StringNullableFilter<"Events"> | string | null
   isActive?: Prisma.BoolFilter<"Events"> | boolean
   createdById?: Prisma.UuidFilter<"Events"> | string
+  institutionId?: Prisma.UuidFilter<"Events"> | string
   createdAt?: Prisma.DateTimeFilter<"Events"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Events"> | Date | string
   createdBy?: Prisma.XOR<Prisma.UsersScalarRelationFilter, Prisma.UsersWhereInput>
+  institution?: Prisma.XOR<Prisma.InstitutionScalarRelationFilter, Prisma.InstitutionWhereInput>
   products?: Prisma.EventProductListRelationFilter
   photos?: Prisma.EventPhotoListRelationFilter
   groups?: Prisma.GroupEventListRelationFilter
@@ -283,9 +292,11 @@ export type EventsOrderByWithRelationInput = {
   streamingUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   createdBy?: Prisma.UsersOrderByWithRelationInput
+  institution?: Prisma.InstitutionOrderByWithRelationInput
   products?: Prisma.EventProductOrderByRelationAggregateInput
   photos?: Prisma.EventPhotoOrderByRelationAggregateInput
   groups?: Prisma.GroupEventOrderByRelationAggregateInput
@@ -309,9 +320,11 @@ export type EventsWhereUniqueInput = Prisma.AtLeast<{
   streamingUrl?: Prisma.StringNullableFilter<"Events"> | string | null
   isActive?: Prisma.BoolFilter<"Events"> | boolean
   createdById?: Prisma.UuidFilter<"Events"> | string
+  institutionId?: Prisma.UuidFilter<"Events"> | string
   createdAt?: Prisma.DateTimeFilter<"Events"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Events"> | Date | string
   createdBy?: Prisma.XOR<Prisma.UsersScalarRelationFilter, Prisma.UsersWhereInput>
+  institution?: Prisma.XOR<Prisma.InstitutionScalarRelationFilter, Prisma.InstitutionWhereInput>
   products?: Prisma.EventProductListRelationFilter
   photos?: Prisma.EventPhotoListRelationFilter
   groups?: Prisma.GroupEventListRelationFilter
@@ -332,6 +345,7 @@ export type EventsOrderByWithAggregationInput = {
   streamingUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.EventsCountOrderByAggregateInput
@@ -356,6 +370,7 @@ export type EventsScalarWhereWithAggregatesInput = {
   streamingUrl?: Prisma.StringNullableWithAggregatesFilter<"Events"> | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"Events"> | boolean
   createdById?: Prisma.UuidWithAggregatesFilter<"Events"> | string
+  institutionId?: Prisma.UuidWithAggregatesFilter<"Events"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Events"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Events"> | Date | string
 }
@@ -376,6 +391,7 @@ export type EventsCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy: Prisma.UsersCreateNestedOneWithoutCreatedEventsInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutEventsInput
   products?: Prisma.EventProductCreateNestedManyWithoutEventInput
   photos?: Prisma.EventPhotoCreateNestedManyWithoutEventInput
   groups?: Prisma.GroupEventCreateNestedManyWithoutEventInput
@@ -396,6 +412,7 @@ export type EventsUncheckedCreateInput = {
   streamingUrl?: string | null
   isActive?: boolean
   createdById: string
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.EventProductUncheckedCreateNestedManyWithoutEventInput
@@ -420,6 +437,7 @@ export type EventsUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.UsersUpdateOneRequiredWithoutCreatedEventsNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutEventsNestedInput
   products?: Prisma.EventProductUpdateManyWithoutEventNestedInput
   photos?: Prisma.EventPhotoUpdateManyWithoutEventNestedInput
   groups?: Prisma.GroupEventUpdateManyWithoutEventNestedInput
@@ -440,6 +458,7 @@ export type EventsUncheckedUpdateInput = {
   streamingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.EventProductUncheckedUpdateManyWithoutEventNestedInput
@@ -462,6 +481,7 @@ export type EventsCreateManyInput = {
   streamingUrl?: string | null
   isActive?: boolean
   createdById: string
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -497,6 +517,7 @@ export type EventsUncheckedUpdateManyInput = {
   streamingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -525,6 +546,7 @@ export type EventsCountOrderByAggregateInput = {
   streamingUrl?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -543,6 +565,7 @@ export type EventsMaxOrderByAggregateInput = {
   streamingUrl?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -561,6 +584,7 @@ export type EventsMinOrderByAggregateInput = {
   streamingUrl?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdById?: Prisma.SortOrder
+  institutionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -676,6 +700,48 @@ export type EventsUpdateOneRequiredWithoutGroupsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.EventsUpdateToOneWithWhereWithoutGroupsInput, Prisma.EventsUpdateWithoutGroupsInput>, Prisma.EventsUncheckedUpdateWithoutGroupsInput>
 }
 
+export type EventsCreateNestedManyWithoutInstitutionInput = {
+  create?: Prisma.XOR<Prisma.EventsCreateWithoutInstitutionInput, Prisma.EventsUncheckedCreateWithoutInstitutionInput> | Prisma.EventsCreateWithoutInstitutionInput[] | Prisma.EventsUncheckedCreateWithoutInstitutionInput[]
+  connectOrCreate?: Prisma.EventsCreateOrConnectWithoutInstitutionInput | Prisma.EventsCreateOrConnectWithoutInstitutionInput[]
+  createMany?: Prisma.EventsCreateManyInstitutionInputEnvelope
+  connect?: Prisma.EventsWhereUniqueInput | Prisma.EventsWhereUniqueInput[]
+}
+
+export type EventsUncheckedCreateNestedManyWithoutInstitutionInput = {
+  create?: Prisma.XOR<Prisma.EventsCreateWithoutInstitutionInput, Prisma.EventsUncheckedCreateWithoutInstitutionInput> | Prisma.EventsCreateWithoutInstitutionInput[] | Prisma.EventsUncheckedCreateWithoutInstitutionInput[]
+  connectOrCreate?: Prisma.EventsCreateOrConnectWithoutInstitutionInput | Prisma.EventsCreateOrConnectWithoutInstitutionInput[]
+  createMany?: Prisma.EventsCreateManyInstitutionInputEnvelope
+  connect?: Prisma.EventsWhereUniqueInput | Prisma.EventsWhereUniqueInput[]
+}
+
+export type EventsUpdateManyWithoutInstitutionNestedInput = {
+  create?: Prisma.XOR<Prisma.EventsCreateWithoutInstitutionInput, Prisma.EventsUncheckedCreateWithoutInstitutionInput> | Prisma.EventsCreateWithoutInstitutionInput[] | Prisma.EventsUncheckedCreateWithoutInstitutionInput[]
+  connectOrCreate?: Prisma.EventsCreateOrConnectWithoutInstitutionInput | Prisma.EventsCreateOrConnectWithoutInstitutionInput[]
+  upsert?: Prisma.EventsUpsertWithWhereUniqueWithoutInstitutionInput | Prisma.EventsUpsertWithWhereUniqueWithoutInstitutionInput[]
+  createMany?: Prisma.EventsCreateManyInstitutionInputEnvelope
+  set?: Prisma.EventsWhereUniqueInput | Prisma.EventsWhereUniqueInput[]
+  disconnect?: Prisma.EventsWhereUniqueInput | Prisma.EventsWhereUniqueInput[]
+  delete?: Prisma.EventsWhereUniqueInput | Prisma.EventsWhereUniqueInput[]
+  connect?: Prisma.EventsWhereUniqueInput | Prisma.EventsWhereUniqueInput[]
+  update?: Prisma.EventsUpdateWithWhereUniqueWithoutInstitutionInput | Prisma.EventsUpdateWithWhereUniqueWithoutInstitutionInput[]
+  updateMany?: Prisma.EventsUpdateManyWithWhereWithoutInstitutionInput | Prisma.EventsUpdateManyWithWhereWithoutInstitutionInput[]
+  deleteMany?: Prisma.EventsScalarWhereInput | Prisma.EventsScalarWhereInput[]
+}
+
+export type EventsUncheckedUpdateManyWithoutInstitutionNestedInput = {
+  create?: Prisma.XOR<Prisma.EventsCreateWithoutInstitutionInput, Prisma.EventsUncheckedCreateWithoutInstitutionInput> | Prisma.EventsCreateWithoutInstitutionInput[] | Prisma.EventsUncheckedCreateWithoutInstitutionInput[]
+  connectOrCreate?: Prisma.EventsCreateOrConnectWithoutInstitutionInput | Prisma.EventsCreateOrConnectWithoutInstitutionInput[]
+  upsert?: Prisma.EventsUpsertWithWhereUniqueWithoutInstitutionInput | Prisma.EventsUpsertWithWhereUniqueWithoutInstitutionInput[]
+  createMany?: Prisma.EventsCreateManyInstitutionInputEnvelope
+  set?: Prisma.EventsWhereUniqueInput | Prisma.EventsWhereUniqueInput[]
+  disconnect?: Prisma.EventsWhereUniqueInput | Prisma.EventsWhereUniqueInput[]
+  delete?: Prisma.EventsWhereUniqueInput | Prisma.EventsWhereUniqueInput[]
+  connect?: Prisma.EventsWhereUniqueInput | Prisma.EventsWhereUniqueInput[]
+  update?: Prisma.EventsUpdateWithWhereUniqueWithoutInstitutionInput | Prisma.EventsUpdateWithWhereUniqueWithoutInstitutionInput[]
+  updateMany?: Prisma.EventsUpdateManyWithWhereWithoutInstitutionInput | Prisma.EventsUpdateManyWithWhereWithoutInstitutionInput[]
+  deleteMany?: Prisma.EventsScalarWhereInput | Prisma.EventsScalarWhereInput[]
+}
+
 export type EventsCreateWithoutCreatedByInput = {
   uid?: string
   name: string
@@ -691,6 +757,7 @@ export type EventsCreateWithoutCreatedByInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  institution: Prisma.InstitutionCreateNestedOneWithoutEventsInput
   products?: Prisma.EventProductCreateNestedManyWithoutEventInput
   photos?: Prisma.EventPhotoCreateNestedManyWithoutEventInput
   groups?: Prisma.GroupEventCreateNestedManyWithoutEventInput
@@ -710,6 +777,7 @@ export type EventsUncheckedCreateWithoutCreatedByInput = {
   isVirtual?: boolean
   streamingUrl?: string | null
   isActive?: boolean
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.EventProductUncheckedCreateNestedManyWithoutEventInput
@@ -761,6 +829,7 @@ export type EventsScalarWhereInput = {
   streamingUrl?: Prisma.StringNullableFilter<"Events"> | string | null
   isActive?: Prisma.BoolFilter<"Events"> | boolean
   createdById?: Prisma.UuidFilter<"Events"> | string
+  institutionId?: Prisma.UuidFilter<"Events"> | string
   createdAt?: Prisma.DateTimeFilter<"Events"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Events"> | Date | string
 }
@@ -781,6 +850,7 @@ export type EventsCreateWithoutProductsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy: Prisma.UsersCreateNestedOneWithoutCreatedEventsInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutEventsInput
   photos?: Prisma.EventPhotoCreateNestedManyWithoutEventInput
   groups?: Prisma.GroupEventCreateNestedManyWithoutEventInput
   invitations?: Prisma.EventInvitationCreateNestedManyWithoutEventInput
@@ -800,6 +870,7 @@ export type EventsUncheckedCreateWithoutProductsInput = {
   streamingUrl?: string | null
   isActive?: boolean
   createdById: string
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   photos?: Prisma.EventPhotoUncheckedCreateNestedManyWithoutEventInput
@@ -839,6 +910,7 @@ export type EventsUpdateWithoutProductsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.UsersUpdateOneRequiredWithoutCreatedEventsNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutEventsNestedInput
   photos?: Prisma.EventPhotoUpdateManyWithoutEventNestedInput
   groups?: Prisma.GroupEventUpdateManyWithoutEventNestedInput
   invitations?: Prisma.EventInvitationUpdateManyWithoutEventNestedInput
@@ -858,6 +930,7 @@ export type EventsUncheckedUpdateWithoutProductsInput = {
   streamingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   photos?: Prisma.EventPhotoUncheckedUpdateManyWithoutEventNestedInput
@@ -881,6 +954,7 @@ export type EventsCreateWithoutInvitationsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy: Prisma.UsersCreateNestedOneWithoutCreatedEventsInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutEventsInput
   products?: Prisma.EventProductCreateNestedManyWithoutEventInput
   photos?: Prisma.EventPhotoCreateNestedManyWithoutEventInput
   groups?: Prisma.GroupEventCreateNestedManyWithoutEventInput
@@ -900,6 +974,7 @@ export type EventsUncheckedCreateWithoutInvitationsInput = {
   streamingUrl?: string | null
   isActive?: boolean
   createdById: string
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.EventProductUncheckedCreateNestedManyWithoutEventInput
@@ -939,6 +1014,7 @@ export type EventsUpdateWithoutInvitationsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.UsersUpdateOneRequiredWithoutCreatedEventsNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutEventsNestedInput
   products?: Prisma.EventProductUpdateManyWithoutEventNestedInput
   photos?: Prisma.EventPhotoUpdateManyWithoutEventNestedInput
   groups?: Prisma.GroupEventUpdateManyWithoutEventNestedInput
@@ -958,6 +1034,7 @@ export type EventsUncheckedUpdateWithoutInvitationsInput = {
   streamingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.EventProductUncheckedUpdateManyWithoutEventNestedInput
@@ -981,6 +1058,7 @@ export type EventsCreateWithoutPhotosInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy: Prisma.UsersCreateNestedOneWithoutCreatedEventsInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutEventsInput
   products?: Prisma.EventProductCreateNestedManyWithoutEventInput
   groups?: Prisma.GroupEventCreateNestedManyWithoutEventInput
   invitations?: Prisma.EventInvitationCreateNestedManyWithoutEventInput
@@ -1000,6 +1078,7 @@ export type EventsUncheckedCreateWithoutPhotosInput = {
   streamingUrl?: string | null
   isActive?: boolean
   createdById: string
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.EventProductUncheckedCreateNestedManyWithoutEventInput
@@ -1039,6 +1118,7 @@ export type EventsUpdateWithoutPhotosInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.UsersUpdateOneRequiredWithoutCreatedEventsNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutEventsNestedInput
   products?: Prisma.EventProductUpdateManyWithoutEventNestedInput
   groups?: Prisma.GroupEventUpdateManyWithoutEventNestedInput
   invitations?: Prisma.EventInvitationUpdateManyWithoutEventNestedInput
@@ -1058,6 +1138,7 @@ export type EventsUncheckedUpdateWithoutPhotosInput = {
   streamingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.EventProductUncheckedUpdateManyWithoutEventNestedInput
@@ -1081,6 +1162,7 @@ export type EventsCreateWithoutGroupsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   createdBy: Prisma.UsersCreateNestedOneWithoutCreatedEventsInput
+  institution: Prisma.InstitutionCreateNestedOneWithoutEventsInput
   products?: Prisma.EventProductCreateNestedManyWithoutEventInput
   photos?: Prisma.EventPhotoCreateNestedManyWithoutEventInput
   invitations?: Prisma.EventInvitationCreateNestedManyWithoutEventInput
@@ -1100,6 +1182,7 @@ export type EventsUncheckedCreateWithoutGroupsInput = {
   streamingUrl?: string | null
   isActive?: boolean
   createdById: string
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
   products?: Prisma.EventProductUncheckedCreateNestedManyWithoutEventInput
@@ -1139,6 +1222,7 @@ export type EventsUpdateWithoutGroupsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdBy?: Prisma.UsersUpdateOneRequiredWithoutCreatedEventsNestedInput
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutEventsNestedInput
   products?: Prisma.EventProductUpdateManyWithoutEventNestedInput
   photos?: Prisma.EventPhotoUpdateManyWithoutEventNestedInput
   invitations?: Prisma.EventInvitationUpdateManyWithoutEventNestedInput
@@ -1158,11 +1242,82 @@ export type EventsUncheckedUpdateWithoutGroupsInput = {
   streamingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.EventProductUncheckedUpdateManyWithoutEventNestedInput
   photos?: Prisma.EventPhotoUncheckedUpdateManyWithoutEventNestedInput
   invitations?: Prisma.EventInvitationUncheckedUpdateManyWithoutEventNestedInput
+}
+
+export type EventsCreateWithoutInstitutionInput = {
+  uid?: string
+  name: string
+  description: string
+  status?: $Enums.EventStatus
+  feedback?: string | null
+  eventType?: $Enums.EventType
+  startDate: Date | string
+  endDate?: Date | string | null
+  locationUrl?: string | null
+  isVirtual?: boolean
+  streamingUrl?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  createdBy: Prisma.UsersCreateNestedOneWithoutCreatedEventsInput
+  products?: Prisma.EventProductCreateNestedManyWithoutEventInput
+  photos?: Prisma.EventPhotoCreateNestedManyWithoutEventInput
+  groups?: Prisma.GroupEventCreateNestedManyWithoutEventInput
+  invitations?: Prisma.EventInvitationCreateNestedManyWithoutEventInput
+}
+
+export type EventsUncheckedCreateWithoutInstitutionInput = {
+  uid?: string
+  name: string
+  description: string
+  status?: $Enums.EventStatus
+  feedback?: string | null
+  eventType?: $Enums.EventType
+  startDate: Date | string
+  endDate?: Date | string | null
+  locationUrl?: string | null
+  isVirtual?: boolean
+  streamingUrl?: string | null
+  isActive?: boolean
+  createdById: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  products?: Prisma.EventProductUncheckedCreateNestedManyWithoutEventInput
+  photos?: Prisma.EventPhotoUncheckedCreateNestedManyWithoutEventInput
+  groups?: Prisma.GroupEventUncheckedCreateNestedManyWithoutEventInput
+  invitations?: Prisma.EventInvitationUncheckedCreateNestedManyWithoutEventInput
+}
+
+export type EventsCreateOrConnectWithoutInstitutionInput = {
+  where: Prisma.EventsWhereUniqueInput
+  create: Prisma.XOR<Prisma.EventsCreateWithoutInstitutionInput, Prisma.EventsUncheckedCreateWithoutInstitutionInput>
+}
+
+export type EventsCreateManyInstitutionInputEnvelope = {
+  data: Prisma.EventsCreateManyInstitutionInput | Prisma.EventsCreateManyInstitutionInput[]
+  skipDuplicates?: boolean
+}
+
+export type EventsUpsertWithWhereUniqueWithoutInstitutionInput = {
+  where: Prisma.EventsWhereUniqueInput
+  update: Prisma.XOR<Prisma.EventsUpdateWithoutInstitutionInput, Prisma.EventsUncheckedUpdateWithoutInstitutionInput>
+  create: Prisma.XOR<Prisma.EventsCreateWithoutInstitutionInput, Prisma.EventsUncheckedCreateWithoutInstitutionInput>
+}
+
+export type EventsUpdateWithWhereUniqueWithoutInstitutionInput = {
+  where: Prisma.EventsWhereUniqueInput
+  data: Prisma.XOR<Prisma.EventsUpdateWithoutInstitutionInput, Prisma.EventsUncheckedUpdateWithoutInstitutionInput>
+}
+
+export type EventsUpdateManyWithWhereWithoutInstitutionInput = {
+  where: Prisma.EventsScalarWhereInput
+  data: Prisma.XOR<Prisma.EventsUpdateManyMutationInput, Prisma.EventsUncheckedUpdateManyWithoutInstitutionInput>
 }
 
 export type EventsCreateManyCreatedByInput = {
@@ -1178,6 +1333,7 @@ export type EventsCreateManyCreatedByInput = {
   isVirtual?: boolean
   streamingUrl?: string | null
   isActive?: boolean
+  institutionId: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1197,6 +1353,7 @@ export type EventsUpdateWithoutCreatedByInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  institution?: Prisma.InstitutionUpdateOneRequiredWithoutEventsNestedInput
   products?: Prisma.EventProductUpdateManyWithoutEventNestedInput
   photos?: Prisma.EventPhotoUpdateManyWithoutEventNestedInput
   groups?: Prisma.GroupEventUpdateManyWithoutEventNestedInput
@@ -1216,6 +1373,7 @@ export type EventsUncheckedUpdateWithoutCreatedByInput = {
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   streamingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   products?: Prisma.EventProductUncheckedUpdateManyWithoutEventNestedInput
@@ -1237,6 +1395,87 @@ export type EventsUncheckedUpdateManyWithoutCreatedByInput = {
   isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
   streamingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  institutionId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type EventsCreateManyInstitutionInput = {
+  uid?: string
+  name: string
+  description: string
+  status?: $Enums.EventStatus
+  feedback?: string | null
+  eventType?: $Enums.EventType
+  startDate: Date | string
+  endDate?: Date | string | null
+  locationUrl?: string | null
+  isVirtual?: boolean
+  streamingUrl?: string | null
+  isActive?: boolean
+  createdById: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type EventsUpdateWithoutInstitutionInput = {
+  uid?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  feedback?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  eventType?: Prisma.EnumEventTypeFieldUpdateOperationsInput | $Enums.EventType
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  locationUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  streamingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdBy?: Prisma.UsersUpdateOneRequiredWithoutCreatedEventsNestedInput
+  products?: Prisma.EventProductUpdateManyWithoutEventNestedInput
+  photos?: Prisma.EventPhotoUpdateManyWithoutEventNestedInput
+  groups?: Prisma.GroupEventUpdateManyWithoutEventNestedInput
+  invitations?: Prisma.EventInvitationUpdateManyWithoutEventNestedInput
+}
+
+export type EventsUncheckedUpdateWithoutInstitutionInput = {
+  uid?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  feedback?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  eventType?: Prisma.EnumEventTypeFieldUpdateOperationsInput | $Enums.EventType
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  locationUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  streamingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  products?: Prisma.EventProductUncheckedUpdateManyWithoutEventNestedInput
+  photos?: Prisma.EventPhotoUncheckedUpdateManyWithoutEventNestedInput
+  groups?: Prisma.GroupEventUncheckedUpdateManyWithoutEventNestedInput
+  invitations?: Prisma.EventInvitationUncheckedUpdateManyWithoutEventNestedInput
+}
+
+export type EventsUncheckedUpdateManyWithoutInstitutionInput = {
+  uid?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumEventStatusFieldUpdateOperationsInput | $Enums.EventStatus
+  feedback?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  eventType?: Prisma.EnumEventTypeFieldUpdateOperationsInput | $Enums.EventType
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  locationUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isVirtual?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  streamingUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdById?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1313,9 +1552,11 @@ export type EventsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   streamingUrl?: boolean
   isActive?: boolean
   createdById?: boolean
+  institutionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdBy?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
   products?: boolean | Prisma.Events$productsArgs<ExtArgs>
   photos?: boolean | Prisma.Events$photosArgs<ExtArgs>
   groups?: boolean | Prisma.Events$groupsArgs<ExtArgs>
@@ -1337,9 +1578,11 @@ export type EventsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   streamingUrl?: boolean
   isActive?: boolean
   createdById?: boolean
+  institutionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdBy?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["events"]>
 
 export type EventsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1356,9 +1599,11 @@ export type EventsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   streamingUrl?: boolean
   isActive?: boolean
   createdById?: boolean
+  institutionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   createdBy?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["events"]>
 
 export type EventsSelectScalar = {
@@ -1375,13 +1620,15 @@ export type EventsSelectScalar = {
   streamingUrl?: boolean
   isActive?: boolean
   createdById?: boolean
+  institutionId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type EventsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "name" | "description" | "status" | "feedback" | "eventType" | "startDate" | "endDate" | "locationUrl" | "isVirtual" | "streamingUrl" | "isActive" | "createdById" | "createdAt" | "updatedAt", ExtArgs["result"]["events"]>
+export type EventsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "name" | "description" | "status" | "feedback" | "eventType" | "startDate" | "endDate" | "locationUrl" | "isVirtual" | "streamingUrl" | "isActive" | "createdById" | "institutionId" | "createdAt" | "updatedAt", ExtArgs["result"]["events"]>
 export type EventsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   createdBy?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
   products?: boolean | Prisma.Events$productsArgs<ExtArgs>
   photos?: boolean | Prisma.Events$photosArgs<ExtArgs>
   groups?: boolean | Prisma.Events$groupsArgs<ExtArgs>
@@ -1390,15 +1637,18 @@ export type EventsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
 }
 export type EventsIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   createdBy?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
 }
 export type EventsIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   createdBy?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
+  institution?: boolean | Prisma.InstitutionDefaultArgs<ExtArgs>
 }
 
 export type $EventsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Events"
   objects: {
     createdBy: Prisma.$UsersPayload<ExtArgs>
+    institution: Prisma.$InstitutionPayload<ExtArgs>
     products: Prisma.$EventProductPayload<ExtArgs>[]
     photos: Prisma.$EventPhotoPayload<ExtArgs>[]
     groups: Prisma.$GroupEventPayload<ExtArgs>[]
@@ -1418,6 +1668,7 @@ export type $EventsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     streamingUrl: string | null
     isActive: boolean
     createdById: string
+    institutionId: string
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["events"]>
@@ -1815,6 +2066,7 @@ readonly fields: EventsFieldRefs;
 export interface Prisma__EventsClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   createdBy<T extends Prisma.UsersDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UsersDefaultArgs<ExtArgs>>): Prisma.Prisma__UsersClient<runtime.Types.Result.GetResult<Prisma.$UsersPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  institution<T extends Prisma.InstitutionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InstitutionDefaultArgs<ExtArgs>>): Prisma.Prisma__InstitutionClient<runtime.Types.Result.GetResult<Prisma.$InstitutionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   products<T extends Prisma.Events$productsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Events$productsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   photos<T extends Prisma.Events$photosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Events$photosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventPhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   groups<T extends Prisma.Events$groupsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Events$groupsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GroupEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -1861,6 +2113,7 @@ export interface EventsFieldRefs {
   readonly streamingUrl: Prisma.FieldRef<"Events", 'String'>
   readonly isActive: Prisma.FieldRef<"Events", 'Boolean'>
   readonly createdById: Prisma.FieldRef<"Events", 'String'>
+  readonly institutionId: Prisma.FieldRef<"Events", 'String'>
   readonly createdAt: Prisma.FieldRef<"Events", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Events", 'DateTime'>
 }

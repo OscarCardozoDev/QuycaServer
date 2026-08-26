@@ -1,17 +1,7 @@
-export interface PhotoParams {
-  uid: string;
-}
-
 export interface PhotoResponse {
   uid: string;
   name: string;
   url?: string;
-}
-
-export interface GetPhotoResponse {
-  uid: string;
-  name: string;
-  url: string;
 }
 
 export interface CreatePhotoUseCase {

@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { photoManagment } from 'src/utils/photosManagment';
+import { photoManagement } from 'src/utils/photosManagement';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
@@ -11,7 +11,7 @@ import {
 
 @Injectable()
 export class PhotosService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   // ───────────────────────────────────────────────────────────────
   // Helpers
@@ -53,7 +53,7 @@ export class PhotosService {
       : `${uid}_${name}.${extension}`;
 
     try {
-      fileResult = await photoManagment.save({
+      fileResult = await photoManagement.save({
         fileBuffer: buffer,
         fileName,
         folderPath: folder,
@@ -113,7 +113,7 @@ export class PhotosService {
 
     const { buffer } = this.base64ToBuffer(params.base64);
 
-    await photoManagment.edit({
+    await photoManagement.edit({
       fileBuffer: buffer,
       folderPath: photo.url,
     });
@@ -145,7 +145,7 @@ export class PhotosService {
     const fileName = segments.pop()!;
     const folderPath = segments.join('/');
 
-    await photoManagment.remove(fileName, folderPath);
+    await photoManagement.remove(fileName, folderPath);
 
     await this.prisma.photos.delete({
       where: { uid: photoId },

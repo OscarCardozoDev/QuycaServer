@@ -9,13 +9,13 @@ import {
   Body,
   Param,
   Query,
-  NotFoundException,
+  Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CurrentUser } from 'src/decorators/currentUser';
 import { GroupService } from './Group.service';
-import { AuthGuard } from 'src/middleware/jwt.guard';
-import { Roles } from 'src/decorators/roles.decorator';
+import { AuthGuard } from 'src/guards/jwt.guard';
 import {
   GroupParamsDto,
   GetGroupsDto,
@@ -26,18 +26,34 @@ import {
   UpdateStudentsDto,
   ChangeProfesorDto,
 } from './Group.dto';
+import { TenantGuard } from 'src/tenant/tenant.guard';
+import { ContextRoleGuard } from 'src/guards/context-role.guard';
+import { FeatureGuard } from 'src/guards/feature.guard';
+import { RequireContextRole } from 'src/decorators/context-role.decorator';
+import { RequireFeature } from 'src/decorators/feature.decorator';
+import { Institution } from 'src/decorators/institution.decorator';
+import type { ActiveInstitution, AuthenticatedRequest } from 'src/interface/jwtPayload';
 
 @ApiTags('groups')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, TenantGuard)
 @Controller('groups')
 export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 
   @Post('create')
-  @Roles('admin')
+  @UseGuards(ContextRoleGuard, FeatureGuard)
+  @RequireContextRole('rector', 'coordinator')
+  @RequireFeature('groups_create')
   @ApiOperation({ summary: 'Crear grupo' })
-  async create(@Body() body: CreateGroupDto) {
-    return this.groupService.createGroupUseCase(body);
+  async create(
+    @Body() body: CreateGroupDto,
+    @Institution() institution: ActiveInstitution,
+  ) {
+    return this.groupService.createGroupUseCase({
+      ...body,
+      institutionId: institution.uid,
+      maxGroups: institution.subscriptionPlan.maxGroups,
+    });
   }
 
   @Get('get')
@@ -46,33 +62,51 @@ export class GroupController {
     return this.groupService.getAll(query);
   }
 
+  @Get('mine')
+  @ApiOperation({ summary: 'Grupos del usuario autenticado' })
+  async getMine(
+    @CurrentUser('uid') uid: string,
+    @Institution() institution: ActiveInstitution,
+  ) {
+    return this.groupService.getMyGroups(uid, institution.uid);
+  }
+
   @Get('get/:uid')
   @ApiOperation({ summary: 'Obtener grupo por UID' })
-  async getById(@Param() params: GroupParamsDto) {
-    const group = await this.groupService.getById(params.uid);
-
-    if (!group) {
-      throw new NotFoundException('Group not found');
-    }
-
-    return group;
+  async getById(
+    @Param() params: GroupParamsDto,
+    @CurrentUser('uid') uid: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.groupService.getById(params.uid, uid, req.contextRole || '');
   }
 
   @Put('update/:uid')
-  @Roles('admin')
   @ApiOperation({ summary: 'Actualizar grupo' })
-  async update(@Param() params: GroupParamsDto, @Body() body: UpdateGroupDto) {
+  async update(
+    @Param() params: GroupParamsDto,
+    @Body() body: UpdateGroupDto,
+    @CurrentUser('uid') uid: string,
+    @Institution() institution: ActiveInstitution,
+    @Req() req: AuthenticatedRequest,
+  ) {
     return this.groupService.updateGroupUseCase({
       groupId: params.uid,
+      institutionId: institution.uid,
+      uid,
+      contextRole: req.contextRole || '',
       data: {
         name: body.name,
-        profesorId: body.profesorId,
+        description: body.description,
+        rules: body.rules,
+        coverPhotoId: body.coverPhotoId,
       },
     });
   }
 
   @Delete('delete/:uid')
-  @Roles('admin')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @ApiOperation({ summary: 'Eliminar grupo' })
   async delete(@Param() params: GroupParamsDto) {
     await this.groupService.deleteGroup(params.uid);
@@ -80,15 +114,18 @@ export class GroupController {
   }
 
   @Patch('change-profesor/:uid')
-  @Roles('admin')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @ApiOperation({ summary: 'Cambiar el profesor asignado al grupo' })
   async changeProfesor(
     @Param() params: GroupParamsDto,
     @Body() body: ChangeProfesorDto,
+    @Institution() institution: ActiveInstitution,
   ) {
     return this.groupService.changeProfesor({
       groupId: params.uid,
       newProfesorId: body.newProfesorId,
+      institutionId: institution.uid,
     });
   }
 
@@ -97,36 +134,86 @@ export class GroupController {
   async addStudent(
     @CurrentUser('uid') uid: string,
     @Body() body: AddStudentDto,
+    @Institution() institution: ActiveInstitution,
+    @Req() req: AuthenticatedRequest,
   ) {
-    const userId = body.userId ?? uid;
+    const targetUserId = body.userId ?? uid;
+    if (targetUserId !== uid && !['rector', 'coordinator', 'institutional'].includes(req.contextRole || '')) {
+      throw new ForbiddenException('Solo un rector, coordinador o profesor puede agregar a otra persona a un grupo');
+    }
     return this.groupService.addStudentToGroups({
-      userId,
+      userId: targetUserId,
       groupIds: body.groupIds,
+      institutionId: institution.uid,
     });
+  }
+
+  // ─── PANEL DE CONTROL ─────────────────────────────────────────────────────
+  // Las dos rutas que `/dashboard/panel-control` llamaba desde siempre y que no
+  // existían: la pantalla daba 404 para los seis roles.
+  // Ver obsidian/Raw/Specs/2026-08-23-matriz-de-permisos-design.md §3.12.
+  //
+  // Van con dos segmentos y sufijo literal, así que no compiten con 'get/:uid'
+  // ni con 'student/get/:groupId'. Sin ContextRoleGuard a propósito: quien
+  // decide es `assertCanViewGroup`, el segundo eje de aislamiento --gestión, o
+  // miembro del grupo-- y responde 404, no 403.
+
+  @Get(':groupId/stats')
+  @ApiOperation({ summary: 'Ficha y contadores del grupo, para el panel de control' })
+  async getStats(
+    @Param('groupId') groupId: string,
+    @CurrentUser('uid') uid: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.groupService.getGroupStats(groupId, uid, req.contextRole || '');
+  }
+
+  @Get(':groupId/members')
+  @ApiOperation({ summary: 'Estudiantes del grupo, paginados' })
+  async getMembers(
+    @Param('groupId') groupId: string,
+    @Query() query: GetGroupsDto,
+    @CurrentUser('uid') uid: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.groupService.getGroupMembers(
+      groupId,
+      uid,
+      req.contextRole || '',
+      query,
+    );
   }
 
   @Get('student/get/:groupId')
   @ApiOperation({ summary: 'Obtener estudiantes de un grupo' })
-  async getAllStudents(@Param('groupId') groupId: string) {
-    return this.groupService.getAllStudentsByGroup(groupId);
+  async getAllStudents(
+    @Param('groupId') groupId: string,
+    @CurrentUser('uid') uid: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.groupService.getAllStudentsByGroup(groupId, uid, req.contextRole || '');
   }
 
   @Delete('student/delete/:groupId')
-  @Roles('admin', 'professor')
   @ApiOperation({ summary: 'Eliminar un estudiante del grupo' })
   async deleteStudent(
     @Param('groupId') groupId: string,
     @Body() body: DeleteStudentDto,
+    @CurrentUser('uid') uid: string,
+    @Req() req: AuthenticatedRequest,
   ) {
     await this.groupService.deleteOneStudentByGroup({
       groupId,
       userId: body.userId,
+      uid,
+      contextRole: req.contextRole || '',
     });
     return { success: true };
   }
 
   @Delete('student/deleteAll/:groupId')
-  @Roles('admin')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator')
   @ApiOperation({ summary: 'Eliminar todos los estudiantes del grupo' })
   async deleteAllStudents(@Param('groupId') groupId: string) {
     await this.groupService.deleteStudentsByGroup(groupId);
@@ -134,15 +221,20 @@ export class GroupController {
   }
 
   @Put('student/update/:groupId')
-  @Roles('admin', 'professor')
   @ApiOperation({ summary: 'Actualizar lista de estudiantes del grupo' })
   async updateStudents(
     @Param('groupId') groupId: string,
     @Body() body: UpdateStudentsDto,
+    @Institution() institution: ActiveInstitution,
+    @CurrentUser('uid') uid: string,
+    @Req() req: AuthenticatedRequest,
   ) {
     return this.groupService.updateStudentsByGroup({
       groupId,
       users: body.users,
+      institutionId: institution.uid,
+      uid,
+      contextRole: req.contextRole || '',
     });
   }
 }

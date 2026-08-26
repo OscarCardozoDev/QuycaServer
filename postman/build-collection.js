@@ -16,6 +16,17 @@ function jsonHeader() {
   return [{ key: 'Content-Type', value: 'application/json' }];
 }
 
+function tenantHeaders() {
+  return [
+    { key: 'Content-Type', value: 'application/json' },
+    { key: 'X-Institution-Slug', value: '{{institutionSlug}}' },
+  ];
+}
+
+function tenantHeader() {
+  return [{ key: 'X-Institution-Slug', value: '{{institutionSlug}}' }];
+}
+
 function makeUrl(raw) {
   return raw; // Newman requires plain string URL, not { raw } object
 }
@@ -75,6 +86,9 @@ const authFolder = {
       url: '{{baseUrl}}/auth/register',
       headers: jsonHeader(),
       body: { mail: '{{newUserMail}}', password: '{{newUserPassword}}' },
+      preRequest: [
+        "pm.environment.set('newUserMail', 'test_' + Date.now() + '@usantoto.edu.co');",
+      ],
       tests: [
         "pm.test('Status 201', () => pm.response.to.have.status(201));",
         "const json = pm.response.json();",
@@ -116,13 +130,13 @@ const authFolder = {
       ],
     }),
     makeItem({
-      name: 'Login - unknown email returns 404',
+      name: 'Login - unknown email returns 401',
       method: 'POST',
       url: '{{baseUrl}}/auth/login',
       headers: jsonHeader(),
       body: { mail: 'nobody@nowhere.com', password: 'Test@1234!' },
       tests: [
-        "pm.test('Status 404 on unknown email', () => pm.response.to.have.status(404));",
+        "pm.test('Status 401 on unknown email', () => pm.response.to.have.status(401));",
       ],
     }),
     makeItem({
@@ -196,21 +210,38 @@ const authFolder = {
 const userFolder = {
   name: 'User',
   item: [
-    // ── Admin ──────────────────────────────────────────────────────────────────
-    loginRequest('admin'),
+    // ── El perfil lo crea su dueño, no el admin ────────────────────────────────
+    //
+    // `POST /user/professor` ya NO existe: se eliminó cuando los profesores
+    // pasaron a invitación (`POST /institutions/...`). El reemplazo es
+    // `POST /user/create`, que toma el uid del JWT (@CurrentUser) y no del
+    // body — o sea que el usuario tiene que estar logueado como sí mismo.
+    //
+    // Sigue publicando `createdUserId` y `newProfessorId`, que son de los que
+    // dependen Groups, Products y Events más abajo.
     makeItem({
-      name: 'Create Professor Profile (admin)',
-      method: 'POST',
-      url: '{{baseUrl}}/user/professor',
+      name: '🔐 Login as New User',
+      method: 'POST', url: '{{baseUrl}}/auth/login',
       headers: jsonHeader(),
+      body: { mail: '{{newUserMail}}', password: '{{newUserPassword}}' },
+      tests: ["pm.test('Login OK', () => pm.response.to.have.status(201));"],
+    }),
+    makeItem({
+      name: 'Create Own Profile (new user)',
+      method: 'POST',
+      url: '{{baseUrl}}/user/create',
+      headers: jsonHeader(),
+      preRequest: [
+        "pm.environment.set('professorUsername', 'prof_api_' + Date.now());",
+      ],
       body: {
-        uid: '{{newUserId}}',
         name: 'Nuevo',
         lastName: 'Profesor',
-        username: 'nuevo_profesor_api_001',
+        username: '{{professorUsername}}',
         description: 'Profesor de prueba',
         gender: 'M',
         telNumber: '3001234567',
+        roleData: { career: 'Artes', semester: '1' },
       },
       tests: [
         "pm.test('Status 201', () => pm.response.to.have.status(201));",
@@ -220,6 +251,21 @@ const userFolder = {
         "pm.environment.set('newProfessorId', json.uid);",
       ],
     }),
+    makeItem({
+      name: 'Create Own Profile - segunda vez devuelve 400/409',
+      method: 'POST', url: '{{baseUrl}}/user/create',
+      headers: jsonHeader(),
+      body: {
+        name: 'Nuevo', lastName: 'Profesor', username: 'dupe_prof_api_001',
+        gender: 'M', telNumber: '3000000001',
+        roleData: { career: 'Artes', semester: '1' },
+      },
+      tests: [
+        "pm.test('Ya tiene perfil', () => pm.expect(pm.response.code).to.be.oneOf([400, 409]));",
+      ],
+    }),
+    // ── Admin ──────────────────────────────────────────────────────────────────
+    loginRequest('admin'),
     makeItem({
       name: 'Get All Active Users (admin)',
       method: 'GET', url: '{{baseUrl}}/user/allActive',
@@ -281,38 +327,34 @@ const userFolder = {
       tests: ["pm.test('Status 200', () => pm.response.to.have.status(200));"],
     }),
     makeItem({
-      name: 'Create Professor Profile - 409 on duplicate uid (admin)',
-      method: 'POST', url: '{{baseUrl}}/user/professor',
-      headers: jsonHeader(),
-      body: {
-        uid: '{{newUserId}}',
-        name: 'Dupe', lastName: 'Prof', username: 'dupe_prof_api_001',
-        gender: 'M', telNumber: '3000000001',
-      },
-      tests: [
-        "pm.test('Status 409 on duplicate uid', () => pm.response.to.have.status(409));",
-      ],
-    }),
-    makeItem({
-      name: 'Create Student Profile - 403 for admin',
+      name: 'Create Student Profile - 400 for admin (already has profile)',
       method: 'POST', url: '{{baseUrl}}/user/create',
       headers: jsonHeader(),
       body: { name: 'X', lastName: 'Y', username: 'xy_001', gender: 'M', telNumber: '3000000002', roleId: '00000000-0000-0000-0000-000000000010', roleData: {} },
       tests: [
-        "pm.test('Status 403 — admin cannot create student profile', () => pm.response.to.have.status(403));",
+        "pm.test('Status 400 — admin already has profile', () => pm.expect(pm.response.code).to.be.oneOf([400, 409]));",
       ],
+    }),
+    // El viejo caso "403 para el profesor" probaba un guard de admin que ya no
+    // existe: `POST /user/create` lleva solo `AuthGuard`. La regla que SÍ rige
+    // hoy es que exige sesión, así que eso es lo que se prueba.
+    makeItem({
+      name: 'Logout antes del caso sin sesión',
+      method: 'POST', url: '{{baseUrl}}/auth/logout',
+      tests: ["pm.test('Status 201', () => pm.response.to.have.status(201));"],
+    }),
+    makeItem({
+      name: 'Create Profile - 401 sin sesión',
+      method: 'POST', url: '{{baseUrl}}/user/create',
+      headers: jsonHeader(),
+      body: {
+        name: 'X', lastName: 'Y', username: 'xy_002', gender: 'M',
+        telNumber: '3000000003', roleData: { career: 'Artes', semester: '1' },
+      },
+      tests: ["pm.test('Status 401', () => pm.response.to.have.status(401));"],
     }),
     // ── Professor ──────────────────────────────────────────────────────────────
     loginRequest('professor'),
-    makeItem({
-      name: 'Create Professor Profile - 403 for professor',
-      method: 'POST', url: '{{baseUrl}}/user/professor',
-      headers: jsonHeader(),
-      body: { uid: '{{newUserId}}', name: 'X', lastName: 'Y', username: 'xy_002', gender: 'M', telNumber: '3000000003' },
-      tests: [
-        "pm.test('Status 403', () => pm.response.to.have.status(403));",
-      ],
-    }),
     makeItem({
       name: 'Update Current User (professor)',
       method: 'PUT', url: '{{baseUrl}}/user/update',
@@ -351,18 +393,233 @@ const userFolder = {
   ],
 };
 
+// ─── INSTITUTIONS MODULE ─────────────────────────────────────────────────────
+
+const institutionsFolder = {
+  name: 'Institutions',
+  item: [
+    makeItem({
+      name: 'Create Institution (public)',
+      method: 'POST', url: '{{baseUrl}}/institutions',
+      headers: jsonHeader(),
+      preRequest: [
+        "var ts = Date.now();",
+        "pm.environment.set('institutionSlug', 'test-inst-' + ts);",
+        "pm.environment.set('rectorMail', 'rector_' + ts + '@quyca.com');",
+        "pm.environment.set('rectorPassword', 'RectorTest@123!');",
+      ],
+      body: {
+        name: 'Institución Test API',
+        slug: '{{institutionSlug}}',
+        type: 'EDUCATIONAL',
+        representativeName: 'Rector',
+        representativeLastName: 'Test',
+        email: '{{rectorMail}}',
+        password: '{{rectorPassword}}',
+      },
+      tests: [
+        "pm.test('Status 201', () => pm.response.to.have.status(201));",
+        "const json = pm.response.json();",
+        "pm.test('Has uid', () => pm.expect(json.uid).to.be.a('string'));",
+        "pm.environment.set('institutionId', json.uid);",
+      ],
+    }),
+    makeItem({
+      name: 'Create Institution - duplicate slug returns 409',
+      method: 'POST', url: '{{baseUrl}}/institutions',
+      headers: jsonHeader(),
+      body: {
+        name: 'Dup', slug: '{{institutionSlug}}', type: 'EDUCATIONAL',
+        representativeName: 'X', representativeLastName: 'Y', email: 'dup@test.com', password: 'Test@1234!',
+      },
+      tests: [
+        "pm.test('Status 409 on duplicate slug', () => pm.response.to.have.status(409));",
+      ],
+    }),
+    makeItem({
+      name: '🔐 Login as Rector',
+      method: 'POST', url: '{{baseUrl}}/auth/login',
+      headers: jsonHeader(),
+      body: { mail: '{{rectorMail}}', password: '{{rectorPassword}}' },
+      tests: [
+        "pm.test('Rector login 201', () => pm.response.to.have.status(201));",
+      ],
+    }),
+    makeItem({
+      name: 'Get Institution by Slug (auth)',
+      method: 'GET', url: '{{baseUrl}}/institutions/{{institutionSlug}}',
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('slug matches', () => pm.expect(pm.response.json().slug).to.equal(pm.environment.get('institutionSlug')));",
+      ],
+    }),
+    makeItem({
+      name: 'Update Institution (rector)',
+      method: 'PATCH', url: '{{baseUrl}}/institutions/{{institutionId}}',
+      headers: tenantHeaders(),
+      body: { name: 'Institución Test Actualizada' },
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Has uid', () => pm.expect(pm.response.json().uid).to.be.a('string'));",
+      ],
+    }),
+    makeItem({
+      name: 'Create Invitation (rector → professor)',
+      method: 'POST', url: '{{baseUrl}}/institutions/{{institutionId}}/invitations',
+      headers: tenantHeaders(),
+      body: { toEmail: '{{professorMail}}', targetRole: 'institutional', expiresInDays: 7 },
+      tests: [
+        "pm.test('Status 201', () => pm.response.to.have.status(201));",
+        "const json = pm.response.json();",
+        "pm.test('Has token', () => pm.expect(json.token).to.be.a('string'));",
+        "pm.environment.set('invitationToken', json.token);",
+      ],
+    }),
+    makeItem({
+      name: 'Get Invitation by Token (rector)',
+      method: 'GET', url: '{{baseUrl}}/invitations/{{invitationToken}}',
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Has token', () => pm.expect(pm.response.json().token).to.be.a('string'));",
+      ],
+    }),
+    loginRequest('professor'),
+    makeItem({
+      name: 'Respond to Invitation - Accept (professor)',
+      method: 'POST', url: '{{baseUrl}}/invitations/{{invitationToken}}/respond',
+      headers: jsonHeader(),
+      body: { accept: true },
+      tests: [
+        "pm.test('Status 201', () => pm.response.to.have.status(201));",
+        "const json = pm.response.json();",
+        "pm.test('Status ACCEPTED', () => pm.expect(json.status).to.equal('ACCEPTED'));",
+      ],
+    }),
+    makeItem({
+      name: 'Respond to Invitation - already responded returns 400',
+      method: 'POST', url: '{{baseUrl}}/invitations/{{invitationToken}}/respond',
+      headers: jsonHeader(),
+      body: { accept: true },
+      tests: [
+        "pm.test('Status 400 on double respond', () => pm.response.to.have.status(400));",
+      ],
+    }),
+    makeItem({
+      name: '🔐 Login as Rector (again)',
+      method: 'POST', url: '{{baseUrl}}/auth/login',
+      headers: jsonHeader(),
+      body: { mail: '{{rectorMail}}', password: '{{rectorPassword}}' },
+      tests: [
+        "pm.test('Rector login 201', () => pm.response.to.have.status(201));",
+      ],
+    }),
+    makeItem({
+      name: 'Get Institution Invitations (rector)',
+      method: 'GET', url: '{{baseUrl}}/institutions/{{institutionId}}/invitations',
+      headers: tenantHeader(),
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+        "pm.test('Has ≥1 invitation', () => pm.expect(pm.response.json().length).to.be.at.least(1));",
+      ],
+    }),
+  ],
+};
+
+// ─── CATEGORIES MODULE ────────────────────────────────────────────────────────
+
+const categoriesFolder = {
+  name: 'Categories',
+  item: [
+    makeItem({
+      name: 'Get Active Categories (public)',
+      method: 'GET', url: '{{baseUrl}}/categories',
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "const arr = pm.response.json();",
+        "pm.test('Returns array', () => pm.expect(arr).to.be.an('array'));",
+        "pm.test('Has seeded categories', () => pm.expect(arr.length).to.be.at.least(1));",
+        "if (arr.length > 0) pm.environment.set('categoryId', arr[0].uid);",
+      ],
+    }),
+    // Rector creates a content request (tenant-scoped)
+    makeItem({
+      name: '🔐 Login as Rector (categories)',
+      method: 'POST', url: '{{baseUrl}}/auth/login',
+      headers: jsonHeader(),
+      body: { mail: '{{rectorMail}}', password: '{{rectorPassword}}' },
+      tests: [
+        "pm.test('Rector login 201', () => pm.response.to.have.status(201));",
+      ],
+    }),
+    makeItem({
+      name: 'Create Content Request - CATEGORY (rector)',
+      method: 'POST', url: '{{baseUrl}}/content-requests',
+      headers: tenantHeaders(),
+      body: {
+        type: 'CATEGORY',
+        requestedName: 'Fotografía',
+        justification: 'Queremos agregar fotografía como nueva categoría',
+      },
+      tests: [
+        "pm.test('Status 201', () => pm.response.to.have.status(201));",
+        "const json = pm.response.json();",
+        "pm.test('Has uid', () => pm.expect(json.uid).to.be.a('string'));",
+        "pm.environment.set('contentRequestId', json.uid);",
+      ],
+    }),
+    makeItem({
+      name: 'Get My Content Requests (rector)',
+      method: 'GET', url: '{{baseUrl}}/content-requests/mine',
+      headers: tenantHeader(),
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+        "pm.test('Has ≥1 request', () => pm.expect(pm.response.json().length).to.be.at.least(1));",
+      ],
+    }),
+    // Professor (institutional role) cannot create content requests (needs rector/coordinator)
+    loginRequest('professor'),
+    makeItem({
+      name: 'Create Content Request - 403 for institutional role',
+      method: 'POST', url: '{{baseUrl}}/content-requests',
+      headers: tenantHeaders(),
+      body: { type: 'CATEGORY', requestedName: 'No Permitido', justification: 'Test' },
+      tests: [
+        "pm.test('Status 403 for institutional role', () => pm.response.to.have.status(403));",
+      ],
+    }),
+    // Restore rector session for Groups folder
+    makeItem({
+      name: '🔐 Login as Rector (restore)',
+      method: 'POST', url: '{{baseUrl}}/auth/login',
+      headers: jsonHeader(),
+      body: { mail: '{{rectorMail}}', password: '{{rectorPassword}}' },
+      tests: [
+        "pm.test('Rector login 201', () => pm.response.to.have.status(201));",
+      ],
+    }),
+  ],
+};
+
 // ─── GROUPS MODULE ────────────────────────────────────────────────────────────
 
 const groupsFolder = {
   name: 'Groups',
   item: [
-    // ── Admin: CRUD ────────────────────────────────────────────────────────────
-    loginRequest('admin'),
+    // ── Rector: tenant-scoped create + list ───────────────────────────────────
+    loginRequest('rector'),
     makeItem({
       name: 'Create Group',
       method: 'POST', url: '{{baseUrl}}/groups/create',
-      headers: jsonHeader(),
-      body: { name: 'Grupo Test 2026', profesorId: '{{newProfessorId}}', users: [] },
+      headers: tenantHeaders(),
+      body: {
+        name: 'Grupo Test 2026',
+        profesorId: '{{newProfessorId}}',
+        institutionId: '{{institutionId}}',
+        categoryId: '{{categoryId}}',
+        users: [],
+      },
       tests: [
         "pm.test('Status 201', () => pm.response.to.have.status(201));",
         "const json = pm.response.json();",
@@ -373,11 +630,14 @@ const groupsFolder = {
     makeItem({
       name: 'Get All Groups',
       method: 'GET', url: '{{baseUrl}}/groups/get?page=1&limit=10',
+      headers: tenantHeader(),
       tests: [
         "pm.test('Status 200', () => pm.response.to.have.status(200));",
         "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));",
       ],
     }),
+    // ── Admin: CRUD ────────────────────────────────────────────────────────────
+    loginRequest('admin'),
     makeItem({
       name: 'Get Group by UID',
       method: 'GET', url: '{{baseUrl}}/groups/get/{{groupId}}',
@@ -464,12 +724,18 @@ const groupsFolder = {
       ],
     }),
     makeItem({
-      name: 'Create Group - 403 for professor',
+      name: 'Create Group - 403 for professor (institutional role, not rector)',
       method: 'POST', url: '{{baseUrl}}/groups/create',
-      headers: jsonHeader(),
-      body: { name: 'No Permitido', profesorId: '{{newProfessorId}}', users: [] },
+      headers: tenantHeaders(),
+      body: {
+        name: 'No Permitido',
+        profesorId: '{{newProfessorId}}',
+        institutionId: '{{institutionId}}',
+        categoryId: '{{categoryId}}',
+        users: [],
+      },
       tests: [
-        "pm.test('Status 403', () => pm.response.to.have.status(403));",
+        "pm.test('Status 403 — institutional role cannot create groups', () => pm.response.to.have.status(403));",
       ],
     }),
     // ── Admin: bulk delete + delete group ─────────────────────────────────────
@@ -507,11 +773,18 @@ const groupsFolder = {
       ],
     }),
     // ── Downstream: recreate group with professor + student ───────────────────
+    loginRequest('rector'),
     makeItem({
       name: 'Create Group (downstream)',
       method: 'POST', url: '{{baseUrl}}/groups/create',
-      headers: jsonHeader(),
-      body: { name: 'Grupo Downstream 2026', profesorId: '{{newProfessorId}}', users: ['{{studentId}}'] },
+      headers: tenantHeaders(),
+      body: {
+        name: 'Grupo Downstream 2026',
+        profesorId: '{{newProfessorId}}',
+        institutionId: '{{institutionId}}',
+        categoryId: '{{categoryId}}',
+        users: ['{{studentId}}'],
+      },
       tests: [
         "pm.test('Status 201', () => pm.response.to.have.status(201));",
         "pm.environment.set('groupId', pm.response.json().uid);",
@@ -708,7 +981,7 @@ const stylesFolder = {
     }),
     makeItem({
       name: 'Get Styles by Category (public)',
-      method: 'GET', url: '{{baseUrl}}/styles/all/ARTES',
+      method: 'GET', url: '{{baseUrl}}/styles/all/{{categoryId}}',
       tests: [
         "pm.test('Status 200', () => pm.response.to.have.status(200));",
         "pm.test('Returns array', () => pm.expect(pm.response.json()).to.be.an('array'));",
@@ -719,7 +992,7 @@ const stylesFolder = {
       name: 'Create Style (professor)',
       method: 'POST', url: '{{baseUrl}}/styles/create',
       headers: jsonHeader(),
-      body: { name: 'Impresionismo Test', description: 'Estilo de prueba', groupId: '{{groupId}}', category: 'ARTES' },
+      body: { name: 'Impresionismo Test', description: 'Estilo de prueba', groupId: '{{groupId}}', categoryId: '{{categoryId}}' },
       tests: [
         "pm.test('Status 201', () => pm.response.to.have.status(201));",
         "const json = pm.response.json();",
@@ -1082,16 +1355,440 @@ const scheduleFolder = {
   ],
 };
 
+// ─── LESSONS + CHAPTERS MODULE ───────────────────────────────────────────────
+//
+// Depende de `institutionSlug` (Institutions) y `categoryId` (Categories),
+// nada más.
+//
+// Manda `categoryId` y NO `groupId` a propósito: `CreateLessonDto` acepta los
+// dos —con `groupId` la categoría se hereda del grupo— pero atarse al grupo
+// encadenaba este folder a que Groups pasara. Cuando `Create Group` falla,
+// `{{groupId}}` queda vacío y `POST /lessons/create` revienta con un 500 de
+// Postgres (`invalid input syntax for type uuid: "null"`) que no dice nada de
+// Lessons. `categoryId` sale de `GET /categories`, que es público y sembrado.
+//
+// El autor es el RECTOR. `@RequireContextRole('rector','coordinator',
+// 'institutional')` lo deja crear, y además es quien revisa — que permite
+// caminar el ciclo entero sin depender del flujo de invitación de un docente
+// a la institución recién creada.
+//
+// Lo que esta suite aporta sobre los 71 casos de jest: el header
+// `X-Institution-Slug` de verdad, la cookie HttpOnly de verdad, y el orden
+// real de los guards. Jest mockea el Prisma; acá se resuelve el tenant.
+
+const lessonsFolder = {
+  name: 'Lessons',
+  item: [
+    // ── Alta ────────────────────────────────────────────────────────────────
+    loginRequest('rector'),
+    makeItem({
+      name: 'Create Lesson (rector)',
+      method: 'POST', url: '{{baseUrl}}/lessons/create',
+      headers: tenantHeaders(),
+      body: {
+        title: 'Básico Guitarra API',
+        summary: 'Lección creada por la suite de Newman.',
+        categoryId: '{{categoryId}}',
+      },
+      tests: [
+        "pm.test('Status 201', () => pm.response.to.have.status(201));",
+        "const json = pm.response.json();",
+        "pm.test('Nace en DRAFT', () => pm.expect(json.institutionStatus).to.eql('DRAFT'));",
+        "pm.test('No es pública', () => pm.expect(json.isPublic).to.eql(false));",
+        "pm.environment.set('lessonId', json.uid);",
+      ],
+    }),
+    makeItem({
+      name: 'Create Lesson - sin título devuelve 400',
+      method: 'POST', url: '{{baseUrl}}/lessons/create',
+      headers: tenantHeaders(),
+      body: { summary: 'Sin título', categoryId: '{{categoryId}}' },
+      tests: ["pm.test('Status 400', () => pm.response.to.have.status(400));"],
+    }),
+    makeItem({
+      name: 'Create Lesson - sin header de institución devuelve 400',
+      method: 'POST', url: '{{baseUrl}}/lessons/create',
+      headers: jsonHeader(),
+      body: { title: 'Sin tenant', categoryId: '{{categoryId}}' },
+      tests: [
+        "pm.test('Status 400 sin X-Institution-Slug', () => pm.response.to.have.status(400));",
+      ],
+    }),
+    makeItem({
+      name: 'Get Lesson by uid',
+      method: 'GET', url: '{{baseUrl}}/lessons/get/{{lessonId}}',
+      headers: tenantHeader(),
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Es la misma lección', () => pm.expect(pm.response.json().uid).to.eql(pm.environment.get('lessonId')));",
+      ],
+    }),
+    makeItem({
+      name: 'Get Lesson - uid inexistente devuelve 404',
+      method: 'GET', url: '{{baseUrl}}/lessons/get/00000000-0000-4000-8000-000000000000',
+      headers: tenantHeader(),
+      tests: ["pm.test('Status 404', () => pm.response.to.have.status(404));"],
+    }),
+    makeItem({
+      name: 'Get Institution Queue (rector)',
+      method: 'GET', url: '{{baseUrl}}/lessons/get',
+      headers: tenantHeader(),
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Devuelve array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+      ],
+    }),
+    makeItem({
+      name: 'Get My Lessons',
+      method: 'GET', url: '{{baseUrl}}/lessons/mine',
+      headers: tenantHeader(),
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Incluye la recién creada', () => {",
+        "  const ids = pm.response.json().map(l => l.uid);",
+        "  pm.expect(ids).to.include(pm.environment.get('lessonId'));",
+        "});",
+      ],
+    }),
+
+    // ── Capítulos ───────────────────────────────────────────────────────────
+    makeItem({
+      name: 'Create Chapter 1',
+      method: 'POST', url: '{{baseUrl}}/lessons/{{lessonId}}/chapters',
+      headers: tenantHeaders(),
+      // El `---` y el bloque de código van a propósito: el SqlInjectionGuard
+      // excluye `contentmd` de su escaneo y sin esa exclusión esto da 403.
+      body: {
+        title: 'Partes de la guitarra',
+        contentMd: '# Partes\n\n---\n\nLa caja, el mástil y el clavijero.\n\n```js\n/* comentario */\n```',
+      },
+      tests: [
+        "pm.test('Status 201', () => pm.response.to.have.status(201));",
+        "const json = pm.response.json();",
+        "pm.test('Secuencia 1', () => pm.expect(json.sequence).to.eql(1));",
+        "pm.environment.set('chapterId', json.uid);",
+      ],
+    }),
+    makeItem({
+      name: 'Create Chapter 2',
+      method: 'POST', url: '{{baseUrl}}/lessons/{{lessonId}}/chapters',
+      headers: tenantHeaders(),
+      body: { title: 'Las cuerdas', contentMd: 'Seis cuerdas, de la sexta a la primera.' },
+      tests: [
+        "pm.test('Status 201', () => pm.response.to.have.status(201));",
+        "const json = pm.response.json();",
+        "pm.test('Secuencia 2', () => pm.expect(json.sequence).to.eql(2));",
+        "pm.environment.set('chapter2Id', json.uid);",
+      ],
+    }),
+    makeItem({
+      name: 'Create Chapter 3',
+      method: 'POST', url: '{{baseUrl}}/lessons/{{lessonId}}/chapters',
+      headers: tenantHeaders(),
+      body: { title: 'Los acordes', contentMd: 'Un acorde son tres notas o más.' },
+      tests: [
+        "pm.test('Status 201', () => pm.response.to.have.status(201));",
+        "const json = pm.response.json();",
+        "pm.test('Secuencia 3', () => pm.expect(json.sequence).to.eql(3));",
+        "pm.environment.set('chapter3Id', json.uid);",
+      ],
+    }),
+    makeItem({
+      name: 'List Chapters - secuencia 1..N contigua',
+      method: 'GET', url: '{{baseUrl}}/lessons/{{lessonId}}/chapters',
+      headers: tenantHeader(),
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "const arr = pm.response.json();",
+        "pm.test('Son 3', () => pm.expect(arr).to.have.lengthOf(3));",
+        "pm.test('Secuencia 1,2,3 sin huecos', () => {",
+        "  pm.expect(arr.map(c => c.sequence)).to.eql([1, 2, 3]);",
+        "});",
+        "pm.test('Trae el progreso en el índice', () => {",
+        "  pm.expect(arr[0]).to.have.property('completed');",
+        "});",
+      ],
+    }),
+    makeItem({
+      name: 'Get Chapter - trae prevUid/nextUid del backend',
+      method: 'GET', url: '{{baseUrl}}/lessons/{{lessonId}}/chapters/{{chapter2Id}}',
+      headers: tenantHeader(),
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "const json = pm.response.json();",
+        "pm.test('El del medio tiene anterior y siguiente', () => {",
+        "  pm.expect(json.prevUid).to.be.a('string');",
+        "  pm.expect(json.nextUid).to.be.a('string');",
+        "});",
+      ],
+    }),
+    makeItem({
+      name: 'Get Chapter - de otra lección devuelve 404',
+      method: 'GET',
+      url: '{{baseUrl}}/lessons/00000000-0000-4000-8000-000000000000/chapters/{{chapterId}}',
+      headers: tenantHeader(),
+      tests: [
+        "pm.test('Status 404 — el capítulo tiene que ser de ESA lección', () => pm.response.to.have.status(404));",
+      ],
+    }),
+    makeItem({
+      name: 'Reorder Chapters',
+      method: 'PATCH', url: '{{baseUrl}}/lessons/{{lessonId}}/chapters/reorder',
+      headers: tenantHeaders(),
+      body: { uids: ['{{chapter3Id}}', '{{chapterId}}', '{{chapter2Id}}'] },
+      // `reorder` NO devuelve la lista: el service es `void`, hace el
+      // $transaction y llama a markForReview. El orden se comprueba con el GET
+      // de abajo, que además es la lectura que ve el usuario.
+      tests: ["pm.test('Status 200', () => pm.response.to.have.status(200));"],
+    }),
+    makeItem({
+      name: 'List Chapters - el reorder quedó aplicado',
+      method: 'GET', url: '{{baseUrl}}/lessons/{{lessonId}}/chapters',
+      headers: tenantHeader(),
+      tests: [
+        "const arr = pm.response.json();",
+        "pm.test('Reescribe 1..N en transacción', () => {",
+        "  pm.expect(arr.map(c => c.sequence)).to.eql([1, 2, 3]);",
+        "});",
+        "pm.test('El que se mandó primero quedó primero', () => {",
+        "  pm.expect(arr[0].uid).to.eql(pm.environment.get('chapter3Id'));",
+        "});",
+      ],
+    }),
+    makeItem({
+      name: 'Delete Chapter 3 - recompacta',
+      method: 'DELETE', url: '{{baseUrl}}/lessons/{{lessonId}}/chapters/{{chapter3Id}}',
+      headers: tenantHeader(),
+      tests: ["pm.test('Status 200', () => pm.response.to.have.status(200));"],
+    }),
+    makeItem({
+      name: 'List Chapters - quedan 2, sin huecos',
+      method: 'GET', url: '{{baseUrl}}/lessons/{{lessonId}}/chapters',
+      headers: tenantHeader(),
+      tests: [
+        "const arr = pm.response.json();",
+        "pm.test('Quedan 2', () => pm.expect(arr).to.have.lengthOf(2));",
+        "pm.test('Renumerados a 1,2', () => pm.expect(arr.map(c => c.sequence)).to.eql([1, 2]));",
+      ],
+    }),
+
+    // ── Revisión de la institución ──────────────────────────────────────────
+    makeItem({
+      name: 'Submit for Review',
+      method: 'POST', url: '{{baseUrl}}/lessons/{{lessonId}}/submit',
+      headers: tenantHeader(),
+      tests: [
+        "pm.test('Status 201', () => pm.response.to.have.status(201));",
+        "pm.test('Pasa a PENDING', () => pm.expect(pm.response.json().institutionStatus).to.eql('PENDING'));",
+      ],
+    }),
+    makeItem({
+      name: 'Review - rechazar con motivo',
+      method: 'PATCH', url: '{{baseUrl}}/lessons/{{lessonId}}/review',
+      headers: tenantHeaders(),
+      body: { approve: false, feedback: 'Faltan ejemplos en el capítulo 2.' },
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "const json = pm.response.json();",
+        "pm.test('Queda REJECTED', () => pm.expect(json.institutionStatus).to.eql('REJECTED'));",
+        "pm.test('Guarda el motivo', () => pm.expect(json.institutionFeedback).to.be.a('string'));",
+      ],
+    }),
+    makeItem({
+      name: 'Submit again after rejection',
+      method: 'POST', url: '{{baseUrl}}/lessons/{{lessonId}}/submit',
+      headers: tenantHeader(),
+      tests: [
+        "pm.test('Vuelve a PENDING', () => pm.expect(pm.response.json().institutionStatus).to.eql('PENDING'));",
+      ],
+    }),
+    makeItem({
+      name: 'Review - aprobar',
+      method: 'PATCH', url: '{{baseUrl}}/lessons/{{lessonId}}/review',
+      headers: tenantHeaders(),
+      body: { approve: true },
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Queda APPROVED', () => pm.expect(pm.response.json().institutionStatus).to.eql('APPROVED'));",
+      ],
+    }),
+
+    // ── El reseteo a revisión ───────────────────────────────────────────────
+    //
+    // El bloque que más importa de la suite. Si esto falla hay contenido sin
+    // revisar visible en TODAS las instituciones, porque `isPublic` es la
+    // condición que autoriza la lectura cross-tenant del catálogo.
+    makeItem({
+      name: '⚠ Editar la lección aprobada la devuelve a la cola',
+      method: 'PUT', url: '{{baseUrl}}/lessons/update/{{lessonId}}',
+      headers: tenantHeaders(),
+      body: { title: 'Básico Guitarra API (corregido)' },
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "const json = pm.response.json();",
+        "pm.test('APPROVED -> PENDING', () => pm.expect(json.institutionStatus).to.eql('PENDING'));",
+        "pm.test('Sale del catálogo', () => pm.expect(json.isPublic).to.eql(false));",
+        "pm.test('Se limpia el veredicto global', () => pm.expect(json.globalStatus).to.eql(null));",
+      ],
+    }),
+    makeItem({
+      name: 'Re-aprobar tras la edición',
+      method: 'PATCH', url: '{{baseUrl}}/lessons/{{lessonId}}/review',
+      headers: tenantHeaders(),
+      body: { approve: true },
+      tests: [
+        "pm.test('Vuelve a APPROVED', () => pm.expect(pm.response.json().institutionStatus).to.eql('APPROVED'));",
+      ],
+    }),
+    makeItem({
+      name: '⚠ Editar un capítulo también la devuelve a la cola',
+      method: 'PUT', url: '{{baseUrl}}/lessons/{{lessonId}}/chapters/{{chapterId}}',
+      headers: tenantHeaders(),
+      body: { title: 'Partes de la guitarra (corregido)', contentMd: 'Texto corregido.' },
+      tests: ["pm.test('Status 200', () => pm.response.to.have.status(200));"],
+    }),
+    makeItem({
+      name: '⚠ ...comprobado en la lección',
+      method: 'GET', url: '{{baseUrl}}/lessons/get/{{lessonId}}',
+      headers: tenantHeader(),
+      tests: [
+        "const json = pm.response.json();",
+        "pm.test('Tocar un capítulo invalida la aprobación', () => pm.expect(json.institutionStatus).to.eql('PENDING'));",
+        "pm.test('Y la saca del catálogo', () => pm.expect(json.isPublic).to.eql(false));",
+      ],
+    }),
+    makeItem({
+      name: 'Re-aprobar tras editar el capítulo',
+      method: 'PATCH', url: '{{baseUrl}}/lessons/{{lessonId}}/review',
+      headers: tenantHeaders(),
+      body: { approve: true },
+      tests: [
+        "pm.test('Vuelve a APPROVED', () => pm.expect(pm.response.json().institutionStatus).to.eql('APPROVED'));",
+      ],
+    }),
+
+    // ── Catálogo global ─────────────────────────────────────────────────────
+    makeItem({
+      name: 'Submit Global (rector)',
+      method: 'POST', url: '{{baseUrl}}/lessons/{{lessonId}}/submit-global',
+      headers: tenantHeader(),
+      tests: [
+        "pm.test('Status 201', () => pm.response.to.have.status(201));",
+        "pm.test('globalStatus PENDING', () => pm.expect(pm.response.json().globalStatus).to.eql('PENDING'));",
+      ],
+    }),
+    loginRequest('admin'),
+    makeItem({
+      name: 'Admin Queue - cross-tenant, sin header de institución',
+      method: 'GET', url: '{{baseUrl}}/lessons/admin',
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Devuelve array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+      ],
+    }),
+    makeItem({
+      name: '⚠ El revisor lee una lección que todavía NO es pública',
+      method: 'GET', url: '{{baseUrl}}/lessons/admin/{{lessonId}}',
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "const json = pm.response.json();",
+        "pm.test('Todavía no es pública', () => pm.expect(json.isPublic).to.eql(false));",
+      ],
+    }),
+    makeItem({
+      name: 'Admin lee los capítulos de esa lección',
+      method: 'GET', url: '{{baseUrl}}/lessons/admin/{{lessonId}}/chapters',
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Devuelve array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+      ],
+    }),
+    makeItem({
+      name: 'Admin Review - aprobar al catálogo',
+      method: 'PATCH', url: '{{baseUrl}}/lessons/admin/{{lessonId}}/review',
+      headers: jsonHeader(),
+      body: { approve: true },
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "const json = pm.response.json();",
+        "pm.test('globalStatus APPROVED', () => pm.expect(json.globalStatus).to.eql('APPROVED'));",
+        "pm.test('Aprobar global enciende isPublic', () => pm.expect(json.isPublic).to.eql(true));",
+      ],
+    }),
+
+    // ── Lectura desde otro usuario ──────────────────────────────────────────
+    loginRequest('student'),
+    makeItem({
+      name: 'Catálogo Quyca - visible para el estudiante, sin tenant',
+      method: 'GET', url: '{{baseUrl}}/lessons/catalog',
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "const ids = pm.response.json().map(l => l.uid);",
+        "pm.test('Contiene la lección publicada', () => pm.expect(ids).to.include(pm.environment.get('lessonId')));",
+      ],
+    }),
+    makeItem({
+      name: 'Create Lesson - 403 para el estudiante',
+      method: 'POST', url: '{{baseUrl}}/lessons/create',
+      headers: tenantHeaders(),
+      body: { title: 'No debería poder', categoryId: '{{categoryId}}' },
+      tests: [
+        "pm.test('Status 403 o 400 (no es miembro de esa institución)', () => {",
+        "  pm.expect(pm.response.code).to.be.oneOf([400, 403]);",
+        "});",
+      ],
+    }),
+
+    // ── Retiro y baja ───────────────────────────────────────────────────────
+    loginRequest('rector'),
+    makeItem({
+      name: 'Unpublish - la retira del catálogo',
+      method: 'POST', url: '{{baseUrl}}/lessons/{{lessonId}}/unpublish',
+      headers: tenantHeader(),
+      tests: [
+        "pm.test('Status 201', () => pm.response.to.have.status(201));",
+        "pm.test('Deja de ser pública', () => pm.expect(pm.response.json().isPublic).to.eql(false));",
+      ],
+    }),
+    makeItem({
+      name: 'Delete Lesson',
+      method: 'DELETE', url: '{{baseUrl}}/lessons/delete/{{lessonId}}',
+      headers: tenantHeader(),
+      tests: ["pm.test('Status 200', () => pm.response.to.have.status(200));"],
+    }),
+    makeItem({
+      name: 'Tras la baja, desaparece de los listados',
+      method: 'GET', url: '{{baseUrl}}/lessons/mine',
+      headers: tenantHeader(),
+      // La baja es SOFT (`isActive: false`). La garantía que rige es que sale
+      // de los listados — todos filtran `isActive: true`.
+      //
+      // Lo que NO rige: `GET /lessons/get/:uid` la sigue devolviendo. La
+      // lectura pasa por `findInTenant`, que hace `findUnique({ where: { uid } })`
+      // SIN filtrar `isActive`. Quien ya tenga el uid y esté en el mismo tenant
+      // sigue leyendo una lección dada de baja. No es fuga cross-tenant, pero
+      // tampoco es lo que "eliminar" sugiere. Documentado, no asumido.
+      tests: [
+        "pm.test('Status 200', () => pm.response.to.have.status(200));",
+        "pm.test('Ya no aparece en /lessons/mine', () => {",
+        "  const ids = pm.response.json().map(l => l.uid);",
+        "  pm.expect(ids).to.not.include(pm.environment.get('lessonId'));",
+        "});",
+      ],
+    }),
+  ],
+};
+
 // ─── COLLECTION ASSEMBLY ─────────────────────────────────────────────────────
 
 const collection = {
   info: {
     _postman_id: 'usta-gallery-api-tests',
-    name: 'UstaGallery API Tests',
-    description: 'Full Newman test suite — Auth, User, Groups, Photos, Products, Styles, Events, Classes, Schedule',
+    name: 'Quyca API Tests',
+    description: 'Full Newman test suite — Auth, User, Institutions, Categories, Groups, Photos, Products, Styles, Events, Classes, Schedule, Lessons',
     schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
   },
-  item: [authFolder, userFolder, groupsFolder, photosFolder, productsFolder, stylesFolder, eventsFolder, classesFolder, scheduleFolder],
+  item: [authFolder, userFolder, institutionsFolder, categoriesFolder, groupsFolder, photosFolder, productsFolder, stylesFolder, eventsFolder, classesFolder, scheduleFolder, lessonsFolder],
 };
 
 const outPath = path.join(__dirname, 'collections', 'server-api', 'collection.json');

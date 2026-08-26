@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import { NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ScheduleService } from './Schedule.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -31,6 +32,7 @@ const mockConfig = { get: jest.fn() };
 const mockPrisma = {
   $transaction: jest.fn(),
   schedule: { findMany: jest.fn(), update: jest.fn() },
+  groups: { findUnique: jest.fn() },
 };
 
 describe('ScheduleService - session generation', () => {
@@ -47,6 +49,9 @@ describe('ScheduleService - session generation', () => {
 
     service = module.get(ScheduleService);
     jest.clearAllMocks();
+    // Default: groupId belongs to the active tenant. Overridden by the
+    // FK-guard describe block below.
+    mockPrisma.groups.findUnique.mockResolvedValue({ uid: 'g-1' });
   });
 
   afterEach(() => {
@@ -70,6 +75,7 @@ describe('ScheduleService - session generation', () => {
       dayOfWeek: 1,
       startTime: '10:00',
       endTime: '11:00',
+      institutionId: 'inst-1',
     });
 
     expect(dates.length).toBeGreaterThan(0);
@@ -94,6 +100,7 @@ describe('ScheduleService - session generation', () => {
       dayOfWeek: 5,
       startTime: '10:00',
       endTime: '11:00',
+      institutionId: 'inst-1',
     });
 
     expect(dates.length).toBeGreaterThan(1);
@@ -119,6 +126,7 @@ describe('ScheduleService - session generation', () => {
       dayOfWeek: 5,
       startTime: '10:00',
       endTime: '11:00',
+      institutionId: 'inst-1',
     });
 
     dates.forEach((date) => {
@@ -143,6 +151,7 @@ describe('ScheduleService - session generation', () => {
       dayOfWeek: 5,
       startTime: '10:00',
       endTime: '11:00',
+      institutionId: 'inst-1',
     });
 
     const firstDate = dates[0];
@@ -168,8 +177,49 @@ describe('ScheduleService - session generation', () => {
       dayOfWeek: 5,
       startTime: '10:00',
       endTime: '11:00',
+      institutionId: 'inst-1',
     });
 
     expect(dates).toHaveLength(0);
+  });
+});
+
+// ─── create (FK guard — groupId must belong to the active tenant) ─────────────
+//
+// `groupId` is a direct FK on `Schedule`/`Classes`, not filtered by the
+// tenant extension on nested reads. `groups.findUnique` IS scoped, so a
+// foreign groupId resolves to null and must block the write before any
+// Schedule/Classes rows are created.
+
+describe('ScheduleService - groupId tenant guard', () => {
+  let service: ScheduleService;
+
+  beforeEach(async () => {
+    const module = await Test.createTestingModule({
+      providers: [
+        ScheduleService,
+        { provide: PrismaService, useValue: mockPrisma },
+        { provide: ConfigService, useValue: mockConfig },
+      ],
+    }).compile();
+
+    service = module.get(ScheduleService);
+    jest.clearAllMocks();
+  });
+
+  it('throws NotFoundException for a groupId outside the active tenant and writes nothing', async () => {
+    mockPrisma.groups.findUnique.mockResolvedValue(null); // extension scoped it out
+
+    await expect(
+      service.create({
+        groupId: 'foreign-group',
+        dayOfWeek: 1,
+        startTime: '10:00',
+        endTime: '11:00',
+        institutionId: 'inst-1',
+      }),
+    ).rejects.toThrow(NotFoundException);
+
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,4 @@
-# UstaGallery API — Postman Test Suite
+# Quyca API — Postman Test Suite
 
 Newman integration tests for the NestJS backend. Tests run sequentially; auth cookies are shared across requests within a run.
 

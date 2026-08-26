@@ -56,6 +56,7 @@ export interface CreateEventUseCase {
     isVirtual: boolean;
     streamingUrl?: string;
     createdById: string;
+    institutionId: string;
   };
   // Grupos propios del coordinador (entran directo a GroupEvent, sin invitación)
   groupIds: string[];
@@ -108,4 +109,22 @@ export interface AddEventPhotoUseCase {
 export interface RespondInvitationUseCase {
   invitationId: string;
   status: InvitationStatus.ACCEPTED | InvitationStatus.REJECTED;
+}
+
+/* =========================
+ * PORTAFOLIO DEL ARTISTA
+ * ========================= */
+
+// Eventos en los que un autor participó (getByAuthor). "Participó" = tiene
+// una obra propia expuesta — ver Event.service.ts § getByAuthor.
+export interface AuthorEvent {
+  uid: string;
+  name: string;
+  eventType: EventType;
+  startDate: Date;
+  endDate: Date | null;
+  isVirtual: boolean;
+  locationUrl: string | null;
+  worksCount: number;
+  works: { uid: string; name: string }[];
 }

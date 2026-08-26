@@ -59,7 +59,20 @@ export type UsersGroups = Prisma.UsersGroupsModel
 export type Products = Prisma.ProductsModel
 /**
  * Model Styles
+ * Catálogo de estilos de la plataforma, igual que `GroupCategory`: **no tiene
+ * tenant**. No está en SCOPED_MODELS, no lleva `institutionId` y solo lo
+ * escribe `super_admin`.
  * 
+ * Antes colgaba de un grupo (`groupId`) Y de una institución, así que el mismo
+ * catálogo existía repetido una vez por grupo de artes: tres filas "Acuarela",
+ * una por institución. La galería pública tenía que colapsarlas por nombre
+ * para no mostrar el filtro triplicado, y el filtro tenía que buscar por
+ * nombre en vez de por uid para no esconder las obras de las otras.
+ * Ver obsidian/errors/products/2026-08-24-la-galeria-vacia-por-un-undefined.md
+ * 
+ * Un estilo pertenece a una categoría y a nada más. El nombre puede repetirse
+ * **entre** categorías —"Contemporáneo" existe en Danzas y en Música— pero no
+ * dentro de una: eso es lo que fija `@@unique([name, categoryId])`.
  */
 export type Styles = Prisma.StylesModel
 /**
@@ -122,3 +135,59 @@ export type Classes = Prisma.ClassesModel
  * 
  */
 export type Attendance = Prisma.AttendanceModel
+/**
+ * Model SubscriptionPlan
+ * 
+ */
+export type SubscriptionPlan = Prisma.SubscriptionPlanModel
+/**
+ * Model Institution
+ * 
+ */
+export type Institution = Prisma.InstitutionModel
+/**
+ * Model UserInstitution
+ * 
+ */
+export type UserInstitution = Prisma.UserInstitutionModel
+/**
+ * Model GroupCategory
+ * 
+ */
+export type GroupCategory = Prisma.GroupCategoryModel
+/**
+ * Model InstitutionInvitation
+ * 
+ */
+export type InstitutionInvitation = Prisma.InstitutionInvitationModel
+/**
+ * Model ContentRequest
+ * 
+ */
+export type ContentRequest = Prisma.ContentRequestModel
+/**
+ * Model Lessons
+ * 
+ */
+export type Lessons = Prisma.LessonsModel
+/**
+ * Model Chapters
+ * 
+ */
+export type Chapters = Prisma.ChaptersModel
+/**
+ * Model ChapterPhoto
+ * Tabla puente. Las imágenes del vlog dentro de un capítulo.
+ */
+export type ChapterPhoto = Prisma.ChapterPhotoModel
+/**
+ * Model LessonProgress
+ * Avance del estudiante. Una fila = un capítulo terminado.
+ * 
+ * NO lleva institutionId y NO entra en SCOPED_MODELS, y es la única excepción
+ * deliberada del módulo: un usuario avanza en lecciones GLOBALES de otras
+ * instituciones, así que etiquetar su progreso con la institución activa del
+ * momento sería un dato falso. Se filtra SIEMPRE por userId explícito, igual
+ * que una tabla puente.
+ */
+export type LessonProgress = Prisma.LessonProgressModel

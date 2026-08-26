@@ -5,10 +5,6 @@ import { IsOptional } from 'class-validator';
  * PARAMS / OPTIONS
  * ========================= */
 
-export interface ProductParams {
-  uid: string;
-}
-
 export enum ProductStatus {
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
@@ -26,6 +22,14 @@ export class GetProductsOptions {
 
   @IsOptional()
   styleId?: string;
+
+  /** Slug de GroupCategory: `artes`, `teatro`, `danzas`, `musica`, `canto`. */
+  @IsOptional()
+  categorySlug?: string;
+
+  /** Grupo activo. Sólo lo usa `getMine`. */
+  @IsOptional()
+  groupId?: string;
 }
 
 /* =========================
@@ -52,6 +56,9 @@ export interface CreateProductUseCase {
     folder: string;
     isMain?: boolean;
   }[];
+  /** Audio de la obra (categoria `musica`). El data-URL lo valida audioDecoder. */
+  audio?: { base64: string };
+  institutionId: string;
 }
 
 export interface UpdateProductImageUseCase {
@@ -65,6 +72,8 @@ export interface UpdateProductImageUseCase {
 
 export interface UpdateProductUseCase {
   productId: string;
+  /** Quién edita: la obra tiene que ser suya. Ver `updateProductUseCase`. */
+  userId: string;
   data: {
     name?: string;
     description?: string;
@@ -78,6 +87,8 @@ export interface UpdateProductUseCase {
   }[];
   styles?: string[];
   images?: UpdateProductImageUseCase[];
+  /** Audio nuevo. Si no viene, el que ya estaba se conserva. */
+  audio?: { base64: string };
 }
 
 export interface UpdateStatusUseCase {

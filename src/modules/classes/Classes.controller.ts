@@ -10,8 +10,12 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ClassesService } from './Classes.service';
-import { AuthGuard } from 'src/middleware/jwt.guard';
-import { Roles } from 'src/decorators/roles.decorator';
+import { AuthGuard } from 'src/guards/jwt.guard';
+import { TenantGuard } from 'src/tenant/tenant.guard';
+import { ContextRoleGuard } from 'src/guards/context-role.guard';
+import { RequireContextRole } from 'src/decorators/context-role.decorator';
+import { Institution } from 'src/decorators/institution.decorator';
+import type { ActiveInstitution } from 'src/interface/jwtPayload';
 import { CurrentUser } from 'src/decorators/currentUser';
 import {
   ClassParamsDto,
@@ -23,30 +27,51 @@ import {
 } from './Classes.dto';
 
 @ApiTags('classes')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, TenantGuard)
 @Controller('classes')
 export class ClassesController {
   constructor(private readonly classesService: ClassesService) {}
 
   // Fixed-prefix routes first
   @Post('create')
-  @Roles('professor', 'admin')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator', 'institutional')
   @ApiOperation({ summary: 'Crear clase manual' })
-  async create(@Body() body: CreateClassDto) {
+  async create(
+    @Body() body: CreateClassDto,
+    @Institution() institution: ActiveInstitution,
+  ) {
     return this.classesService.create({
       groupId: body.groupId,
       date: new Date(body.date),
       startTime: body.startTime,
       endTime: body.endTime,
       topic: body.topic,
+      institutionId: institution.uid,
     });
   }
 
   @Post('attend')
-  @Roles('student')
+  @UseGuards(ContextRoleGuard)
+  // `self-taught` e `independent` se agregaron el 2026-08-25: los dos se suman
+  // a un grupo por su cuenta desde /explore-groups, así que también asisten a
+  // sus clases. `institutional` queda afuera a propósito: el docente toma la
+  // asistencia, no la marca.
+  // La membresía la sigue verificando el servicio (usersGroups), así que el rol
+  // no es lo único que separa a una persona de la clase de otro grupo.
+  // Ver obsidian/Raw/Specs/2026-08-23-matriz-de-permisos-design.md §3.5.
+  @RequireContextRole('student', 'self-taught', 'independent')
   @ApiOperation({ summary: 'Registrar asistencia del estudiante autenticado' })
-  async attend(@CurrentUser('uid') userId: string, @Body() body: AttendDto) {
-    return this.classesService.attend({ classId: body.classId, userId });
+  async attend(
+    @CurrentUser('uid') userId: string,
+    @Body() body: AttendDto,
+    @Institution() institution: ActiveInstitution,
+  ) {
+    return this.classesService.attend({
+      classId: body.classId,
+      userId,
+      institutionId: institution.uid,
+    });
   }
 
   @Get('group/:groupId')
@@ -66,14 +91,16 @@ export class ClassesController {
 
   // Parameterized routes after
   @Get(':uid/attendance')
-  @Roles('professor', 'admin')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator', 'institutional')
   @ApiOperation({ summary: 'Listar estudiantes que asistieron a la clase' })
   async getAttendance(@Param() params: ClassParamsDto) {
     return this.classesService.getAttendance(params.uid);
   }
 
   @Patch(':uid/topic')
-  @Roles('professor', 'admin')
+  @UseGuards(ContextRoleGuard)
+  @RequireContextRole('rector', 'coordinator', 'institutional')
   @ApiOperation({ summary: 'Actualizar temática y/o reseña de la clase' })
   async updateTopic(
     @Param() params: ClassParamsDto,

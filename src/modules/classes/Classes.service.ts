@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Inject,
   NotFoundException,
   ConflictException,
   ForbiddenException,
@@ -14,7 +15,7 @@ import type {
 
 @Injectable()
 export class ClassesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   private getCurrentTimeStr(): string {
     return new Date().toLocaleTimeString('en-GB', {
@@ -46,7 +47,38 @@ export class ClassesService {
     return { start, end };
   }
 
+  /* =========================
+   * FK GUARD
+   * `groupId` arrives from the client and is a direct FK on `Classes`
+   * (not a bridge table). The tenant extension only rewrites the
+   * top-level `where`/`data` of the call it intercepts — it does NOT
+   * scope nested `include`/`select` relations resolved by FK. So a
+   * `groupId` from another tenant, left unchecked, lets a `Classes` row
+   * (correctly stamped with the caller's own institutionId) point at a
+   * foreign `Groups` row, and any read that nests `group: {...}` off of
+   * it leaks that foreign group's name/category/professor identity.
+   * `groups.findUnique` is itself scoped, so a foreign id simply comes
+   * back null — the check is just "did the scoped lookup find it".
+   * ========================= */
+  private async assertGroupInTenant(groupId: string): Promise<void> {
+    const group = await this.prisma.groups.findUnique({
+      where: { uid: groupId },
+      select: { uid: true },
+    });
+    if (!group) {
+      throw new NotFoundException('Group not found');
+    }
+  }
+
   async getByGroup(groupId: string, from?: string, to?: string) {
+    // Read-side half of the same guard: a foreign groupId must return
+    // nothing, not leak the nested `group` relation below.
+    const group = await this.prisma.groups.findUnique({
+      where: { uid: groupId },
+      select: { uid: true },
+    });
+    if (!group) return [];
+
     const where: Record<string, unknown> = { groupId, isActive: true };
 
     if (from || to) {
@@ -71,7 +103,7 @@ export class ClassesService {
         group: {
           select: {
             name: true,
-            category: true,
+            categoryId: true,
             profesor: {
               select: { uid: true, name: true, lastName: true },
             },
@@ -82,6 +114,8 @@ export class ClassesService {
   }
 
   async create(data: CreateClassUseCase) {
+    await this.assertGroupInTenant(data.groupId);
+
     return this.prisma.classes.create({
       data: {
         groupId: data.groupId,
@@ -90,6 +124,7 @@ export class ClassesService {
         endTime: data.endTime,
         topic: data.topic,
         scheduleId: null,
+        institutionId: data.institutionId,
       },
       select: { uid: true },
     });
@@ -138,7 +173,7 @@ export class ClassesService {
     return active ? { active: true, classId: active.uid } : { active: false };
   }
 
-  async attend({ classId, userId }: AttendUseCase) {
+  async attend({ classId, userId, institutionId }: AttendUseCase) {
     const cls = await this.prisma.classes.findUnique({
       where: { uid: classId },
       select: {
@@ -167,7 +202,9 @@ export class ClassesService {
     if (!membership) throw new ForbiddenException('User not in this group');
 
     try {
-      await this.prisma.attendance.create({ data: { classId, userId } });
+      await this.prisma.attendance.create({
+        data: { classId, userId, institutionId },
+      });
       return { success: true };
     } catch (e: unknown) {
       if ((e as { code?: string }).code === 'P2002') {

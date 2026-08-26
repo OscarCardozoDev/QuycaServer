@@ -23,6 +23,17 @@ export interface AuthorInfo {
   description?: string | null;
   photoId?: string | null;
   photo?: { uid: string; url?: string } | null;
+  // Grupos del autor, aplanados desde el puente UsersGroups. Solo lo público
+  // de un grupo cerrado — nunca la lista de estudiantes. Ver
+  // UserService.getInfoAuthor.
+  groups: {
+    uid: string;
+    name: string;
+    description: string | null;
+    coverPhoto: { url: string } | null;
+    groupCategory: { name: string; slug: string } | null;
+    institution: { name: string; slug: string };
+  }[];
 }
 
 export interface UserWithRelations extends User {
@@ -30,6 +41,10 @@ export interface UserWithRelations extends User {
   photo?: { uid: string; url?: string } | null;
   role?: { uid: string; name?: string; slug?: string } | null;
   groups?: { group: { uid: string; name?: string } }[] | null;
+  // Solo lo devuelve getActiveUsers, acotado a la institución consultada: es
+  // el rol del usuario EN esa institución, y es lo único que distingue a un
+  // profesor invitado de un artista autodidacta.
+  userInstitutions?: { contextRole: string; joinedAt: Date }[] | null;
 }
 
 export interface CreateStudentUseCase {
@@ -41,33 +56,9 @@ export interface CreateStudentUseCase {
     description?: string;
     gender: string;
     telNumber: string;
-    roleId: string;
     roleData: unknown;
   };
   photo?: { base64: string; name: string; folder: string };
-}
-
-export interface CreateProfessorUseCase {
-  uid: string;   // Credentials UID del profesor (viene del body, no del JWT del admin)
-  user: {
-    name: string;
-    lastName: string;
-    username: string;
-    description?: string;
-    gender: string;
-    telNumber: string;
-  };
-  photo?: { base64: string; name: string; folder: string };
-}
-
-export interface UpdateUserUseCase {
-  name?: string;
-  lastName?: string;
-  username?: string;
-  description?: string;
-  gender?: string;
-  telNumber?: string;
-  userTypeId?: string;
 }
 
 export interface UserUidResult {

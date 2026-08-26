@@ -10,8 +10,49 @@ jobs:
   jest:
     name: Jest — server unit tests
     runs-on: ubuntu-latest
+
+    # Dos suites no son unitarias: `src/tenant/tenant-isolation.spec.ts` ejercita
+    # la extensión real contra dos instituciones reales —es el criterio de
+    # aceptación del aislamiento multi-tenant, y con mocks no probaría nada— y
+    # `src/modules/products/Product.audio.spec.ts` escribe el audio en disco y
+    # guarda la ruta. Sin base, ambas reventaban acá: 35 tests en rojo mientras
+    # los otros 367 pasaban.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: quyca_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d quyca_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # `env/development.env` está gitignoreado, así que en CI no existe: el
+      # `dotenv.config()` de los specs y de prisma.config.ts no encuentra nada y
+      # esta variable es la única fuente de la conexión. dotenv no pisa lo que
+      # ya está en el entorno, así que tampoco molesta si algún día existiera.
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/quyca_test
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
+
+      # El binario local, no `npx`: ya está instalado y no hay que ir al
+      # registry. `prisma.config.ts` toma la URL de DATABASE_URL.
+      - name: Migrar la base de test
+        run: ./node_modules/.bin/prisma migrate deploy
+
+      # Las dos suites de integración necesitan los catálogos sembrados: el plan
+      # 'academia' y una GroupCategory (aislamiento), y el grupo de plataforma
+      # "Música" (audio). El seed es idempotente.
+      - name: Sembrar datos estáticos
+        run: bun run prisma:seed:static
+
       - run: bun run test
