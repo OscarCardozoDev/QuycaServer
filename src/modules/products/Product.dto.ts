@@ -3,6 +3,7 @@ import { Transform, Type } from 'class-transformer';
 import {
   IsOptional,
   IsString,
+  IsUUID,
   IsNumber,
   IsBoolean,
   IsArray,
@@ -88,6 +89,16 @@ export class GetProductsDto {
   @IsOptional()
   @IsString()
   categorySlug?: string;
+
+  /**
+   * Acota al grupo activo del sidebar. Sin esto, `GET /products/mine` mezcla
+   * las obras de todos los grupos de la institución en una sola bandeja: quien
+   * está parado en MÚSICA veía también las que subió en ARTES.
+   */
+  @ApiPropertyOptional({ example: 'a270cbc6-60b1-4853-93e7-2ab2ae2afa4e' })
+  @IsOptional()
+  @IsUUID()
+  groupId?: string;
 }
 
 export class CreateProductDto {

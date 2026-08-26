@@ -55,4 +55,26 @@ describe('ProductService.getMine — bandeja propia, todos los estados', () => {
 
     expect(seenWhere?.authors).toEqual({ some: { userId: 'user-1' } });
   });
+
+  it('acota al grupo activo cuando llega groupId', async () => {
+    await tenantStorage.run(
+      { institutionId: 'inst-1', bypass: false },
+      async () => {
+        await service.getMine('user-1', { groupId: 'grp-musica' });
+      },
+    );
+
+    expect(seenWhere?.groupId).toBe('grp-musica');
+  });
+
+  it('sin groupId no filtra por grupo — la bandeja completa de la institución', async () => {
+    await tenantStorage.run(
+      { institutionId: 'inst-1', bypass: false },
+      async () => {
+        await service.getMine('user-1');
+      },
+    );
+
+    expect(seenWhere).not.toHaveProperty('groupId');
+  });
 });

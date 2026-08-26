@@ -529,11 +529,15 @@ export class ProductService {
    * patrón aplicado acá.
    */
   async getMine(userId: string, options: GetProductsOptions = {}) {
-    const { page = 1, limit = 10 } = options;
+    const { page = 1, limit = 10, groupId } = options;
 
     return this.prisma.products.findMany({
       where: {
         authors: { some: { userId } },
+        // El grupo activo del sidebar. Es opcional a propósito: sin él la
+        // bandeja mezclaba las obras de MÚSICA con las de ARTES, porque la
+        // extensión de tenant acota a la institución, no al grupo.
+        ...(groupId && { groupId }),
       },
       skip: (page - 1) * limit,
       take: limit,

@@ -26,6 +26,10 @@ export class GetProductsOptions {
   /** Slug de GroupCategory: `artes`, `teatro`, `danzas`, `musica`, `canto`. */
   @IsOptional()
   categorySlug?: string;
+
+  /** Grupo activo. Sólo lo usa `getMine`. */
+  @IsOptional()
+  groupId?: string;
 }
 
 /* =========================
