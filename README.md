@@ -1,250 +1,194 @@
+# Quyca Server 2.0
 
-# Quyca — Backend
+**Merge:** `develop` → `master` · 98 commits · 213 archivos · +43.341 / −3.069
 
-Backend API para la plataforma de gestión de galería de arte de la Universidad Santo Tomás (Tunja).
-
-**Stack:** NestJS · Bun · PostgreSQL · Prisma · Docker
-
----
-
-## Tabla de Contenidos
-
-1. [Requisitos Previos](#requisitos-previos)
-2. [Instalación](#instalación)
-3. [Configuración](#configuración)
-4. [Base de Datos](#base-de-datos)
-5. [Autenticación y Roles](#autenticación-y-roles)
-6. [Endpoints](#endpoints)
-7. [Swagger](#swagger)
-8. [Docker](#docker)
+UstaGallery deja de ser la galería de una universidad y pasa a ser **Quyca**, un SaaS
+multi-tenant para instituciones educativas colombianas. La 1.x asumía una sola institución
+en cada consulta; la 2.0 no puede asumir ninguna, y ese cambio toca el 80% del backend.
 
 ---
 
-## Requisitos Previos
+## 1. Lo que entra
 
-- **Bun** v1.0+
-- **PostgreSQL** v12+
-- **Docker** (opcional)
+### Multi-tenancy (el cambio de fondo)
+
+Aislamiento por fila con `institutionId` denormalizado. **El filtro no lo escribe ningún
+servicio**: lo inyecta una extensión del cliente de Prisma en cada consulta.
+
+| Pieza | Archivo | Qué hace |
+|---|---|---|
+| Contexto | `src/tenant/tenant-context.ts` | `AsyncLocalStorage` con la institución del request |
+| Middleware | `src/tenant/tenant.middleware.ts` | Abre el store, una vez por request |
+| Guard | `src/tenant/tenant.guard.ts` | Resuelve slug → institución y **exige membresía activa** |
+| Extensión | `src/tenant/tenant.extension.ts` | Inyecta el `where` en los 9 modelos scoped |
+| Cross-tenant | `src/tenant/cross-tenant.guard.ts` | `@AllowCrossTenant()` para endpoints de `super_admin` |
+
+- La institución activa viaja en el header **`X-Institution-Slug`**, nunca en el JWT.
+- **Falla cerrado:** un modelo scoped consultado sin tenant resuelto tira 403. Lo público
+  se declara con `runWithoutTenant()`, explícito y auditable.
+- Modelos scoped: `Groups`, `Events`, `Products`, `Classes`, `Schedule`, `Attendance`,
+  `ContentRequest`, `Lessons`, `Chapters`.
+- Catálogos de plataforma (sin tenant): `GroupCategory`, `SubscriptionPlan`, `UserTypes`,
+  `Roles`, `Styles`.
+- Modelos de bootstrap (**filtro explícito obligatorio**): `Institution`, `UserInstitution`,
+  `InstitutionInvitation` — son los que resuelven el tenant, no pueden depender de él.
+
+Reglas completas en `obsidian/Arquitectura/Multitenancy.md`; los internos, en `obsidian/learn/`.
+
+### Módulos nuevos
+
+| Módulo | Endpoints | Para qué |
+|---|---|---|
+| `institutions` | `/institutions`, invitaciones, membresías | Alta atómica de institución + rector, invitar, aceptar/rechazar, salir |
+| `categories` | `/categories`, `ContentRequest` | Catálogo global de categorías y solicitudes de contenido |
+| `lessons` + `chapters` | `/lessons`, `/lessons/:id/chapters` | Lecciones, capítulos, progreso y cola de revisión |
+| `plans` | `/subscription-plans` | Planes, features y límites por plan |
+| `roles` | `/roles` | Los seis `contextRole` de la plataforma |
+
+La superficie HTTP pasa de **61 a 96 rutas**.
+
+### Autorización
+
+- Se autoriza por **`@RequireContextRole(...)`** — el rol **en la institución activa**
+  (`UserInstitution.contextRole`), no por `userType`. Los seis roles: `rector`,
+  `coordinator`, `institutional`, `independent`, `student`, `self-taught`.
+- `userType` queda como identidad global (`super_admin`, `institution`, `professor`, `user`)
+  con UUIDs fijos. Usarlo para autorizar abría una escalada a SUPER_ADMIN — por eso se movió.
+- `FeatureGuard` + `@RequireFeature(...)`: la feature sale del plan de la institución.
+- `SqlInjectionGuard` global, antes de cualquier controlador.
+
+### Seguridad (25 fixes)
+
+Los de mayor impacto, todos con su plan en `docs/superpowers/plans/`:
+
+- Registro sin autenticar que permitía autoasignarse `super_admin`.
+- Alta directa de profesores (`POST /user/professor`) — **eliminada**, ahora se invita.
+- Fugas cross-tenant en grupos, eventos, productos, invitaciones y capítulos.
+- Portafolio público que exponía obras `PENDING` y `REJECTED` con el feedback del docente.
+- Enumeración de correos en el login (mensajes de error unificados).
+- `Math.random()` → `crypto.randomInt()` en los códigos de verificación.
+- Cookie de sesión: `sameSite` correcto para cross-origin en producción.
+
+### Contenido y obras
+
+- **Audio en las obras** (`Products.audioUrl`): una pista por obra para la categoría música,
+  validada por firma de archivo y servida desde `/audio`.
+- Grupos con descripción, reglas, portada, baja lógica y límite por plan (`maxGroups`).
+- `Styles` pasa a catálogo de plataforma por categoría (sin `groupId` ni `institutionId`).
+- Rutas privadas por grupo para obras y eventos, acotadas al tenant.
+
+### Infraestructura
+
+- Prisma 7 con `@prisma/adapter-pg`; `PrismaService` es un **Symbol** que devuelve el cliente
+  ya extendido — ningún servicio puede obtener uno sin filtrar.
+- Correo transaccional con Resend (invitaciones con link y vencimiento a 3 días).
+- CI en GitHub Actions: Postgres de servicio, `migrate deploy`, seed y **402 tests en 56 suites**.
+- Colección de Postman/Newman al día, incluida la suite de Lessons y Chapters.
 
 ---
 
-## Instalación
+## 2. Breaking changes
+
+| # | Qué cambió | Qué se rompe | Qué hacer |
+|---|---|---|---|
+| 1 | Header `X-Institution-Slug` obligatorio | Toda consulta a un modelo scoped sin header → **403** | El cliente manda el slug en cada request |
+| 2 | `POST /user/professor` eliminado | Alta directa de profesores | Invitar: `POST /institutions/:id/invitations` |
+| 3 | `GET /products/getGroup/:uid` eliminado (era público y sin filtro de estado) | Lecturas anónimas de obras de un grupo | `GET /products/group/:uid` con sesión y membresía |
+| 4 | `GET /styles/mine` eliminado | "Estilos de mi institución" ya no existe | `GET /styles/all/:categoryId` |
+| 5 | Vocabulario de roles: `admin/user/...` → `super_admin/institution/professor/user` + los seis `contextRole` | Cualquier check por `userType` | Autorizar por `contextRole` |
+| 6 | `Category` (enum) → tabla `GroupCategory` | FKs y filtros por categoría | Correr `prisma:migrate:data` |
+| 7 | `Users` **no tiene** `institutionId` | Suponer una institución por usuario | El rol vive en `UserInstitution` |
+| 8 | El login devuelve `nextSteps` en vez de tres booleanos | Clientes que leían los flags | Leer `nextSteps` |
+| 9 | Historial de migraciones squasheado en `20260807190410_init` | `migrate deploy` sobre una base 1.x | Ver Despliegue |
+
+---
+
+## 3. Despliegue
+
+### Variables de entorno nuevas (`env/production.env`)
+
+| Variable | Obligatoria | Para qué |
+|---|---|---|
+| `ID_SUPER_ADMIN`, `ID_INSTITUTION`, `ID_PROFESSOR`, `ID_USER` | sí | UUIDs fijos que deben coincidir con las filas de `UserTypes` |
+| `RESEND_API_KEY`, `RESEND_EMAIL_FROM` | sí | Invitaciones y códigos por correo |
+| `FRONTEND_URL` | recomendada | Links absolutos del correo. Sin ella cae a `CORS_URL_FRONT` |
+| `SEMESTER_END_DATE` | sí | Fin del período académico |
+
+`DATABASE_URL`, `JWT_SECRET` y `CORS_URL_FRONT` siguen igual.
+
+### Base de datos limpia
 
 ```bash
-git clone https://github.com/OscarCardozoDev/UstaGalleryServer.git
-cd UstaGalleryServer/server
 bun install
-bun run start:dev        # dev con hot reload, puerto 3000
+bun run prisma:migrate:prod      # migrate deploy
+bun run prisma:seed:static       # UserTypes, Roles, planes, 5 categorías, quyca-platform
 ```
 
-Para producción:
+El seed es idempotente y **es obligatorio**: sin `UserTypes` con los UUIDs de las env vars,
+la app arranca pero ningún alta funciona.
+
+### Base existente de la 1.x
+
+El historial de migraciones fue reemplazado por un `init` squasheado, así que Prisma no
+reconoce la base vieja. En orden:
 
 ```bash
-bun run build
-bun run start:prod
-```
+# 1. Backup. No es opcional.
+pg_dump "$DATABASE_URL" > backup-pre-2.0.sql
 
----
+# 2. Marcar el init como aplicado (la base YA tiene esas tablas)
+npx prisma migrate resolve --applied 20260807190410_init
 
-## Configuración
-
-Variables en `server/env/development.env` (desarrollo) o `server/env/production.env` (producción):
-
-| Variable | Descripción |
-|---|---|
-| `DATABASE_URL` | Cadena de conexión PostgreSQL |
-| `JWT_SECRET` | Secreto para firmar JWT |
-| `CORS_URL_FRONT` | Origen permitido por CORS |
-| `ID_STUDENT` | UUID del UserType estudiante |
-| `ID_PROFESSOR` | UUID del UserType profesor |
-| `ID_ADMIN` | UUID del UserType admin |
-| `SEMESTER_END_DATE` | Fecha fin de semestre (`YYYY-MM-DD`) — limita generación de clases |
-
----
-
-## Base de Datos
-
-```bash
-# Crear y aplicar migración (dev)
-bun run prisma:migrate:dev -- <nombre>
-
-# Aplicar migraciones pendientes (prod)
+# 3. Aplicar el resto
 bun run prisma:migrate:prod
 
-# Seed inicial (UserTypes, usuarios por defecto, un grupo)
+# 4. Sembrar catálogos
 bun run prisma:seed:static
+
+# 5. Migrar los datos: Category (enum) → GroupCategory, y poblar institutionId
+bun run prisma:migrate:data
 ```
 
-## Autenticación y Roles
+Después del paso 5, verificar que no quedó ninguna fila scoped sin institución:
 
-- JWT almacenado en cookie `HttpOnly` (`access_token`). No se usa header Bearer.
-- Flujo: `POST /auth/register` → `POST /auth/login` (fija la cookie) → peticiones autenticadas.
-- `Credentials` y `Users` son tablas separadas con el mismo UUID de PK.
-
-| Rol | Permisos |
-|---|---|
-| **admin** | Acceso completo |
-| **professor** | Gestión de grupo, obras, eventos y horarios |
-| **student** | Crear obras y registrar asistencia |
-| *(sin auth)* | Lectura de galería, eventos públicos e info de autores |
-
----
-
-## Endpoints
-
-### Autenticación — `/auth`
-
-| Método | Ruta | Auth | Descripción |
-|---|---|---|---|
-| `POST` | `/auth/login` | — | Iniciar sesión |
-| `POST` | `/auth/register` | — | Registrar cuenta |
-| `POST` | `/auth/logout` | — | Cerrar sesión |
-| `POST` | `/auth/send-code` | ✓ | Enviar código de verificación por email |
-| `POST` | `/auth/verify-code` | ✓ | Verificar código de email |
-| `GET` | `/auth/without-profile` | admin | Credenciales sin perfil creado |
-
-### Usuarios — `/user`
-
-| Método | Ruta | Auth | Descripción |
-|---|---|---|---|
-| `POST` | `/user/create` | ✓ | Crear perfil de estudiante |
-| `POST` | `/user/professor` | admin | Crear perfil de profesor |
-| `GET` | `/user/me` | ✓ | Usuario actual |
-| `GET` | `/user/allActive` | admin / professor | Todos los usuarios activos |
-| `GET` | `/user/author/:uid` | — | Info pública del autor |
-| `GET` | `/user/:uid` | — | Usuario por UID |
-| `PUT` | `/user/update` | student / professor | Actualizar perfil propio |
-| `PUT` | `/user/:uid` | admin | Actualizar usuario por UID |
-| `PATCH` | `/user/photo` | student / professor | Cambiar foto propia |
-| `PATCH` | `/user/:uid/photo` | admin | Cambiar foto por UID |
-| `PATCH` | `/user/deactivate` | ✓ | Desactivar cuenta propia |
-| `PATCH` | `/user/:uid/deactivate` | admin | Desactivar usuario por UID |
-| `PATCH` | `/user/:uid/reactivate` | admin | Reactivar usuario |
-
-### Estilos Artísticos — `/styles`
-
-| Método | Ruta | Auth | Descripción |
-|---|---|---|---|
-| `GET` | `/styles/all` | — | Todos los estilos |
-| `GET` | `/styles/all/:category` | — | Estilos por categoría (`ARTES`, `TEATRO`, `DANZAS`, `MUSICA`, `CANTO`) |
-| `GET` | `/styles/get/:uid` | — | Estilo por UID |
-| `POST` | `/styles/create` | admin / professor | Crear estilo |
-| `PUT` | `/styles/update/:uid` | admin / professor | Actualizar estilo |
-| `DELETE` | `/styles/delete/:uid` | admin | Eliminar estilo |
-
-### Grupos — `/groups`
-
-| Método | Ruta | Auth | Descripción |
-|---|---|---|---|
-| `POST` | `/groups/create` | admin | Crear grupo |
-| `GET` | `/groups/get` | ✓ | Todos los grupos |
-| `GET` | `/groups/get/:uid` | ✓ | Grupo por UID |
-| `PUT` | `/groups/update/:uid` | admin | Actualizar grupo |
-| `DELETE` | `/groups/delete/:uid` | admin | Eliminar grupo |
-| `PATCH` | `/groups/change-profesor/:uid` | admin | Cambiar profesor asignado |
-| `POST` | `/groups/student/add` | ✓ | Agregar estudiante a grupo(s) |
-| `GET` | `/groups/student/get/:groupId` | ✓ | Estudiantes del grupo |
-| `PUT` | `/groups/student/update/:groupId` | admin / professor | Reemplazar lista de estudiantes |
-| `DELETE` | `/groups/student/delete/:groupId` | admin / professor | Quitar un estudiante |
-| `DELETE` | `/groups/student/deleteAll/:groupId` | admin | Quitar todos los estudiantes |
-
-### Fotos — `/photos`
-
-| Método | Ruta | Auth | Descripción |
-|---|---|---|---|
-| `GET` | `/photos/get/:uid` | — | Obtener foto |
-| `POST` | `/photos/create` | — | Crear foto |
-| `PUT` | `/photos/edit/:uid` | — | Actualizar foto |
-
-### Obras — `/products`
-
-| Método | Ruta | Auth | Descripción |
-|---|---|---|---|
-| `POST` | `/products/create` | student / professor | Crear obra |
-| `GET` | `/products/getAll` | admin | Todas las obras paginadas |
-| `GET` | `/products/getGalleryHome` | — | Obras aprobadas para galería home |
-| `GET` | `/products/getGroup/:uid` | admin / professor | Obras por grupo |
-| `GET` | `/products/getAuthor/:uid` | — | Obras por autor |
-| `GET` | `/products/get/:uid` | — | Obra por UID |
-| `PUT` | `/products/approveMany` | professor | Aprobar varias obras a la vez |
-| `PATCH` | `/products/status/:uid` | professor | Aprobar o rechazar una obra |
-| `PUT` | `/products/update/:uid` | student / professor | Actualizar obra |
-
-### Eventos — `/events`
-
-| Método | Ruta | Auth | Descripción |
-|---|---|---|---|
-| `POST` | `/events/create` | professor / admin | Crear evento |
-| `GET` | `/events/getAll` | admin | Todos los eventos paginados |
-| `GET` | `/events/upcoming` | — | Eventos próximos aprobados |
-| `GET` | `/events/past` | — | Eventos pasados completados |
-| `GET` | `/events/home` | — | Eventos para página de inicio |
-| `GET` | `/events/getByGroup/:uid` | — | Eventos de un grupo |
-| `GET` | `/events/available-products/:groupId` | professor / admin | Obras disponibles para el evento |
-| `GET` | `/events/invitations/pending` | professor / admin | Invitaciones pendientes |
-| `GET` | `/events/get/:uid` | — | Detalle completo del evento |
-| `PUT` | `/events/update/:uid` | professor / admin | Editar evento (vuelve a PENDING) |
-| `PATCH` | `/events/status/:uid` | admin | Cambiar status del evento |
-| `PATCH` | `/events/deactivate/:uid` | admin | Desactivar evento (soft delete) |
-| `PUT` | `/events/:uid/products` | professor / admin | Actualizar obras del evento |
-| `POST` | `/events/:uid/photos` | professor / admin | Agregar foto al evento |
-| `DELETE` | `/events/:uid/photos/:photoId` | professor / admin | Eliminar foto del evento |
-| `POST` | `/events/:uid/invite` | professor / admin | Invitar grupo al evento |
-| `PATCH` | `/events/invitations/:uid/respond` | professor | Aceptar o rechazar invitación |
-| `DELETE` | `/events/:uid/invite/:groupId` | professor / admin | Revocar invitación |
-| `DELETE` | `/events/:uid/groups/:groupId` | professor / admin | Quitar grupo del evento |
-
-### Horarios — `/schedule`
-
-| Método | Ruta | Auth | Descripción |
-|---|---|---|---|
-| `POST` | `/schedule/create` | professor / admin | Crear horario (genera clases hasta fin de semestre) |
-| `GET` | `/schedule/group/:groupId` | ✓ | Horarios activos del grupo |
-| `PUT` | `/schedule/:uid` | professor / admin | Actualizar horario y regenerar clases futuras |
-| `DELETE` | `/schedule/:uid` | professor / admin | Desactivar horario y eliminar clases futuras sin asistencia |
-
-### Clases — `/classes`
-
-| Método | Ruta | Auth | Descripción |
-|---|---|---|---|
-| `POST` | `/classes/create` | professor / admin | Crear clase manual |
-| `POST` | `/classes/attend` | student | Registrar asistencia |
-| `GET` | `/classes/group/:groupId` | ✓ | Sesiones del grupo (con filtros `from`/`to`) |
-| `GET` | `/classes/current/:groupId` | ✓ | Clase activa en este momento |
-| `GET` | `/classes/:uid/attendance` | professor / admin | Lista de asistencia de una clase |
-| `PATCH` | `/classes/:uid/topic` | professor / admin | Actualizar temática o reseña |
-
----
-
-## Swagger
-
-Documentación interactiva disponible en:
-
-```
-http://localhost:3000/api-docs
+```sql
+SELECT 'groups' t, count(*) FROM "Groups" WHERE "institutionId" IS NULL
+UNION ALL SELECT 'products', count(*) FROM "Products" WHERE "institutionId" IS NULL
+UNION ALL SELECT 'events',   count(*) FROM "Events"   WHERE "institutionId" IS NULL;
 ```
 
-JSON para generación de tipos:
+Cualquier resultado distinto de 0 **bloquea el despliegue**: esas filas son invisibles para
+la extensión de tenant y no las va a ver nadie.
 
-```
-http://localhost:3000/api-docs-json
-```
-
----
-
-## Docker
+### Docker
 
 ```bash
-# Desarrollo (db + backend + frontend, puerto 3000)
-docker-compose -f docker-compose.dev.yml up -d
-
-# Entorno de pruebas aislado (db en 5433, backend en 3001)
-docker-compose -f docker-compose.test.yml up -d
-
-# Producción
 docker-compose -f docker-compose.prod.yml up -d
 ```
 
+`env_file` se lee al **crear** el contenedor, no al arrancarlo: si cambian las variables,
+`--force-recreate`, no `restart`.
+
 ---
 
-**Versión:** 1.0.0 · **Runtime:** Bun v1.0+ · **Última actualización:** 2026-05-05
+## 4. Verificación
+
+| Qué | Comando | Estado |
+|---|---|---|
+| Unit + integración | `docker exec Quyca-Backend node node_modules/jest/bin/jest.js` | 56 suites / 402 tests ✅ |
+| CI | GitHub Actions, job `jest` | verde con Postgres de servicio ✅ |
+| API end-to-end | `bun run test:api` (Newman, servidor arriba) | reporte en `reports/` |
+| Aislamiento | `src/tenant/tenant-isolation.spec.ts` | 10 modelos scoped, dos instituciones reales ✅ |
+
+> **Nunca correr `bun run lint`**: el script es `eslint "{src,apps,libs,test}/**/*.ts" --fix`,
+> sin scope y con `--fix`. Reescribió ~70 archivos de una vez, incluido el cliente generado.
+
+---
+
+## 5. Lo que queda pendiente
+
+- **Postgres RLS.** La extensión no cubre `include` anidados, `$queryRaw`, consultas directas
+  a tablas puente ni seeds. RLS es el cierre real de ese hueco.
+- **`AuthContext.isAuthenticated()`** del frontend compara contra una clave literal en vez de
+  la de sesión: siempre devuelve `false`.
+- Álbumes con varias pistas (hoy: una canción por obra) — `obsidian/Tareas/Musica-Lo-que-falta.md`.
