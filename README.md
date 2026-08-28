@@ -1,10 +1,19 @@
 # Quyca Server 2.0
 
 **Merge:** `develop` → `master` · 98 commits · 213 archivos · +43.341 / −3.069
+Medido sobre el merge. De tag a tag (`v1.0.0..v2.0.0`): 121 commits · 218 archivos · +43.860 / −3.223.
 
 UstaGallery deja de ser la galería de una universidad y pasa a ser **Quyca**, un SaaS
 multi-tenant para instituciones educativas colombianas. La 1.x asumía una sola institución
 en cada consulta; la 2.0 no puede asumir ninguna, y ese cambio toca el 80% del backend.
+
+> ⚠️ **Esta versión NO se despliega con un `migrate deploy` sobre la base de la 1.x.**
+> El historial de migraciones fue reemplazado por un `init` squasheado. Ver [Despliegue](#3-despliegue).
+
+> **Las dos mitades, en una sola página:** `obsidian/versions/2.0.0.md` del repo raíz
+> (`ProyectoGrado`) junta lo de server y client, los 14 breaking changes, la migración desde una
+> base 1.x y las correcciones posteriores al tag. El despliegue real está en
+> `obsidian/Configuracion/Despliegue-Produccion.md`.
 
 ---
 
@@ -45,7 +54,12 @@ Reglas completas en `obsidian/Arquitectura/Multitenancy.md`; los internos, en `o
 | `plans` | `/subscription-plans` | Planes, features y límites por plan |
 | `roles` | `/roles` | Los seis `contextRole` de la plataforma |
 
-La superficie HTTP pasa de **61 a 96 rutas**.
+La superficie HTTP pasa de **80 a 125 handlers**: decoradores `@Get/@Post/@Put/@Patch/@Delete`
+en `src/modules/*/*.controller.ts`, contados en cada tag y sin los que están comentados.
+
+```bash
+git grep -hE '@(Get|Post|Put|Patch|Delete)\(' v1.0.0 -- 'src/modules/*/*.controller.ts' | grep -vc '^\s*//'
+```
 
 ### Autorización
 
