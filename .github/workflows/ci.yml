@@ -90,30 +90,45 @@ jobs:
       cancel-in-progress: false
 
     steps:
-      # Tres defectos del primer intento (run 33327950401), todos corregidos aca:
+      # Historia de por que este script es asi. Los cuatro defectos aparecieron
+      # en los tres primeros deploys reales (2026-08-30):
       #
       # 1. `script_stops: true` NO es un input valido de ssh-action@v1 —GitHub lo
       #    ignoro con un warning—. El `git pull` fallo, el script siguio de largo
       #    y el job se puso VERDE con la imagen construida del codigo viejo.
-      #    `set -eu` como primera linea del script es lo que si corta.
+      #    `set -eu` es lo que si corta.
       #
-      # 2. `git pull` abortaba: el clon de la VM tenia el arbol sucio
-      #    ("Your local changes to bun.lock would be overwritten"). Un servidor
-      #    de despliegue NO es un workspace: `fetch` + `reset --hard` lo dejan
-      #    identico al remoto siempre. Cualquier edicion hecha a mano alla se
-      #    pierde, que es exactamente lo que se quiere —si un cambio importa,
-      #    va commiteado—.
+      # 2. `git pull` abortaba: el clon de la VM tenia el arbol sucio. Un
+      #    servidor de despliegue NO es un workspace: `fetch` + `reset --hard`
+      #    lo dejan identico al remoto. Lo editado a mano alla se pierde, que es
+      #    lo que se quiere: si un cambio importa, va commiteado.
       #
-      # 3. `up -d --build <servicio>` construye la imagen pero NO recrea el
-      #    contenedor que ya corre: quedaba levantado hace dos dias con la
-      #    imagen anterior. `--force-recreate` es lo que baja y sube el
-      #    contenedor con la imagen nueva.
+      # 3. `up -d --build --force-recreate <svc>` NO recrea el contenedor en
+      #    podman-compose 1.0.6: lo REINICIA. Quedaba corriendo la imagen con la
+      #    que fue creado dias atras mientras el tag `latest` ya apuntaba a otra.
+      #    Sintoma: build exitoso, deploy verde, y la ruta nueva devolviendo 404.
+      #    El unico camino confiable es `podman rm -f` y volver a crearlo.
       #
-      # `--no-deps` ademas evita que podman-compose toque `db`. Dos motivos: no
-      # hay razon para reiniciar la base al desplegar el backend, y su bloque
-      # `environment:` hace que podman-compose imprima
-      # `-e POSTGRES_PASSWORD=...` EN CLARO en el log del run. El `env_file` del
-      # backend no tiene ese problema: se pasa como --env-file, sin expandir.
+      # 4. `podman rm -f backend` falla con 125: el `depends_on` del compose se
+      #    traduce a `--requires`, y **frontend depende de backend**. Hay que
+      #    usar `--depend`, que se lleva el frontend por delante. Consecuencia
+      #    aceptada: no existe desplegar SOLO el backend —el SPA cae con el—.
+      #    Por eso el `up` levanta los dos.
+      #
+      # El `build` va ANTES del `rm`: construir con el contenedor ya borrado
+      # deja el sitio caido los ~2 min que tarda, en vez de ~20 s.
+      #
+      # `--no-deps` para no tocar `db`. Dos motivos: no hay razon para reiniciar
+      # la base al desplegar el backend, y su bloque `environment:` hace que
+      # podman-compose imprima `-e POSTGRES_PASSWORD=...` EN CLARO en el log del
+      # run —ya paso una vez, el 2026-08-30, y hubo que borrar el run entero—.
+      # El `env_file` del backend NO tiene ese problema: se pasa como
+      # --env-file, sin expandir.
+      #
+      # Recrear el backend le cambia la IP en la red de podman, y el nginx del
+      # frontend la tenia resuelta de su arranque: el resultado es 502 hasta que
+      # alguien lo recarga. Recrear el frontend en el mismo paso lo resuelve sin
+      # un `nginx -s reload` aparte.
       - name: Actualizar y reconstruir el backend
         uses: appleboy/ssh-action@v1
         with:
@@ -125,7 +140,9 @@ jobs:
             git -C /Quyca/QuycaServer fetch origin master
             git -C /Quyca/QuycaServer reset --hard FETCH_HEAD
             cd /Quyca
-            sudo podman-compose -f docker-compose.prod.yml up -d --build --force-recreate --no-deps backend
+            sudo podman-compose -f docker-compose.prod.yml build backend
+            sudo podman rm -f --depend backend
+            sudo podman-compose -f docker-compose.prod.yml up -d --no-deps backend frontend
 
       # El job no está verde porque el comando no falló: está verde porque el
       # sitio responde. Se prueba desde afuera, por HTTPS, que es como lo ve el
