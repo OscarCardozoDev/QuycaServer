@@ -135,6 +135,11 @@ jobs:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
+          # El default de la accion son 10 minutos. El build del backend tarda
+          # ~2, pero el del frontend no entro y murio con "Run Command Timeout"
+          # el 2026-08-30. Se sube aca tambien por margen: la VM es chica y el
+          # build compite por RAM con la app viva.
+          command_timeout: 30m
           script: |
             set -eu
             git -C /Quyca/QuycaServer fetch origin master
