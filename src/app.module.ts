@@ -17,6 +17,7 @@ import { RolesModule } from 'src/modules/roles/Roles.module';
 import { InstitutionModule } from 'src/modules/institutions/Institution.module';
 import { CategoriesModule } from 'src/modules/categories/Categories.module';
 import { LessonModule } from 'src/modules/lessons/Lesson.module';
+import { HealthController } from 'src/health/Health.controller';
 import { join } from 'path';
 import configurationApp from 'config/configuration-app';
 
@@ -54,7 +55,9 @@ import configurationApp from 'config/configuration-app';
     CategoriesModule,
     LessonModule,
   ],
-  controllers: [],
+  // Sin modulo propio: es un solo controller sin service. PrismaModule es
+  // @Global(), asi que el token PrismaService ya esta disponible aca.
+  controllers: [HealthController],
   providers: [
     { provide: APP_GUARD, useClass: SqlInjectionGuard },
   ],

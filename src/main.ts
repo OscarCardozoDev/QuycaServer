@@ -42,13 +42,27 @@ async function bootstrap() {
     }),
   );
 
-  const config = new DocumentBuilder()
-    .setTitle('Quyca API')
-    .setVersion('1.0')
-    .build();
+  // Swagger NO se monta en produccion. `/api-docs-json` publica el esquema
+  // OpenAPI completo —cada ruta, cada DTO, cada campo y cada validacion—, que
+  // es el mapa de la superficie de ataque servido a cualquiera que pase.
+  //
+  // No se protege con contrasena ni se bloquea en nginx: no registrar la ruta
+  // es lo unico que garantiza que no exista. Un bloqueo en el proxy deja el
+  // handler vivo detras, alcanzable el dia que alguien exponga el 3000.
+  //
+  // `bun run generate:types` del frontend no se ve afectado: apunta a
+  // localhost:3000, donde NODE_ENV es development y esto si se monta.
+  //
+  // La sonda de produccion es GET /health (src/health/Health.controller.ts).
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Quyca API')
+      .setVersion('1.0')
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api-docs', app, document);
+  }
 
   // Se usa una query real (SELECT 1) en lugar de $connect() porque, con el
   // driver adapter de pg (@prisma/adapter-pg), $connect() es un no-op: no
