@@ -33,7 +33,7 @@ export const PLATFORM_SLUG = 'quyca-platform';
  * Cuando exista pasarela de pago, esta constante se reemplaza por el cupo
  * comprado por el usuario. Ver obsidian/Tareas/Ideas Futuras.md § Pasarela de pago.
  */
-export const FREE_PLATFORM_GROUPS = 1;
+export const FREE_PLATFORM_GROUPS = 5;
 
 @Injectable()
 export class GroupService {
