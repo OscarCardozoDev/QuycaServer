@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { HttpStatus, HttpException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { GroupService } from './Group.service';
+import { GroupService, FREE_PLATFORM_GROUPS } from './Group.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 const PLATFORM_UID = 'platform-uid';
@@ -31,16 +31,21 @@ describe('GroupService — límite de grupos de plataforma', () => {
     service = module.get(GroupService);
   });
 
-  it('deja entrar al primer grupo de plataforma', async () => {
-    prisma.usersGroups.count.mockResolvedValue(0);
+  // Los dos casos del limite salen de FREE_PLATFORM_GROUPS y no de un numero
+  // escrito a mano. Antes decian "el primero pasa, el segundo da 402", que solo
+  // era cierto con el cupo en 1: al subirlo a 5 el test se cayo aunque la regla
+  // seguia bien. Lo que se prueba es la regla —debajo del cupo entra, en el cupo
+  // corta—, no el valor de hoy.
+  it('deja entrar mientras no se alcanzo el cupo', async () => {
+    prisma.usersGroups.count.mockResolvedValue(FREE_PLATFORM_GROUPS - 1);
 
     await expect(
       service.addStudentToGroups({ userId: 'u1', groupIds: ['g1'], institutionId: PLATFORM_UID }),
     ).resolves.toBeDefined();
   });
 
-  it('devuelve 402 en el segundo grupo de plataforma', async () => {
-    prisma.usersGroups.count.mockResolvedValue(1);
+  it('devuelve 402 al alcanzar el cupo', async () => {
+    prisma.usersGroups.count.mockResolvedValue(FREE_PLATFORM_GROUPS);
 
     await expect(
       service.addStudentToGroups({ userId: 'u1', groupIds: ['g1'], institutionId: PLATFORM_UID }),
@@ -48,9 +53,10 @@ describe('GroupService — límite de grupos de plataforma', () => {
   });
 
   it('no cuenta los grupos de una institución', async () => {
-    // El usuario ya tiene 3 grupos, pero la institución activa NO es la
-    // plataforma: el límite no aplica y no debe ni consultarse.
-    prisma.usersGroups.count.mockResolvedValue(3);
+    // El usuario ya pasó el cupo holgadamente, pero la institución activa NO es
+    // la plataforma: el límite no aplica. Se usa el cupo + 10 y no un 3 fijo,
+    // que con el cupo en 5 ya no probaba nada.
+    prisma.usersGroups.count.mockResolvedValue(FREE_PLATFORM_GROUPS + 10);
 
     await expect(
       service.addStudentToGroups({ userId: 'u1', groupIds: ['g1'], institutionId: OTHER_INST_UID }),
