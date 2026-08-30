@@ -1,7 +1,10 @@
 FROM oven/bun:1-alpine AS builder
 WORKDIR /app
 COPY package.json bun.lock* ./
-RUN bun install
+# --frozen-lockfile o la imagen de producción resuelve dependencias el día del
+# build, con versiones que nadie probó. Es la misma clase de bug que el
+# `COPY bun.lockb*` que no matcheaba: no falla, no avisa, y se nota meses después.
+RUN bun install --frozen-lockfile
 COPY . .
 RUN bunx prisma generate
 RUN bun run build

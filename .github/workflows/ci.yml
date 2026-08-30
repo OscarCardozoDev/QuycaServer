@@ -44,6 +44,12 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
 
+      # Antes de levantar la base: si no compila, el resto del job es tiempo
+      # perdido. Sin este paso, un error de tipos pasa el CI en verde y aparece
+      # recién en la VM, durante el `up --build`, con el sitio abajo.
+      - name: Compilar
+        run: bun run build
+
       # El binario local, no `npx`: ya está instalado y no hay que ir al
       # registry. `prisma.config.ts` toma la URL de DATABASE_URL.
       - name: Migrar la base de test
@@ -56,3 +62,59 @@ jobs:
         run: bun run prisma:seed:static
 
       - run: bun run test
+
+  # La imagen de producción es lo único que la VM ejecuta, y era lo único que el
+  # CI nunca ejercitaba. El 2026-08-26 tres errores aparecieron recién en el
+  # primer `podman-compose up --build` de la VM; dos de los tres los agarra este
+  # job solo. Construye, no publica: no hay registry todavía.
+  image:
+    name: Docker — imagen de producción
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: docker build -f Dockerfile.prod .
+
+  # Despliegue. Solo en master, y solo si los tests Y la imagen de producción
+  # pasaron: `needs` es lo que le da sentido al job `image` de arriba —sin esto,
+  # el CI avisaría del build roto DESPUÉS de haberlo publicado.
+  deploy:
+    name: Deploy — VM de producción
+    needs: [jest, image]
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    # Dos pushes seguidos a master no pueden construir a la vez en la misma VM.
+    # `cancel-in-progress: false`: un deploy a medias se termina, no se aborta.
+    concurrency:
+      group: deploy-produccion
+      cancel-in-progress: false
+
+    steps:
+      # Las rutas son las REALES de la VM, no las del runbook: el stack vive en
+      # /Quyca (no ~/quyca) y el clon se llama QuycaServer (no server). El
+      # compose de la VM apunta a ./QuycaServer, así que este job NO toca el
+      # compose: solo actualiza el código y reconstruye el servicio.
+      - name: Actualizar y reconstruir el backend
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script_stops: true
+          script: |
+            git -C /Quyca/QuycaServer pull origin master
+            cd /Quyca
+            sudo podman-compose -f docker-compose.prod.yml up -d --build backend
+
+      # El job no está verde porque el comando no falló: está verde porque el
+      # sitio responde. Se prueba desde afuera, por HTTPS, que es como lo ve el
+      # usuario. Los reintentos cubren el arranque del contenedor y la carrera
+      # con Postgres que `restart: unless-stopped` resuelve reiniciando.
+      # /api/health, no /api-docs: Swagger dejo de montarse en produccion (es el
+      # esquema OpenAPI completo servido a cualquiera). La sonda toca la base
+      # con SELECT 1, asi que un 200 aca significa que el backend Y Postgres
+      # responden, no solo que el proceso arranco.
+      - name: Verificar que la API responde
+        run: >-
+          curl -fsS --retry 10 --retry-delay 10 --retry-all-errors
+          -o /dev/null https://quyca.art/api/health
