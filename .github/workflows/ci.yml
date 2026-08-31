@@ -118,12 +118,21 @@ jobs:
       # El `build` va ANTES del `rm`: construir con el contenedor ya borrado
       # deja el sitio caido los ~2 min que tarda, en vez de ~20 s.
       #
-      # `--no-deps` para no tocar `db`. Dos motivos: no hay razon para reiniciar
-      # la base al desplegar el backend, y su bloque `environment:` hace que
-      # podman-compose imprima `-e POSTGRES_PASSWORD=...` EN CLARO en el log del
-      # run —ya paso una vez, el 2026-08-30, y hubo que borrar el run entero—.
-      # El `env_file` del backend NO tiene ese problema: se pasa como
-      # --env-file, sin expandir.
+      # `--no-deps` declara que este job no administra la base. NO es lo que
+      # protege los secretos: se creyo que si, y era falso —la contrasena
+      # siguio apareciendo en los dos runs siguientes—. `--no-deps` reduce lo
+      # que podman-compose HACE, no lo que IMPRIME.
+      #
+      # La fuga se arreglo en el compose: `db` paso de `environment:` a
+      # `env_file:`. podman-compose expande cada clave de `environment:` a un
+      # `-e VAR=valor` visible en el log; un `env_file` va como `--env-file`,
+      # sin expandir. Es por eso que el JWT_SECRET del backend nunca se filtro
+      # estando en el mismo despliegue.
+      #
+      # El compose se trae del repo `Quyca` en el primer paso: /Quyca es un clon
+      # con sparse-checkout de un solo archivo, para no dejar el vault entero en
+      # un servidor de produccion. Antes el compose de la VM y el del repo eran
+      # archivos distintos y nadie revisaba el que mandaba.
       #
       # Recrear el backend le cambia la IP en la red de podman, y el nginx del
       # frontend la tenia resuelta de su arranque: el resultado es 502 hasta que
@@ -142,8 +151,10 @@ jobs:
           command_timeout: 30m
           script: |
             set -eu
-            git -C /Quyca/QuycaServer fetch origin master
-            git -C /Quyca/QuycaServer reset --hard FETCH_HEAD
+            git -C /Quyca fetch --depth 1 origin master
+            git -C /Quyca reset --hard origin/master
+            git -C /Quyca/server fetch origin master
+            git -C /Quyca/server reset --hard FETCH_HEAD
             cd /Quyca
             sudo podman-compose -f docker-compose.prod.yml build backend
             sudo podman rm -f --depend backend
