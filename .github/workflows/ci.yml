@@ -153,8 +153,8 @@ jobs:
             set -eu
             git -C /Quyca fetch --depth 1 origin master
             git -C /Quyca reset --hard origin/master
-            git -C /Quyca/server fetch origin master
-            git -C /Quyca/server reset --hard FETCH_HEAD
+            git -C /Quyca/QuycaServer fetch origin master
+            git -C /Quyca/QuycaServer reset --hard FETCH_HEAD
             cd /Quyca
             sudo podman-compose -f docker-compose.prod.yml build backend
             sudo podman rm -f --depend backend
