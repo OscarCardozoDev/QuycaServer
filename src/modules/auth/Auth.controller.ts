@@ -11,6 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -89,6 +90,9 @@ export class AuthController {
     res.clearCookie('refresh_token', this.refreshCookieOptions(isProduction));
   }
 
+  // 5 cada 5 min, contados por email (AccountThrottlerGuard): frena la
+  // fuerza bruta sobre una cuenta sin bloquear al resto del laboratorio.
+  @Throttle({ default: { limit: 5, ttl: 300_000 } })
   @Post('login')
   @ApiOperation({ summary: 'Iniciar sesión' })
   @ApiResponse({ status: 201, type: AuthSessionResponseDto })
@@ -122,6 +126,9 @@ export class AuthController {
     };
   }
 
+  // 20 cada hora: alcanza para uso legítimo (una familia, un lab probando
+  // altas) y frena el spam de cuentas.
+  @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
   @Post('register')
   @ApiOperation({ summary: 'Registrar usuario' })
   @ApiResponse({ status: 201, type: AuthSessionResponseDto })
@@ -152,6 +159,11 @@ export class AuthController {
     };
   }
 
+  // Sin @Throttle a propósito: el access token dura 15 min, así que una
+  // clase que arrancó junta refresca junta. Limitar esta ruta deslogearía a
+  // media aula de golpe cuando venza el token en bloque. El resguardo contra
+  // abuso de esta ruta queda del lado de nginx (zona `api`, no `auth` —
+  // Fase 2 del plan).
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Rotar el par access/refresh token' })
@@ -184,6 +196,8 @@ export class AuthController {
     }
   }
 
+  // Tampoco se decora: mismo motivo que 'refresh' arriba, un cierre de
+  // sesión en tanda (fin de una clase) no puede toparse con un límite.
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Cerrar sesión' })
@@ -236,6 +250,9 @@ export class AuthController {
     return this.authService.getCredentialsWithoutProfile();
   }
 
+  // 3 cada 15 min: esta ruta manda correo (cuota de Resend), no solo cuenta
+  // intentos.
+  @Throttle({ default: { limit: 3, ttl: 900_000 } })
   @Post('forgot-password')
   @ApiOperation({ summary: 'Solicitar código de recuperación de contraseña' })
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
@@ -243,6 +260,9 @@ export class AuthController {
     return { message: 'Código enviado' };
   }
 
+  // 3 cada 15 min: mismo motivo que forgot-password, y además el código de
+  // 6 dígitos es un blanco de fuerza bruta si no se limita.
+  @Throttle({ default: { limit: 3, ttl: 900_000 } })
   @Post('reset-password')
   @ApiOperation({ summary: 'Resetear contraseña con código de verificación' })
   async resetPassword(@Body() dto: ResetPasswordDto) {

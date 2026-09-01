@@ -1,5 +1,6 @@
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import * as bodyParser from 'body-parser';
@@ -17,7 +18,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
 
   app.enableCors({
@@ -27,6 +28,14 @@ async function bootstrap() {
   });
 
   app.use(cookieParser());
+  // Sin esto, Express reporta en req.ip la IP del contenedor de nginx, no la
+  // del cliente: TODO el trafico compartiria un solo contador de rate limit y
+  // el limite seria global en vez de por cliente. El `1` significa "confia en
+  // un solo proxy delante" y es correcto SOLO porque nginx sobrescribe
+  // X-Forwarded-For con $remote_addr (QuycaClient/nginx.conf). Si esa linea
+  // vuelve a $proxy_add_x_forwarded_for, esto pasa a ser falsificable por el
+  // cliente.
+  app.set('trust proxy', 1);
   // 20mb y no 6mb desde la pagina de musica: un mp3 de 4:30 a 160 kbps pesa
   // 5,4 MB y en base64 son 7,2 MB, mas la portada en el mismo body. El costo es
   // que cada request se materializa entera en memoria; se acepta hasta que la

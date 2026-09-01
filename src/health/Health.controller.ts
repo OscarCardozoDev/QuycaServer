@@ -7,6 +7,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RedisService } from 'src/redis/redis.service';
 
@@ -41,6 +42,10 @@ const REDIS_PING_TIMEOUT_MS = 1500;
  *
  * No expone version, uptime ni nombre de la base: es publico.
  */
+// El healthcheck de Docker le pega cada 10-30s: no puede competir por el
+// contador con el resto del tráfico ni, sobre todo, con el `curl --retry`
+// del deploy mientras el backend arranca.
+@SkipThrottle()
 @ApiExcludeController()
 @Controller('health')
 export class HealthController {
