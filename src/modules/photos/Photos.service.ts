@@ -1,6 +1,11 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  HttpException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { photoManagement } from 'src/utils/photosManagement';
+import { photoManagement, parsePublicUrl } from 'src/utils/photosManagement';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
@@ -58,7 +63,11 @@ export class PhotosService {
         fileName,
         folderPath: folder,
       });
-    } catch {
+    } catch (error) {
+      // Un `catch` pelado convertía en 500 el 400 que tira `resolveFolder`
+      // cuando la carpeta se sale de public/: el atacante veía "error del
+      // servidor" y el usuario legítimo con una carpeta mal escrita, también.
+      if (error instanceof HttpException) throw error;
       throw new Error('Error saving photo to storage');
     }
 
@@ -113,9 +122,12 @@ export class PhotosService {
 
     const { buffer } = this.base64ToBuffer(params.base64);
 
+    const { folderPath, fileName } = parsePublicUrl(photo.url);
+
     await photoManagement.edit({
       fileBuffer: buffer,
-      folderPath: photo.url,
+      fileName,
+      folderPath,
     });
 
     return {
@@ -139,11 +151,7 @@ export class PhotosService {
       throw new NotFoundException('Photo not found');
     }
 
-    // Quitar el primer "/images" si existe
-    const cleanPath = photo.url.replace(/^\/images\//, '');
-    const segments = cleanPath.split('/').filter(Boolean);
-    const fileName = segments.pop()!;
-    const folderPath = segments.join('/');
+    const { folderPath, fileName } = parsePublicUrl(photo.url);
 
     await photoManagement.remove(fileName, folderPath);
 

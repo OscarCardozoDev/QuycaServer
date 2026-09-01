@@ -8,11 +8,13 @@ import {
   IsBoolean,
   IsArray,
   IsEnum,
+  IsIn,
   MaxLength,
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { ProductStatus } from './Product.interface';
+import { MEDIA_FOLDERS } from 'src/utils/photosManagement';
 
 export class ProductAuthorDto {
   @ApiProperty({ example: 'aa35ee0c-f81a-4739-aa4c-af4cdfa820d3' })
@@ -34,7 +36,10 @@ export class ProductImageDto {
   name: string;
 
   @ApiProperty({ example: 'products' })
-  @IsString()
+  // Conjunto cerrado, no texto libre: `folder` es un segmento de ruta en disco.
+  // La barrera real esta en resolveFolder() (src/utils/photosManagement.ts);
+  // esto es el refuerzo en el borde.
+  @IsIn(MEDIA_FOLDERS)
   folder: string;
 
   @ApiPropertyOptional({ example: true })

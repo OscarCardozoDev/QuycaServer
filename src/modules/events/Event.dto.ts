@@ -6,6 +6,7 @@ import {
   IsBoolean,
   IsArray,
   IsEnum,
+  IsIn,
   IsDateString,
   ValidateIf,
   ValidateNested,
@@ -17,6 +18,7 @@ import {
   EventPhotoType,
   InvitationStatus,
 } from './Event.interface';
+import { MEDIA_FOLDERS } from 'src/utils/photosManagement';
 
 // ─── Params ──────────────────────────────────────────────────────────────────
 
@@ -88,7 +90,10 @@ export class EventPhotoDto {
   name: string;
 
   @ApiProperty({ example: 'events' })
-  @IsString()
+  // Conjunto cerrado, no texto libre: `folder` es un segmento de ruta en disco.
+  // La barrera real esta en resolveFolder() (src/utils/photosManagement.ts);
+  // esto es el refuerzo en el borde.
+  @IsIn(MEDIA_FOLDERS)
   folder: string;
 
   @ApiProperty({ enum: EventPhotoType, example: EventPhotoType.PROMO })

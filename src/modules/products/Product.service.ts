@@ -15,7 +15,11 @@ import {
   ProductStatus,
 } from './Product.interface';
 import { PhotosService } from 'src/modules/photos/Photos.service';
-import { photoManagement, AUDIO_ROOT } from 'src/utils/photosManagement';
+import {
+  photoManagement,
+  parsePublicUrl,
+  AUDIO_ROOT,
+} from 'src/utils/photosManagement';
 import {
   decodeAudioBase64,
   buildAudioFileName,
@@ -770,10 +774,7 @@ export class ProductService {
 
         for (const photo of toDeleteFromDisk) {
           try {
-            const cleanPath = photo.photo.url.replace(/^\/images\//, '');
-            const segments = cleanPath.split('/').filter(Boolean);
-            const fileName = segments.pop()!;
-            const folderPath = segments.join('/');
+            const { folderPath, fileName } = parsePublicUrl(photo.photo.url);
             await photoManagement.remove(fileName, folderPath);
           } catch {
             // Archivo ya no existe, no es crítico
