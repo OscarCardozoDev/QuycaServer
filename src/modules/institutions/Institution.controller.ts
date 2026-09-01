@@ -2,6 +2,7 @@ import {
   Controller, Post, Get, Patch, Delete, Body, Param, UseGuards, Req, ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { InstitutionService } from './Institution.service';
 import { AuthGuard } from 'src/guards/jwt.guard';
 import { TenantGuard } from 'src/tenant/tenant.guard';
@@ -19,6 +20,10 @@ import {
 export class InstitutionController {
   constructor(private readonly institutionService: InstitutionService) {}
 
+  // 3 cada hora: es público y sin auth, y una institución se registra una
+  // vez en la vida. Contado por AccountThrottlerGuard vía `body.email`
+  // (CreateInstitutionDto usa ese nombre, no `mail`).
+  @Throttle({ default: { limit: 3, ttl: 3_600_000 } })
   @Post('institutions')
   @ApiOperation({ summary: 'Registrar nueva institución (público)' })
   async create(@Body() dto: CreateInstitutionDto) {
@@ -72,6 +77,9 @@ export class InstitutionController {
     return this.institutionService.changePlan(institution.uid, dto.planSlug ?? null);
   }
 
+  // 30 cada hora: autenticado, el rector invita en tanda (ej. toda una
+  // clase al arrancar el semestre).
+  @Throttle({ default: { limit: 30, ttl: 3_600_000 } })
   @Post('institutions/:id/invitations')
   @UseGuards(AuthGuard, TenantGuard, ContextRoleGuard)
   @RequireContextRole('rector', 'coordinator', 'institutional')
