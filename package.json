@@ -36,6 +36,7 @@
     "class-validator": "^0.14.3",
     "cookie-parser": "^1.4.7",
     "cross-env": "^10.1.0",
+    "ioredis": "^6.0.0",
     "newman": "^6.2.2",
     "newman-reporter-htmlextra": "^1.23.1",
     "pg": "^8.16.3",

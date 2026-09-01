@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthController } from './Auth.controller';
 import { AuthService } from './Auth.service';
+import { RefreshTokenService } from './refresh-token.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthGuard } from 'src/guards/jwt.guard';
@@ -13,11 +14,14 @@ import { AuthGuard } from 'src/guards/jwt.guard';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('config.jwtSecret'),
-        signOptions: { expiresIn: '24h' },
+        signOptions: { expiresIn: '15m' },
       }),
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthGuard],
+  // RedisModule es @Global() (montado en AppModule) y JwtModule ya está
+  // importado arriba: RefreshTokenService resuelve sus dependencias sin
+  // agregar ningún import más.
+  providers: [AuthService, AuthGuard, RefreshTokenService],
 })
 export class AuthModule {}

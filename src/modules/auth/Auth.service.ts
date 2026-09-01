@@ -123,9 +123,14 @@ export class AuthService {
   }
 
   async putPasswordByEmail(auth: { mail: string; password: string }): Promise<void> {
+    // passwordChangedAt se escribe en el MISMO update que la contraseña
+    // (mismo objeto `data`, misma sentencia UPDATE de Postgres) para que la
+    // futura revocación de refresh tokens (tarea 3) tenga un punto de corte
+    // atómico. Escribirlo en un update separado reabre el hueco que describe
+    // obsidian/Decisiones/Almacenamiento-de-Refresh-Tokens.md.
     await this.prismaService.credentials.update({
       where: { mail: auth.mail },
-      data: { password: auth.password },
+      data: { password: auth.password, passwordChangedAt: new Date() },
     });
   }
 

@@ -18,6 +18,7 @@ import { InstitutionModule } from 'src/modules/institutions/Institution.module';
 import { CategoriesModule } from 'src/modules/categories/Categories.module';
 import { LessonModule } from 'src/modules/lessons/Lesson.module';
 import { HealthController } from 'src/health/Health.controller';
+import { RedisModule } from 'src/redis/redis.module';
 import { join } from 'path';
 import configurationApp from 'config/configuration-app';
 
@@ -41,6 +42,7 @@ import configurationApp from 'config/configuration-app';
       serveRoot: '/audio',
       serveStaticOptions: { index: false },
     }),
+    RedisModule,
     AuthModule,
     UserModule,
     PhotosModule,

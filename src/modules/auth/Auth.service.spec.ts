@@ -93,3 +93,49 @@ describe('AuthService — code generation', () => {
     await expect(service.sendPasswordResetCode('unknown@test.com')).resolves.toBeUndefined();
   });
 });
+
+describe('AuthService — resetPassword', () => {
+  let service: AuthService;
+
+  const resetMockPrisma = {
+    credentials: { findUnique: jest.fn(), update: jest.fn() },
+    verificationCodes: { findFirst: jest.fn(), update: jest.fn() },
+  };
+
+  beforeEach(async () => {
+    const module = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        { provide: PrismaService, useValue: resetMockPrisma },
+        { provide: ConfigService, useValue: mockConfigService },
+      ],
+    }).compile();
+
+    service = module.get(AuthService);
+    jest.clearAllMocks();
+
+    resetMockPrisma.credentials.findUnique.mockResolvedValue({
+      uid: 'u1',
+      mail: 'a@b.com',
+    });
+    resetMockPrisma.verificationCodes.findFirst.mockResolvedValue({
+      uid: 'code1',
+    });
+    resetMockPrisma.verificationCodes.update.mockResolvedValue({});
+    resetMockPrisma.credentials.update.mockResolvedValue({});
+  });
+
+  it('writes password and passwordChangedAt in the same update call', async () => {
+    await service.resetPassword('a@b.com', '123456', 'newSecret123');
+
+    expect(resetMockPrisma.credentials.update).toHaveBeenCalledTimes(1);
+    const call = resetMockPrisma.credentials.update.mock.calls[0][0] as {
+      where: { mail: string };
+      data: { password: string; passwordChangedAt: Date };
+    };
+
+    expect(call.where).toEqual({ mail: 'a@b.com' });
+    expect(call.data).toHaveProperty('password');
+    expect(call.data.passwordChangedAt).toBeInstanceOf(Date);
+  });
+});
