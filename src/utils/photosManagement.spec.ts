@@ -126,7 +126,6 @@ describe('photoManagement — no se puede escribir fuera de public/', () => {
       ['sube con ..', '../../etc'],
       ['sube desde una subcarpeta valida', 'products/../../..'],
       ['ruta absoluta posix', '/etc'],
-      ['separadores de windows', '..\\..\\windows'],
       ['muchos niveles', '../../../../app/dist'],
     ])('rechaza %s', async (_caso, folderPath) => {
       await expect(
@@ -151,6 +150,47 @@ describe('photoManagement — no se puede escribir fuera de public/', () => {
           folderPath: '../images-robado',
         }),
       ).rejects.toThrow(BadRequestException);
+    });
+
+    /**
+     * El unico caso que NO se comporta igual en los dos sistemas, y el que
+     * rompio el CI: `\` es separador en Windows pero un caracter valido de
+     * nombre de archivo en Linux.
+     *
+     *   posix  resolve('/app/public/images', '..\..\windows')
+     *            → '/app/public/images/..\..\windows'   (se queda ADENTRO)
+     *   win32  resolve('C:/app/public/images', '..\..\windows')
+     *            → 'C:\app\windows'                     (se SALE)
+     *
+     * Asi que "tiene que lanzar" es cierto en Windows y falso en Linux, que es
+     * donde corre el CI y donde corre produccion. Afirmar eso ataba el test a
+     * la maquina de quien lo escribio.
+     *
+     * El invariante que si vale en las dos plataformas es el unico que importa
+     * de verdad: NUNCA se escribe fuera de la base. Es lo que se afirma.
+     */
+    it('con separadores de Windows nunca se escribe fuera de la base', async () => {
+      const raro = '..\\..\\windows';
+
+      try {
+        await photoManagement.save({
+          fileBuffer: buffer,
+          fileName: 'x.js',
+          folderPath: raro,
+        });
+      } catch (error) {
+        // Windows: se sale, y la guarda lo corta antes de tocar el disco.
+        expect(error).toBeInstanceOf(BadRequestException);
+        expect(fs.writeFile).not.toHaveBeenCalled();
+        return;
+      }
+
+      // Linux: es un nombre de carpeta feo pero legitimo. Lo que se escribio
+      // tiene que estar dentro de public/images.
+      const [rutaEscrita] = (fs.writeFile as jest.Mock).mock.calls[0] as [
+        string,
+      ];
+      expect(rutaEscrita.startsWith(IMAGES + path.sep)).toBe(true);
     });
 
     it('el rechazo llega antes de tocar el disco, no despues', async () => {
