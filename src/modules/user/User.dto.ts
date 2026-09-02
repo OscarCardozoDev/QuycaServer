@@ -1,6 +1,7 @@
 // server/src/modules/user/User.dto.ts
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsObject } from 'class-validator';
+import { IsString, IsOptional, IsObject, IsIn } from 'class-validator';
+import { MEDIA_FOLDERS } from 'src/utils/photosManagement';
 
 class PhotoDto {
   @ApiProperty({ example: '/9j/4AAQSkZJRgAB...' })
@@ -12,7 +13,10 @@ class PhotoDto {
   name: string;
 
   @ApiProperty({ example: 'users' })
-  @IsString()
+  // Conjunto cerrado, no texto libre: `folder` es un segmento de ruta en disco.
+  // La barrera real esta en resolveFolder() (src/utils/photosManagement.ts);
+  // esto es el refuerzo en el borde.
+  @IsIn(MEDIA_FOLDERS)
   folder: string;
 }
 
@@ -93,6 +97,9 @@ export class UpdateUserPhotoDto {
   name: string;
 
   @ApiProperty({ example: 'users' })
-  @IsString()
+  // Conjunto cerrado, no texto libre: `folder` es un segmento de ruta en disco.
+  // La barrera real esta en resolveFolder() (src/utils/photosManagement.ts);
+  // esto es el refuerzo en el borde.
+  @IsIn(MEDIA_FOLDERS)
   folder: string;
 }

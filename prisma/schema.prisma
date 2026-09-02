@@ -178,7 +178,7 @@ model Groups {
 
   /// Reglas del grupo, texto libre escrito por el docente. Son informativas:
   /// el sistema NO las hace cumplir. Ver
-  /// docs/superpowers/specs/2026-08-11-modelo-de-grupos-design.md § 3.
+  /// obsidian/Raw/Specs/2026-08-11-modelo-de-grupos-design.md § 3.
   rules        String?  @db.Text
 
   /// Portada del grupo, subida por el docente. Si es null, el frontend cae en
