@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsOptional, IsArray, MaxLength } from 'class-validator';
+import { MAX_REGLAS } from 'src/common/validation';
 import { Transform } from 'class-transformer';
 
 export class GroupParamsDto {
@@ -23,6 +24,7 @@ export class GetGroupsDto {
 export class CreateGroupDto {
   @ApiProperty({ example: 'Grupo A 2025' })
   @IsString()
+  @MaxLength(100)
   name: string;
 
   @ApiPropertyOptional({ example: 'uuid-del-profesor' })
@@ -49,9 +51,12 @@ export class CreateGroupDto {
   @MaxLength(500)
   description?: string;
 
-  @ApiPropertyOptional({ example: 'Traer materiales propios. Asistencia mínima del 80%.' })
+  @ApiPropertyOptional({
+    example: 'Traer materiales propios. Asistencia mínima del 80%.',
+  })
   @IsOptional()
   @IsString()
+  @MaxLength(MAX_REGLAS)
   rules?: string;
 
   @ApiPropertyOptional({ example: 'uuid-de-la-foto' })
@@ -64,6 +69,7 @@ export class UpdateGroupDto {
   @ApiPropertyOptional({ example: 'Artes y Fotografía' })
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   name?: string;
 
   @ApiPropertyOptional({ example: 'Colectivo de fotografía analógica' })
@@ -75,6 +81,7 @@ export class UpdateGroupDto {
   @ApiPropertyOptional({ example: 'Traer materiales propios.' })
   @IsOptional()
   @IsString()
+  @MaxLength(MAX_REGLAS)
   rules?: string;
 
   @ApiPropertyOptional({ example: 'uuid-de-la-foto' })

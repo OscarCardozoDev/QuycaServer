@@ -33,6 +33,7 @@ export class ProductImageDto {
 
   @ApiProperty({ example: 'obra.jpeg' })
   @IsString()
+  @MaxLength(100)
   name: string;
 
   @ApiProperty({ example: 'products' })
@@ -64,6 +65,7 @@ export class ProductAudioDto {
   @ApiPropertyOptional({ example: 'cancion.mp3' })
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   name?: string;
 }
 
@@ -109,10 +111,12 @@ export class GetProductsDto {
 export class CreateProductDto {
   @ApiProperty({ example: 'Mi hermosa novia' })
   @IsString()
+  @MaxLength(100)
   name: string;
 
   @ApiProperty({ example: 'Obra hecha en acuarela' })
   @IsString()
+  @MaxLength(500)
   description: string;
 
   @ApiPropertyOptional({ example: 99999 })
@@ -207,11 +211,12 @@ export class UpdateProductImageDto {
   @ApiPropertyOptional({ example: 'foto.jpg' })
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   name?: string;
 
   @ApiPropertyOptional({ example: 'products' })
   @IsOptional()
-  @IsString()
+  @IsIn(MEDIA_FOLDERS)
   folder?: string;
 
   @ApiProperty({ example: true })
@@ -227,11 +232,13 @@ export class UpdateProductDto {
   @ApiPropertyOptional({ example: 'Nuevo nombre' })
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   name?: string;
 
   @ApiPropertyOptional({ example: 'Nueva descripción' })
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   description?: string;
 
   @ApiPropertyOptional({ example: 50000 })
