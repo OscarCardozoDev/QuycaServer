@@ -55,6 +55,21 @@ export const SLUG = /^[a-z0-9]([a-z0-9-]{1,48})[a-z0-9]$/;
 export const SLUG_MSG =
   'Admite minúsculas, números y guiones internos, de 3 a 50 caracteres';
 
+/**
+ * Los valores de `Users.gender`. La columna es `VarChar(3)`.
+ *
+ * `N/A` NO es relleno: lo escribe el servidor al crear el rector en
+ * `Institution.service.ts:81`, porque el alta de una institución no le pregunta
+ * el género a su representante. Con 'M','F','O' solamente, este `@IsIn`
+ * rechazaba a 5 de los 7 usuarios de la base de desarrollo — todos los rectores
+ * — la primera vez que tocaran su perfil.
+ *
+ * Lo encontró la consulta de revisión de datos de la Fase 3 del plan, corrida
+ * ANTES de mergear. Es exactamente para lo que existe esa fase: una lista
+ * blanca escrita mirando el formulario y no la base deja gente afuera.
+ */
+export const GENEROS = ['M', 'F', 'O', 'N/A'] as const;
+
 /** Hora del día en formato de 24 horas. Antes `'DROP TABLE'` era una hora válida. */
 export const HORA_HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 export const HORA_HHMM_MSG = 'Formato HH:MM en 24 horas';

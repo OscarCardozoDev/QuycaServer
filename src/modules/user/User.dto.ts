@@ -15,6 +15,7 @@ import {
   USERNAME_MSG,
   TELEFONO,
   TELEFONO_MSG,
+  GENEROS,
 } from 'src/common/validation';
 import { MEDIA_FOLDERS } from 'src/utils/photosManagement';
 
@@ -58,8 +59,8 @@ export class CreateStudentDto {
   @MaxLength(500)
   description?: string;
 
-  @ApiProperty({ example: 'M', enum: ['M', 'F', 'O'] })
-  @IsIn(['M', 'F', 'O'])
+  @ApiProperty({ example: 'M', enum: GENEROS })
+  @IsIn(GENEROS)
   gender: string;
 
   @ApiProperty({ example: '3001234567' })
@@ -101,9 +102,9 @@ export class UpdateUserDto {
   @MaxLength(500)
   description?: string;
 
-  @ApiPropertyOptional({ example: 'M', enum: ['M', 'F', 'O'] })
+  @ApiPropertyOptional({ example: 'M', enum: GENEROS })
   @IsOptional()
-  @IsIn(['M', 'F', 'O'])
+  @IsIn(GENEROS)
   gender?: string;
 
   @ApiPropertyOptional()

@@ -115,6 +115,21 @@ describe('username — ASCII a proposito', () => {
 
 describe('gender — conjunto cerrado', () => {
   it.each(['M', 'F', 'O'])('acepta %s', (v) => acepta('gender', v));
+
+  /**
+   * `N/A` esta en la lista porque lo escribe el SERVIDOR: el alta de una
+   * institucion no le pregunta el genero a su representante y
+   * `Institution.service.ts:81` guarda 'N/A'.
+   *
+   * Sin el, este @IsIn rechazaba a 5 de los 7 usuarios de la base de
+   * desarrollo —todos los rectores— la primera vez que tocaran su perfil. Lo
+   * encontro la consulta de revision de datos de la Fase 3, corrida antes de
+   * mergear: una lista blanca escrita mirando el formulario y no la base deja
+   * gente afuera.
+   */
+  it('acepta N/A, que es lo que escribe el servidor para un rector', () =>
+    acepta('gender', 'N/A'));
+
   it.each(['X', 'masculino', '', 'M; DROP'])('rechaza %s', (v) =>
     rechaza('gender', v),
   );
