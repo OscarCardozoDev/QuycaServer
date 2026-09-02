@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsBoolean, MaxLength, IsIn } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  MaxLength,
+  IsIn,
+} from 'class-validator';
+import { MAX_TEXTO_LARGO } from 'src/common/validation';
 
 export class LessonParamsDto {
   @ApiProperty({ example: 'uuid-de-la-leccion' })
@@ -68,7 +75,9 @@ export class UpdateLessonDto {
   @MaxLength(500)
   summary?: string;
 
-  @ApiPropertyOptional({ description: 'Solo se acepta mientras la lección es DRAFT.' })
+  @ApiPropertyOptional({
+    description: 'Solo se acepta mientras la lección es DRAFT.',
+  })
   @IsOptional()
   @IsString()
   categoryId?: string;
@@ -80,9 +89,13 @@ export class UpdateLessonDto {
 }
 
 export class ListLessonsDto {
-  @ApiPropertyOptional({ example: 'artes', description: 'Slug de la categoría.' })
+  @ApiPropertyOptional({
+    example: 'artes',
+    description: 'Slug de la categoría.',
+  })
   @IsOptional()
   @IsString()
+  @MaxLength(30)
   category?: string;
 }
 
@@ -108,5 +121,6 @@ export class ReviewLessonDto {
   @ApiPropertyOptional({ example: 'Faltan ejemplos en el capítulo 3.' })
   @IsOptional()
   @IsString()
+  @MaxLength(MAX_TEXTO_LARGO)
   feedback?: string;
 }

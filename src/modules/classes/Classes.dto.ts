@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsDateString } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsDateString,
+  Matches,
+  MaxLength,
+} from 'class-validator';
+import { HORA_HHMM, HORA_HHMM_MSG } from 'src/common/validation';
 
 export class ClassParamsDto {
   @ApiProperty({ example: 'uuid-de-la-clase' })
@@ -36,15 +43,18 @@ export class CreateClassDto {
 
   @ApiProperty({ example: '14:00' })
   @IsString()
+  @Matches(HORA_HHMM, { message: HORA_HHMM_MSG })
   startTime: string;
 
   @ApiProperty({ example: '16:00' })
   @IsString()
+  @Matches(HORA_HHMM, { message: HORA_HHMM_MSG })
   endTime: string;
 
   @ApiPropertyOptional({ example: 'Técnica de acuarela' })
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   topic?: string;
 }
 
@@ -52,11 +62,15 @@ export class UpdateTopicDto {
   @ApiPropertyOptional({ example: 'Técnica de acuarela' })
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   topic?: string;
 
-  @ApiPropertyOptional({ example: 'Se practicó mezcla de colores y fondos húmedos' })
+  @ApiPropertyOptional({
+    example: 'Se practicó mezcla de colores y fondos húmedos',
+  })
   @IsOptional()
   @IsString()
+  @MaxLength(1000)
   review?: string;
 }
 

@@ -7,6 +7,7 @@ import {
   IsArray,
   IsEnum,
   IsIn,
+  IsUrl,
   IsDateString,
   ValidateIf,
   ValidateNested,
@@ -87,6 +88,7 @@ export class EventPhotoDto {
 
   @ApiProperty({ example: 'portada.jpeg' })
   @IsString()
+  @MaxLength(100)
   name: string;
 
   @ApiProperty({ example: 'events' })
@@ -140,7 +142,10 @@ export class CreateEventDto {
 
   @ApiPropertyOptional({ example: 'https://maps.google.com/?q=...' })
   @IsOptional()
-  @IsString()
+  // @IsUrl y no @IsString: se renderiza en un <a href> (EventDetail.tsx) y
+  // React NO escapa el href. `javascript:...` guardado aca se ejecuta al
+  // primer clic, tambien desde la pagina publica sin login.
+  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
   @MaxLength(500)
   locationUrl?: string;
 
@@ -150,7 +155,7 @@ export class CreateEventDto {
 
   @ApiPropertyOptional({ example: 'https://meet.google.com/abc-xyz' })
   @ValidateIf((o) => o.isVirtual === true)
-  @IsString()
+  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
   @MaxLength(500)
   streamingUrl?: string;
 
@@ -211,7 +216,10 @@ export class UpdateEventDto {
 
   @ApiPropertyOptional({ example: 'https://maps.google.com/?q=...' })
   @IsOptional()
-  @IsString()
+  // @IsUrl y no @IsString: se renderiza en un <a href> (EventDetail.tsx) y
+  // React NO escapa el href. `javascript:...` guardado aca se ejecuta al
+  // primer clic, tambien desde la pagina publica sin login.
+  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
   @MaxLength(500)
   locationUrl?: string;
 
@@ -222,7 +230,7 @@ export class UpdateEventDto {
 
   @ApiPropertyOptional({ example: 'https://meet.google.com/abc-xyz' })
   @IsOptional()
-  @IsString()
+  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
   @MaxLength(500)
   streamingUrl?: string;
 }

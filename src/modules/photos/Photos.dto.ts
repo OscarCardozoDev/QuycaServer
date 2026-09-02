@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsIn } from 'class-validator';
+import { IsString, IsIn, MaxLength } from 'class-validator';
 import { MEDIA_FOLDERS } from 'src/utils/photosManagement';
 
 export class PhotoParamsDto {
@@ -15,6 +15,7 @@ export class CreatePhotoDto {
 
   @ApiProperty({ example: 'obra.jpeg' })
   @IsString()
+  @MaxLength(100)
   name: string;
 
   @ApiProperty({ example: 'products' })

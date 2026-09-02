@@ -1,6 +1,21 @@
 // server/src/modules/user/User.dto.ts
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsObject, IsIn } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsObject,
+  IsIn,
+  Matches,
+  MaxLength,
+} from 'class-validator';
+import {
+  NOMBRE_PERSONA,
+  NOMBRE_PERSONA_MSG,
+  USERNAME,
+  USERNAME_MSG,
+  TELEFONO,
+  TELEFONO_MSG,
+} from 'src/common/validation';
 import { MEDIA_FOLDERS } from 'src/utils/photosManagement';
 
 class PhotoDto {
@@ -10,6 +25,7 @@ class PhotoDto {
 
   @ApiProperty({ example: 'foto.jpeg' })
   @IsString()
+  @MaxLength(100)
   name: string;
 
   @ApiProperty({ example: 'users' })
@@ -23,27 +39,32 @@ class PhotoDto {
 export class CreateStudentDto {
   @ApiProperty({ example: 'Juan' })
   @IsString()
+  @Matches(NOMBRE_PERSONA, { message: NOMBRE_PERSONA_MSG })
   name: string;
 
-  @ApiProperty({ example: 'Pérez' })
+  @ApiProperty({ example: 'Peña' })
   @IsString()
+  @Matches(NOMBRE_PERSONA, { message: NOMBRE_PERSONA_MSG })
   lastName: string;
 
-  @ApiProperty({ example: 'juanperez' })
+  @ApiProperty({ example: 'juanpena' })
   @IsString()
+  @Matches(USERNAME, { message: USERNAME_MSG })
   username: string;
 
   @ApiPropertyOptional({ example: 'Estudiante de artes' })
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   description?: string;
 
-  @ApiProperty({ example: 'M' })
-  @IsString()
+  @ApiProperty({ example: 'M', enum: ['M', 'F', 'O'] })
+  @IsIn(['M', 'F', 'O'])
   gender: string;
 
   @ApiProperty({ example: '3001234567' })
   @IsString()
+  @Matches(TELEFONO, { message: TELEFONO_MSG })
   telNumber: string;
 
   @ApiProperty({ example: { career: 'Ingeniería de Sistemas', semester: '5' } })
@@ -59,31 +80,36 @@ export class UpdateUserDto {
   @ApiPropertyOptional({ example: 'Juan' })
   @IsOptional()
   @IsString()
+  @Matches(NOMBRE_PERSONA, { message: NOMBRE_PERSONA_MSG })
   name?: string;
 
-  @ApiPropertyOptional({ example: 'Pérez' })
+  @ApiPropertyOptional({ example: 'Peña' })
   @IsOptional()
   @IsString()
+  @Matches(NOMBRE_PERSONA, { message: NOMBRE_PERSONA_MSG })
   lastName?: string;
 
-  @ApiPropertyOptional({ example: 'juanperez' })
+  @ApiPropertyOptional({ example: 'juanpena' })
   @IsOptional()
   @IsString()
+  @Matches(USERNAME, { message: USERNAME_MSG })
   username?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   description?: string;
 
-  @ApiPropertyOptional({ example: 'M' })
+  @ApiPropertyOptional({ example: 'M', enum: ['M', 'F', 'O'] })
   @IsOptional()
-  @IsString()
+  @IsIn(['M', 'F', 'O'])
   gender?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @Matches(TELEFONO, { message: TELEFONO_MSG })
   telNumber?: string;
 }
 
@@ -94,6 +120,7 @@ export class UpdateUserPhotoDto {
 
   @ApiProperty({ example: 'foto.jpeg' })
   @IsString()
+  @MaxLength(100)
   name: string;
 
   @ApiProperty({ example: 'users' })
