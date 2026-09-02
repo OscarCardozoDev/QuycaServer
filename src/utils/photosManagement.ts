@@ -26,7 +26,13 @@ export const IMAGES_ROOT: MediaRoot = { dir: 'images', urlPrefix: '/images' };
  * Va en su propia carpeta y no en `public/images/audio/`, que habría costado cero
  * líneas: la URL que sale de acá **se persiste** en `Products.audioUrl`, así que
  * un prefijo equivocado se arregla después con una migración de datos y no con un
- * renombre. Ver `docs/superpowers/plans/2026-08-25-pagina-musica.md` §2.2.
+ * renombre.
+ *
+ * El plan que desarrollaba esto (`docs/superpowers/plans/2026-08-25-pagina-musica.md`
+ * §2.2) **se perdió**: `docs/` entero está gitignoreado y ese archivo no está
+ * en ningún repo. No lo busques. El razonamiento completo que quedó es el de arriba,
+ * más `obsidian/Tareas/Musica-Lo-que-falta.md`. Desde 2026-09-01 los planes van a
+ * `obsidian/Raw/Planes/`, dentro del vault, justamente por esto.
  */
 export const AUDIO_ROOT: MediaRoot = { dir: 'audio', urlPrefix: '/audio' };
 
