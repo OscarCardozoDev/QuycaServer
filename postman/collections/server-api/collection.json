@@ -1275,7 +1275,7 @@
             "url": "{{baseUrl}}/institutions/{{institutionId}}/invitations",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"toEmail\": \"{{professorMail}}\",\n  \"targetRole\": \"institutional\",\n  \"expiresInDays\": 7\n}",
+              "raw": "{\n  \"toEmail\": \"{{professorMail}}\",\n  \"targetRole\": \"institutional\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3751,7 +3751,7 @@
             "url": "{{baseUrl}}/classes/create",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"groupId\": \"{{groupId}}\",\n  \"date\": \"2026-08-23\",\n  \"startTime\": \"08:00\",\n  \"endTime\": \"10:00\",\n  \"topic\": \"Introducción al color\"\n}",
+              "raw": "{\n  \"groupId\": \"{{groupId}}\",\n  \"date\": \"2026-09-04\",\n  \"startTime\": \"08:00\",\n  \"endTime\": \"10:00\",\n  \"topic\": \"Introducción al color\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
