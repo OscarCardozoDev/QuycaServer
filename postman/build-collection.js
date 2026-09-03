@@ -467,7 +467,10 @@ const institutionsFolder = {
       name: 'Create Invitation (rector → professor)',
       method: 'POST', url: '{{baseUrl}}/institutions/{{institutionId}}/invitations',
       headers: tenantHeaders(),
-      body: { toEmail: '{{professorMail}}', targetRole: 'institutional', expiresInDays: 7 },
+      // Sin `expiresInDays`: la vigencia la fija el backend
+      // (INVITATION_EXPIRY_DAYS) y el DTO corre con forbidNonWhitelisted,
+      // así que mandarlo devuelve 400 y este request fallaba siempre.
+      body: { toEmail: '{{professorMail}}', targetRole: 'institutional' },
       tests: [
         "pm.test('Status 201', () => pm.response.to.have.status(201));",
         "const json = pm.response.json();",
