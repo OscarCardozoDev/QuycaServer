@@ -32,12 +32,38 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      # `src/modules/auth/refresh-token.spec.ts` corre contra un Redis REAL, no
+      # contra un mock: la rotación entera vive en un script Lua (`ROTATE_LUA`)
+      # y ningún mock de Redis ejecuta Lua, así que con mocks el spec no
+      # probaría la lógica sino la maqueta. Sin este servicio el spec falla
+      # ruidosamente —lanza si `REDIS_AUTH_URL` no está— en vez de conectarse a
+      # la nada y dar verde, que es lo que uno quiere de un test de seguridad.
+      #
+      # Sin `requirepass` a propósito: es un contenedor efímero del runner,
+      # accesible solo desde localhost y sin datos que proteger. En dev y en
+      # producción la instancia SÍ pide contraseña, y además lleva
+      # `appendonly yes` y `maxmemory-policy noeviction`, que son condiciones de
+      # la garantía de seguridad — ver
+      # obsidian/Decisiones/Almacenamiento-de-Refresh-Tokens.md.
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     env:
       # `env/development.env` está gitignoreado, así que en CI no existe: el
       # `dotenv.config()` de los specs y de prisma.config.ts no encuentra nada y
       # esta variable es la única fuente de la conexión. dotenv no pisa lo que
       # ya está en el entorno, así que tampoco molesta si algún día existiera.
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/quyca_test
+      # El spec le agrega `/1` para aislarse en otra base lógica y hace
+      # `flushdb` —nunca `flushall`— entre casos.
+      REDIS_AUTH_URL: redis://localhost:6379
 
     steps:
       - uses: actions/checkout@v5

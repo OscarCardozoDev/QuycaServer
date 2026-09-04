@@ -29,6 +29,7 @@ export type CredentialsMinAggregateOutputType = {
   mail: string | null
   password: string | null
   isEmailVerified: boolean | null
+  passwordChangedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
   finishedAt: Date | null
@@ -39,6 +40,7 @@ export type CredentialsMaxAggregateOutputType = {
   mail: string | null
   password: string | null
   isEmailVerified: boolean | null
+  passwordChangedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
   finishedAt: Date | null
@@ -49,6 +51,7 @@ export type CredentialsCountAggregateOutputType = {
   mail: number
   password: number
   isEmailVerified: number
+  passwordChangedAt: number
   createdAt: number
   updatedAt: number
   finishedAt: number
@@ -61,6 +64,7 @@ export type CredentialsMinAggregateInputType = {
   mail?: true
   password?: true
   isEmailVerified?: true
+  passwordChangedAt?: true
   createdAt?: true
   updatedAt?: true
   finishedAt?: true
@@ -71,6 +75,7 @@ export type CredentialsMaxAggregateInputType = {
   mail?: true
   password?: true
   isEmailVerified?: true
+  passwordChangedAt?: true
   createdAt?: true
   updatedAt?: true
   finishedAt?: true
@@ -81,6 +86,7 @@ export type CredentialsCountAggregateInputType = {
   mail?: true
   password?: true
   isEmailVerified?: true
+  passwordChangedAt?: true
   createdAt?: true
   updatedAt?: true
   finishedAt?: true
@@ -164,6 +170,7 @@ export type CredentialsGroupByOutputType = {
   mail: string
   password: string
   isEmailVerified: boolean
+  passwordChangedAt: Date
   createdAt: Date
   updatedAt: Date
   finishedAt: Date | null
@@ -195,6 +202,7 @@ export type CredentialsWhereInput = {
   mail?: Prisma.StringFilter<"Credentials"> | string
   password?: Prisma.StringFilter<"Credentials"> | string
   isEmailVerified?: Prisma.BoolFilter<"Credentials"> | boolean
+  passwordChangedAt?: Prisma.DateTimeFilter<"Credentials"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"Credentials"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Credentials"> | Date | string
   finishedAt?: Prisma.DateTimeNullableFilter<"Credentials"> | Date | string | null
@@ -205,6 +213,7 @@ export type CredentialsOrderByWithRelationInput = {
   mail?: Prisma.SortOrder
   password?: Prisma.SortOrder
   isEmailVerified?: Prisma.SortOrder
+  passwordChangedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -218,6 +227,7 @@ export type CredentialsWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.CredentialsWhereInput | Prisma.CredentialsWhereInput[]
   password?: Prisma.StringFilter<"Credentials"> | string
   isEmailVerified?: Prisma.BoolFilter<"Credentials"> | boolean
+  passwordChangedAt?: Prisma.DateTimeFilter<"Credentials"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"Credentials"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Credentials"> | Date | string
   finishedAt?: Prisma.DateTimeNullableFilter<"Credentials"> | Date | string | null
@@ -228,6 +238,7 @@ export type CredentialsOrderByWithAggregationInput = {
   mail?: Prisma.SortOrder
   password?: Prisma.SortOrder
   isEmailVerified?: Prisma.SortOrder
+  passwordChangedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -244,6 +255,7 @@ export type CredentialsScalarWhereWithAggregatesInput = {
   mail?: Prisma.StringWithAggregatesFilter<"Credentials"> | string
   password?: Prisma.StringWithAggregatesFilter<"Credentials"> | string
   isEmailVerified?: Prisma.BoolWithAggregatesFilter<"Credentials"> | boolean
+  passwordChangedAt?: Prisma.DateTimeWithAggregatesFilter<"Credentials"> | Date | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Credentials"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Credentials"> | Date | string
   finishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Credentials"> | Date | string | null
@@ -254,6 +266,7 @@ export type CredentialsCreateInput = {
   mail: string
   password: string
   isEmailVerified?: boolean
+  passwordChangedAt?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
   finishedAt?: Date | string | null
@@ -264,6 +277,7 @@ export type CredentialsUncheckedCreateInput = {
   mail: string
   password: string
   isEmailVerified?: boolean
+  passwordChangedAt?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
   finishedAt?: Date | string | null
@@ -274,6 +288,7 @@ export type CredentialsUpdateInput = {
   mail?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  passwordChangedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -284,6 +299,7 @@ export type CredentialsUncheckedUpdateInput = {
   mail?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  passwordChangedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -294,6 +310,7 @@ export type CredentialsCreateManyInput = {
   mail: string
   password: string
   isEmailVerified?: boolean
+  passwordChangedAt?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
   finishedAt?: Date | string | null
@@ -304,6 +321,7 @@ export type CredentialsUpdateManyMutationInput = {
   mail?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  passwordChangedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -314,6 +332,7 @@ export type CredentialsUncheckedUpdateManyInput = {
   mail?: Prisma.StringFieldUpdateOperationsInput | string
   password?: Prisma.StringFieldUpdateOperationsInput | string
   isEmailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  passwordChangedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   finishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -324,6 +343,7 @@ export type CredentialsCountOrderByAggregateInput = {
   mail?: Prisma.SortOrder
   password?: Prisma.SortOrder
   isEmailVerified?: Prisma.SortOrder
+  passwordChangedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
@@ -334,6 +354,7 @@ export type CredentialsMaxOrderByAggregateInput = {
   mail?: Prisma.SortOrder
   password?: Prisma.SortOrder
   isEmailVerified?: Prisma.SortOrder
+  passwordChangedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
@@ -344,6 +365,7 @@ export type CredentialsMinOrderByAggregateInput = {
   mail?: Prisma.SortOrder
   password?: Prisma.SortOrder
   isEmailVerified?: Prisma.SortOrder
+  passwordChangedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   finishedAt?: Prisma.SortOrder
@@ -356,6 +378,7 @@ export type CredentialsSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   mail?: boolean
   password?: boolean
   isEmailVerified?: boolean
+  passwordChangedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   finishedAt?: boolean
@@ -366,6 +389,7 @@ export type CredentialsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   mail?: boolean
   password?: boolean
   isEmailVerified?: boolean
+  passwordChangedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   finishedAt?: boolean
@@ -376,6 +400,7 @@ export type CredentialsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   mail?: boolean
   password?: boolean
   isEmailVerified?: boolean
+  passwordChangedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   finishedAt?: boolean
@@ -386,12 +411,13 @@ export type CredentialsSelectScalar = {
   mail?: boolean
   password?: boolean
   isEmailVerified?: boolean
+  passwordChangedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   finishedAt?: boolean
 }
 
-export type CredentialsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "mail" | "password" | "isEmailVerified" | "createdAt" | "updatedAt" | "finishedAt", ExtArgs["result"]["credentials"]>
+export type CredentialsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"uid" | "mail" | "password" | "isEmailVerified" | "passwordChangedAt" | "createdAt" | "updatedAt" | "finishedAt", ExtArgs["result"]["credentials"]>
 
 export type $CredentialsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Credentials"
@@ -401,6 +427,13 @@ export type $CredentialsPayload<ExtArgs extends runtime.Types.Extensions.Interna
     mail: string
     password: string
     isEmailVerified: boolean
+    /**
+     * Se reescribe en el mismo `update` que `password` (reset-password), nunca
+     * en un `update` separado. La tarea de rotación de refresh tokens compara
+     * el `iat` del token contra esta columna para revocar los emitidos antes
+     * del cambio de contraseña. Ver obsidian/Decisiones/Almacenamiento-de-Refresh-Tokens.md
+     */
+    passwordChangedAt: Date
     createdAt: Date
     updatedAt: Date
     finishedAt: Date | null
@@ -831,6 +864,7 @@ export interface CredentialsFieldRefs {
   readonly mail: Prisma.FieldRef<"Credentials", 'String'>
   readonly password: Prisma.FieldRef<"Credentials", 'String'>
   readonly isEmailVerified: Prisma.FieldRef<"Credentials", 'Boolean'>
+  readonly passwordChangedAt: Prisma.FieldRef<"Credentials", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Credentials", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Credentials", 'DateTime'>
   readonly finishedAt: Prisma.FieldRef<"Credentials", 'DateTime'>

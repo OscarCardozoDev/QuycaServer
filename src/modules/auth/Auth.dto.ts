@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, Length, Matches, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  Length,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
+import { MAX_EMAIL, MAX_PASSWORD } from 'src/common/validation';
 import { ONBOARDING_STEPS, OnboardingStep } from './onboarding-steps';
 
 /**
@@ -28,11 +36,15 @@ export class AuthSessionResponseDto {
 export class LoginDto {
   @ApiProperty({ example: 'artista@gmail.com' })
   @IsEmail()
+  @MaxLength(MAX_EMAIL)
   mail: string;
 
   @ApiProperty({ example: 'password123' })
   @IsString()
   @MinLength(6)
+  // bcryptjs trunca en 72 bytes EN SILENCIO: sin este tope, una contrasena de
+  // 80 caracteres funciona con los primeros 72 y el usuario nunca se entera.
+  @MaxLength(MAX_PASSWORD)
   password: string;
 }
 
@@ -42,11 +54,15 @@ export class RegisterDto {
   // los artistas independientes, que son la mitad del modelo de registro.
   @ApiProperty({ example: 'artista@gmail.com' })
   @IsEmail()
+  @MaxLength(MAX_EMAIL)
   mail: string;
 
   @ApiProperty({ example: 'password123' })
   @IsString()
   @MinLength(6)
+  // bcryptjs trunca en 72 bytes EN SILENCIO: sin este tope, una contrasena de
+  // 80 caracteres funciona con los primeros 72 y el usuario nunca se entera.
+  @MaxLength(MAX_PASSWORD)
   password: string;
 }
 
@@ -61,12 +77,14 @@ export class VerifyCodeDto {
 export class ForgotPasswordDto {
   @ApiProperty({ example: 'artista@gmail.com' })
   @IsEmail()
+  @MaxLength(MAX_EMAIL)
   mail: string;
 }
 
 export class ResetPasswordDto {
   @ApiProperty({ example: 'artista@gmail.com' })
   @IsEmail()
+  @MaxLength(MAX_EMAIL)
   mail: string;
 
   @ApiProperty({ example: '123456' })
@@ -78,5 +96,6 @@ export class ResetPasswordDto {
   @ApiProperty({ example: 'NuevaContraseña@123' })
   @IsString()
   @MinLength(6)
+  @MaxLength(MAX_PASSWORD)
   newPassword: string;
 }

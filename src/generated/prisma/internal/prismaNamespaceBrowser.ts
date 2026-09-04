@@ -147,6 +147,7 @@ export const CredentialsScalarFieldEnum = {
   mail: 'mail',
   password: 'password',
   isEmailVerified: 'isEmailVerified',
+  passwordChangedAt: 'passwordChangedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   finishedAt: 'finishedAt'

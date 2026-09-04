@@ -8,11 +8,13 @@ import {
   IsBoolean,
   IsArray,
   IsEnum,
+  IsIn,
   MaxLength,
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { ProductStatus } from './Product.interface';
+import { MEDIA_FOLDERS } from 'src/utils/photosManagement';
 
 export class ProductAuthorDto {
   @ApiProperty({ example: 'aa35ee0c-f81a-4739-aa4c-af4cdfa820d3' })
@@ -31,10 +33,14 @@ export class ProductImageDto {
 
   @ApiProperty({ example: 'obra.jpeg' })
   @IsString()
+  @MaxLength(100)
   name: string;
 
   @ApiProperty({ example: 'products' })
-  @IsString()
+  // Conjunto cerrado, no texto libre: `folder` es un segmento de ruta en disco.
+  // La barrera real esta en resolveFolder() (src/utils/photosManagement.ts);
+  // esto es el refuerzo en el borde.
+  @IsIn(MEDIA_FOLDERS)
   folder: string;
 
   @ApiPropertyOptional({ example: true })
@@ -59,6 +65,7 @@ export class ProductAudioDto {
   @ApiPropertyOptional({ example: 'cancion.mp3' })
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   name?: string;
 }
 
@@ -104,10 +111,12 @@ export class GetProductsDto {
 export class CreateProductDto {
   @ApiProperty({ example: 'Mi hermosa novia' })
   @IsString()
+  @MaxLength(100)
   name: string;
 
   @ApiProperty({ example: 'Obra hecha en acuarela' })
   @IsString()
+  @MaxLength(500)
   description: string;
 
   @ApiPropertyOptional({ example: 99999 })
@@ -202,11 +211,12 @@ export class UpdateProductImageDto {
   @ApiPropertyOptional({ example: 'foto.jpg' })
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   name?: string;
 
   @ApiPropertyOptional({ example: 'products' })
   @IsOptional()
-  @IsString()
+  @IsIn(MEDIA_FOLDERS)
   folder?: string;
 
   @ApiProperty({ example: true })
@@ -222,11 +232,13 @@ export class UpdateProductDto {
   @ApiPropertyOptional({ example: 'Nuevo nombre' })
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   name?: string;
 
   @ApiPropertyOptional({ example: 'Nueva descripción' })
   @IsOptional()
   @IsString()
+  @MaxLength(500)
   description?: string;
 
   @ApiPropertyOptional({ example: 50000 })

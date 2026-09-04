@@ -6,6 +6,8 @@ import {
   IsBoolean,
   IsArray,
   IsEnum,
+  IsIn,
+  IsUrl,
   IsDateString,
   ValidateIf,
   ValidateNested,
@@ -17,6 +19,7 @@ import {
   EventPhotoType,
   InvitationStatus,
 } from './Event.interface';
+import { MEDIA_FOLDERS } from 'src/utils/photosManagement';
 
 // ─── Params ──────────────────────────────────────────────────────────────────
 
@@ -85,10 +88,14 @@ export class EventPhotoDto {
 
   @ApiProperty({ example: 'portada.jpeg' })
   @IsString()
+  @MaxLength(100)
   name: string;
 
   @ApiProperty({ example: 'events' })
-  @IsString()
+  // Conjunto cerrado, no texto libre: `folder` es un segmento de ruta en disco.
+  // La barrera real esta en resolveFolder() (src/utils/photosManagement.ts);
+  // esto es el refuerzo en el borde.
+  @IsIn(MEDIA_FOLDERS)
   folder: string;
 
   @ApiProperty({ enum: EventPhotoType, example: EventPhotoType.PROMO })
@@ -135,7 +142,10 @@ export class CreateEventDto {
 
   @ApiPropertyOptional({ example: 'https://maps.google.com/?q=...' })
   @IsOptional()
-  @IsString()
+  // @IsUrl y no @IsString: se renderiza en un <a href> (EventDetail.tsx) y
+  // React NO escapa el href. `javascript:...` guardado aca se ejecuta al
+  // primer clic, tambien desde la pagina publica sin login.
+  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
   @MaxLength(500)
   locationUrl?: string;
 
@@ -145,7 +155,7 @@ export class CreateEventDto {
 
   @ApiPropertyOptional({ example: 'https://meet.google.com/abc-xyz' })
   @ValidateIf((o) => o.isVirtual === true)
-  @IsString()
+  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
   @MaxLength(500)
   streamingUrl?: string;
 
@@ -206,7 +216,10 @@ export class UpdateEventDto {
 
   @ApiPropertyOptional({ example: 'https://maps.google.com/?q=...' })
   @IsOptional()
-  @IsString()
+  // @IsUrl y no @IsString: se renderiza en un <a href> (EventDetail.tsx) y
+  // React NO escapa el href. `javascript:...` guardado aca se ejecuta al
+  // primer clic, tambien desde la pagina publica sin login.
+  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
   @MaxLength(500)
   locationUrl?: string;
 
@@ -217,7 +230,7 @@ export class UpdateEventDto {
 
   @ApiPropertyOptional({ example: 'https://meet.google.com/abc-xyz' })
   @IsOptional()
-  @IsString()
+  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
   @MaxLength(500)
   streamingUrl?: string;
 }

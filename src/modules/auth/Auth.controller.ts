@@ -11,10 +11,12 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import type { Response } from 'express';
+import { Throttle } from '@nestjs/throttler';
+import type { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './Auth.service';
+import { RefreshTokenService } from './refresh-token.service';
 import { hashText, verifyText } from 'src/utils/crypto.util';
 import {
   LoginDto,
@@ -35,18 +37,62 @@ export class AuthController {
     private configService: ConfigService,
     private readonly authService: AuthService,
     private jwtService: JwtService,
+    private readonly refreshTokenService: RefreshTokenService,
   ) {}
 
-  // ── private helper ────────────────────────────────────────────────────────
-  private cookieOptions(isProduction: boolean) {
+  // ── private helpers ───────────────────────────────────────────────────────
+  private accessCookieOptions(isProduction: boolean) {
     return {
       httpOnly: true,
       secure: isProduction,
       sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
-      maxAge: 1000 * 60 * 60 * 24,
+      path: '/',
+      maxAge: 1000 * 60 * 15, // 15 min, igual que el access token
     };
   }
 
+  // El path distinto por entorno es lo que rompe en producción sin avisar:
+  // `nginx.conf` hace `proxy_pass http://backend:3000/` sobre `location
+  // /api/`, así que recorta el prefijo `/api` antes de que llegue al backend.
+  // El navegador, en cambio, evalúa el path de la cookie contra la URL que
+  // ÉL pidió (`/api/auth/refresh`), no contra la que ve Nest (`/auth/refresh`).
+  // Si dejáramos `/auth` fijo, en producción la cookie de refresh jamás
+  // matchearía y todos quedarían deslogueados cada 15 minutos.
+  private refreshCookieOptions(isProduction: boolean) {
+    return {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+      path: isProduction ? '/api/auth' : '/auth',
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 días
+    };
+  }
+
+  private setSessionCookies(
+    res: Response,
+    isProduction: boolean,
+    tokens: { accessToken: string; refreshToken: string },
+  ) {
+    res.cookie(
+      'access_token',
+      tokens.accessToken,
+      this.accessCookieOptions(isProduction),
+    );
+    res.cookie(
+      'refresh_token',
+      tokens.refreshToken,
+      this.refreshCookieOptions(isProduction),
+    );
+  }
+
+  private clearSessionCookies(res: Response, isProduction: boolean) {
+    res.clearCookie('access_token', this.accessCookieOptions(isProduction));
+    res.clearCookie('refresh_token', this.refreshCookieOptions(isProduction));
+  }
+
+  // 5 cada 5 min, contados por email (AccountThrottlerGuard): frena la
+  // fuerza bruta sobre una cuenta sin bloquear al resto del laboratorio.
+  @Throttle({ default: { limit: 5, ttl: 300_000 } })
   @Post('login')
   @ApiOperation({ summary: 'Iniciar sesión' })
   @ApiResponse({ status: 201, type: AuthSessionResponseDto })
@@ -67,12 +113,12 @@ export class AuthController {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const token = await this.jwtService.signAsync({
-      uid: credential.uid,
-      userTypeId: credential.userTypeId,
-    });
+    const tokens = await this.refreshTokenService.issuePair(
+      credential.uid,
+      credential.userTypeId ?? null,
+    );
 
-    res.cookie('access_token', token, this.cookieOptions(isProduction));
+    this.setSessionCookies(res, isProduction, tokens);
 
     return {
       message: 'Login successful',
@@ -80,6 +126,9 @@ export class AuthController {
     };
   }
 
+  // 20 cada hora: alcanza para uso legítimo (una familia, un lab probando
+  // altas) y frena el spam de cuentas.
+  @Throttle({ default: { limit: 20, ttl: 3_600_000 } })
   @Post('register')
   @ApiOperation({ summary: 'Registrar usuario' })
   @ApiResponse({ status: 201, type: AuthSessionResponseDto })
@@ -94,9 +143,11 @@ export class AuthController {
     const isProduction =
       this.configService.get<string>('config.nodeEnv') === 'production';
 
-    const token = await this.jwtService.signAsync({ uid });
+    // Todavía no hay perfil en este punto del registro, así que no hay
+    // userTypeId que firmar: null (soportado por issuePair/RefreshPayload).
+    const tokens = await this.refreshTokenService.issuePair(uid, null);
 
-    res.cookie('access_token', token, this.cookieOptions(isProduction));
+    this.setSessionCookies(res, isProduction, tokens);
 
     // Los pasos los resuelve el backend igual que en el login. Antes el
     // registro solo devolvía `isEmailVerified: false` y el frontend inventaba
@@ -108,12 +159,64 @@ export class AuthController {
     };
   }
 
-  @Post('logout')
-  @ApiOperation({ summary: 'Cerrar sesión' })
-  logout(@Res({ passthrough: true }) res: Response) {
+  // Sin @Throttle a propósito: el access token dura 15 min, así que una
+  // clase que arrancó junta refresca junta. Limitar esta ruta deslogearía a
+  // media aula de golpe cuando venza el token en bloque. El resguardo contra
+  // abuso de esta ruta queda del lado de nginx (zona `api`, no `auth` —
+  // Fase 2 del plan).
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Rotar el par access/refresh token' })
+  @ApiResponse({ status: 200, description: 'Tokens rotados, cookies nuevas' })
+  @ApiResponse({
+    status: 401,
+    description: 'Refresh token ausente, inválido, reusado o revocado',
+  })
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const isProduction =
       this.configService.get<string>('config.nodeEnv') === 'production';
-    res.clearCookie('access_token', this.cookieOptions(isProduction));
+    const rawToken = (req.cookies as Record<string, string> | undefined)?.[
+      'refresh_token'
+    ];
+
+    if (!rawToken) {
+      throw new UnauthorizedException('Refresh token ausente');
+    }
+
+    try {
+      const tokens = await this.refreshTokenService.rotate(rawToken);
+      this.setSessionCookies(res, isProduction, tokens);
+      return { message: 'Token refrescado' };
+    } catch (error) {
+      this.clearSessionCookies(res, isProduction);
+      throw error;
+    }
+  }
+
+  // Tampoco se decora: mismo motivo que 'refresh' arriba, un cierre de
+  // sesión en tanda (fin de una clase) no puede toparse con un límite.
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Cerrar sesión' })
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const isProduction =
+      this.configService.get<string>('config.nodeEnv') === 'production';
+    const rawToken = (req.cookies as Record<string, string> | undefined)?.[
+      'refresh_token'
+    ];
+
+    // Mata la familia entera en el servidor, no solo la cookie del
+    // navegador: ese era el bug original que motivó toda la fase.
+    // revokeByToken() nunca lanza, así que logout siempre limpia y
+    // devuelve 200, con cookie o sin ella, válida o no.
+    if (rawToken) {
+      await this.refreshTokenService.revokeByToken(rawToken);
+    }
+
+    this.clearSessionCookies(res, isProduction);
     return { message: 'Logged out' };
   }
 
@@ -147,6 +250,9 @@ export class AuthController {
     return this.authService.getCredentialsWithoutProfile();
   }
 
+  // 3 cada 15 min: esta ruta manda correo (cuota de Resend), no solo cuenta
+  // intentos.
+  @Throttle({ default: { limit: 3, ttl: 900_000 } })
   @Post('forgot-password')
   @ApiOperation({ summary: 'Solicitar código de recuperación de contraseña' })
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
@@ -154,6 +260,9 @@ export class AuthController {
     return { message: 'Código enviado' };
   }
 
+  // 3 cada 15 min: mismo motivo que forgot-password, y además el código de
+  // 6 dígitos es un blanco de fuerza bruta si no se limita.
+  @Throttle({ default: { limit: 3, ttl: 900_000 } })
   @Post('reset-password')
   @ApiOperation({ summary: 'Resetear contraseña con código de verificación' })
   async resetPassword(@Body() dto: ResetPasswordDto) {
